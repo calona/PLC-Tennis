@@ -107,8 +107,27 @@
     <div id="statusMessage"></div>
   </div>
 
+  <!-- Firebase SDK v8 (works with your code syntax) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
   <script>
-    function setAvailability(status) {
+    // TODO: Paste your real Firebase config here
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "plc-tennis.firebaseapp.com",
+      projectId: "plc-tennis",
+      storageBucket: "plc-tennis.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase once
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Single correct version of setAvailability
+    async function setAvailability(status) {
       const player = document.getElementById('playerSelect').value;
 
       if (!player) {
@@ -117,51 +136,18 @@
         return;
       }
 
-      // Placeholder — this is where Firebase will go later
+      await db.collection("availability").add({
+        player: player,
+        matchId: "practice", // later we will make this dynamic
+        status: status,
+        timestamp: new Date()
+      });
+
       document.getElementById('statusMessage').innerText =
         player + ' marked as: ' + status;
     }
   </script>
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "...",
-    authDomain: "...",
-    projectId: "plc-tennis",
-  };
-
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-
-  // Initialize Firebase
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  async function setAvailability(status) {
-    const player = document.getElementById('playerSelect').value;
-
-    if (!player) {
-      document.getElementById('statusMessage').innerText =
-        'Please select your name first.';
-      return;
-    }
-
-    // Write to Firestore
-    await db.collection("availability").add({
-      player: player,
-      matchId: "practice", // later we’ll make this dynamic
-      status: status,
-      timestamp: new Date()
-    });
-
-    document.getElementById('statusMessage').innerText =
-      player + ' marked as: ' + status;
-  }
-</script>
 
 </body>
 </html>
+

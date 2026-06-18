@@ -16,19 +16,36 @@
 <div id="matchList">Loading matches...</div>
 
 <script>
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
+const SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
 async function loadMatches() {
   const res = await fetch(SHEET_URL);
   const csv = await res.text();
   const rows = csv.split("\n").map(r => r.split(","));
 
-  const headers = rows[2].map(h => h.trim());
+  // Row 3 = header row
+  let rawHeaders = rows[2].map(h => h.trim());
+
+  // Remove blank headers + map indexes
+  const headers = [];
+  const headerIndexMap = [];
+
+  rawHeaders.forEach((h, i) => {
+    if (h !== "") {
+      headers.push(h);
+      headerIndexMap.push(i);
+    }
+  });
+
+  // Data rows start at row 4
   const dataRows = rows.slice(3);
 
   return dataRows.map(r => {
     const obj = {};
-    headers.forEach((h, i) => obj[h] = r[i]);
+    headers.forEach((h, idx) => {
+      obj[h] = r[headerIndexMap[idx]]?.trim();
+    });
     return obj;
   });
 }
@@ -51,7 +68,8 @@ loadMatches().then(matches => {
 
     div.onclick = () => {
       localStorage.setItem("selectedMatchId", m["Match #"]);
-      localStorage.setItem("selectedMatchName",
+      localStorage.setItem(
+        "selectedMatchName",
         `${m["Team"]} Match ${m["Match #"]} — ${m["Date"]} — ${m["Home/Away"]} vs ${m["Opponent"]}`
       );
       window.location.href = "availability.html";

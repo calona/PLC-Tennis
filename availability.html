@@ -127,12 +127,15 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
 <script>
-  // Your Firebase config (paste yours here)
   const firebaseConfig = {
-    apiKey: "YOUR_KEY",
-    authDomain: "YOUR_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
+    apiKey: "...",
+    authDomain: "...",
+    projectId: "plc-tennis",
   };
+
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
 
   // Initialize Firebase
   const app = firebase.initializeApp(firebaseConfig);

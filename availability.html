@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Match Calendar</title>
+  <title>Set Availability</title>
 
   <!-- NAVIGATION CSS -->
   <style>
@@ -67,30 +67,28 @@
       padding: 30px;
     }
 
-    /* Match cards */
-    .match {
-      padding: 12px;
-      background: #eee;
-      margin: 10px 0;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .match:hover { background: #ddd; }
-
-    /* Filter buttons */
-    .filter-bar button {
-      padding: 8px 14px;
-      margin-right: 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background: #2a4d8f;
-      color: white;
+    .match-title {
+      font-size: 20px;
+      margin-bottom: 20px;
       font-weight: bold;
     }
-    .filter-bar button:hover {
-      background: #1d3563;
+
+    /* Buttons */
+    .btn {
+      padding: 12px 20px;
+      margin: 10px 10px 10px 0;
+      border: none;
+      border-radius: 6px;
+      font-size: 18px;
+      cursor: pointer;
+      color: white;
     }
+
+    .available { background: #4CAF50; }
+    .maybe { background: #FFC107; color: black; }
+    .unavailable { background: #F44336; }
+
+    .btn:hover { opacity: 0.85; }
   </style>
 
   <!-- NAVIGATION JS -->
@@ -123,128 +121,65 @@
 
 <div class="content">
 
-<h1>Match Calendar</h1>
+<h1>Set Your Availability</h1>
 
-<!-- FILTER BAR -->
-<div class="filter-bar" style="margin-bottom: 20px;">
-  <button onclick="setFilter('all')">All</button>
-  <button onclick="setFilter('40')">40+</button>
-  <button onclick="setFilter('55')">55+</button>
-</div>
+<div id="matchName" class="match-title"></div>
 
-<div id="matchList">Loading matches...</div>
+<!-- Availability Buttons -->
+<button class="btn available" onclick="submitAvailability('Available')">Available</button>
+<button class="btn maybe" onclick="submitAvailability('Maybe')">Maybe</button>
+<button class="btn unavailable" onclick="submitAvailability('Unavailable')">Unavailable</button>
 
 </div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
-const SHEET_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
+/* ---------------- FIREBASE CONFIG ---------------- */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "plc-tennis.firebaseapp.com",
+  projectId: "plc-tennis",
+  storageBucket: "plc-tennis.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
 
-// Robust CSV parser
-function parseCSV(text) {
-  const rows = [];
-  let row = [];
-  let cell = "";
-  let insideQuotes = false;
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    const next = text[i + 1];
+/* ---------------- LOAD MATCH INFO ---------------- */
+const matchId = localStorage.getItem("selectedMatchId");
+const matchName = localStorage.getItem("selectedMatchName");
 
-    if (c === '"' && next === '"') {
-      cell += '"';
-      i++;
-    } else if (c === '"') {
-      insideQuotes = !insideQuotes;
-    } else if (c === ',' && !insideQuotes) {
-      row.push(cell);
-      cell = "";
-    } else if (c === '\n' && !insideQuotes) {
-      row.push(cell);
-      rows.push(row);
-      row = [];
-      cell = "";
-    } else {
-      cell += c;
-    }
-  }
-  row.push(cell);
-  rows.push(row);
+document.getElementById("matchName").innerText =
+  matchName || "Match Not Found";
 
-  return rows;
-}
+/* ---------------- SUBMIT AVAILABILITY ---------------- */
+function submitAvailability(status) {
+  const player = prompt("Enter your name:");
 
-let allMatches = [];
-let leagueFilter = "all";
-
-function setFilter(filter) {
-  leagueFilter = filter;
-  renderMatches();
-}
-
-async function loadMatches() {
-  const res = await fetch(SHEET_URL);
-  const csv = await res.text();
-  const rows = parseCSV(csv);
-
-  const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
-
-  const matches = [];
-  const numMatches = rows[0].length - 1;
-
-  for (let col = 1; col <= numMatches; col++) {
-    const match = {};
-    for (let row = 0; row < fieldNames.length; row++) {
-      const field = fieldNames[row];
-      const value = rows[row][col]?.trim();
-      if (field && value) match[field] = value;
-    }
-    if (match["Match ID"]) matches.push(match);
+  if (!player) {
+    alert("Name is required.");
+    return;
   }
 
-  return matches;
-}
-
-function renderMatches() {
-  const list = document.getElementById("matchList");
-  list.innerHTML = "";
-
-  const filtered = allMatches.filter(m => {
-    if (leagueFilter === "all") return true;
-    if (leagueFilter === "40") return m["League"]?.includes("40+");
-    if (leagueFilter === "55") return m["League"]?.includes("55+");
-    return true;
-  });
-
-  filtered.forEach(m => {
-    const league = m["League"] || "";
-    const date = m["Schedule Date"] || "";
-    const time = m["Schedule Time"] || "";
-    const home = m["Home Team"] || "";
-    const away = m["Visiting Team"] || "";
-    const site = m["Facility/Match Site"] || "";
-    const id = m["Match ID"];
-
-    const display = `${league} — ${date} ${time} — ${home} vs ${away} @ ${site}`;
-
-    const div = document.createElement("div");
-    div.className = "match";
-    div.innerHTML = `<strong>${display}</strong>`;
-
-    div.onclick = () => {
-      localStorage.setItem("selectedMatchId", id);
-      localStorage.setItem("selectedMatchName", display);
-      window.location.href = "availability.html";
-    };
-
-    list.appendChild(div);
+  db.collection("availability").add({
+    matchId: matchId,
+    matchName: matchName,
+    player: player,
+    status: status,
+    timestamp: firebase.firestore.Timestamp.now()
+  })
+  .then(() => {
+    alert("Availability saved!");
+  })
+  .catch(err => {
+    alert("Error saving availability: " + err);
   });
 }
-
-loadMatches().then(matches => {
-  allMatches = matches;
-  renderMatches();
-});
 </script>
 
 </body>

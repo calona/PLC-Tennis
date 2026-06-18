@@ -61,12 +61,12 @@
 
 <script>
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
   authDomain: "plc-tennis.firebaseapp.com",
   projectId: "plc-tennis",
   storageBucket: "plc-tennis.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  messagingSenderId: "472563332469",
+  appId: "1:472563332469:web:b781075e99cd0f5a3c4f3c"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -75,11 +75,11 @@ const db = firebase.firestore();
 
 // Captain allow-list
 const CAPTAINS = [
-  "your-email@example.com",
-  "another-captain@example.com"
+  "g@calona.com",     // <-- Add your real captain emails here
+  "anothercaptain@example.com"
 ];
 
-// Redirect if not logged in or not captain
+// Protect page
 auth.onAuthStateChanged(user => {
   if (!user) {
     window.location.href = "login.html";
@@ -167,13 +167,11 @@ async function renderMatches(matches) {
     const matchId = match["Match ID"];
     const matchName = `${match["League"]} — ${match["Schedule Date"]} ${match["Schedule Time"]} — ${match["Home Team"]} vs ${match["Visiting Team"]}`;
 
-    // Create match box
     const box = document.createElement("div");
     box.className = "box";
     box.innerHTML = `<h2>${matchName}</h2><p>Loading availability...</p>`;
     container.appendChild(box);
 
-    // Load availability
     const snapshot = await db
       .collection("availability")
       .doc(matchId)
@@ -191,7 +189,6 @@ async function renderMatches(matches) {
       else if (data.status === "Maybe") maybe.push(data.email);
     });
 
-    // Build table
     box.innerHTML = `
       <h2>${matchName}</h2>
       <table>

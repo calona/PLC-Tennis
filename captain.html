@@ -1,549 +1,321 @@
-
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Captain Dashboard</title>
 
+  <!-- SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
   <style>
-    body { font-family: Arial; margin: 0; padding: 0; background: #f4f4f4; }
-
-    /* HEADER */
-    .header {
-      width: 100%;
-      background: #1d3563;
-      color: white;
-      padding: 16px 24px;
-      font-size: 22px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-    }
-
-    .hamburger {
-      font-size: 26px;
-      cursor: pointer;
-      margin-right: 20px;
-    }
-
-    /* SIDEBAR */
-    .sidebar {
-      height: 100%;
-      width: 0;
-      position: fixed;
-      z-index: 1000;
-      top: 0;
-      left: 0;
-      background-color: #1d3563;
-      overflow-x: hidden;
-      transition: 0.3s;
-      padding-top: 60px;
-    }
-
-    .sidebar a {
-      padding: 12px 24px;
-      text-decoration: none;
-      font-size: 20px;
-      color: white;
-      display: block;
-    }
-
-    .sidebar a:hover {
-      background: #2a4d8f;
-    }
-
-    .sidebar-close {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      font-size: 30px;
-      cursor: pointer;
-      color: white;
-    }
-
-    /* CONTENT */
-    .container {
+    body {
+      font-family: Arial, sans-serif;
       padding: 20px;
+      background: #f5f7fa;
     }
 
-    .box {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 30px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      vertical-align: top;
-    }
-
-    th {
-      background: #1d3563;
-      color: white;
-    }
-
-    .note {
-      font-size: 13px;
-      color: #444;
-      margin-top: 4px;
-      padding-left: 10px;
-      border-left: 3px solid #ccc;
-    }
-
-    select {
-      padding: 10px;
-      font-size: 16px;
+    h2 {
+      color: #1d3563;
       margin-bottom: 20px;
-      width: 200px;
+    }
+
+    /* Excel-style export button */
+    .excel-btn {
+      background: #1d6f42;
+      color: white;
+      padding: 12px 22px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.25s ease;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    }
+
+    .excel-btn:hover {
+      background: #145a33;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.20);
+    }
+
+    .excel-icon {
+      width: 20px;
+      height: 20px;
+      filter: brightness(0) invert(1);
     }
   </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
-<div id="sidebar" class="sidebar">
-  <span class="sidebar-close" onclick="closeNav()">&times;</span>
-  <a href="index.html">Home</a>
-  <a href="calendar.html">Calendar</a>
-  <a href="availability.html">Availability</a>
-  <a href="captain.html">Captain Dashboard</a>
-  <a href="#" onclick="logout()">Logout</a>
-</div>
+  <h2>Captain Dashboard</h2>
 
-<!-- HEADER -->
-<div class="header">
-  <span class="hamburger" onclick="openNav()">&#9776;</span>
-  PLC Tennis Team — Captain Dashboard
-</div>
+  <!-- Excel Export Button -->
+  <button class="excel-btn" onclick="exportTeamAvailabilityMatrix()">
+    <img class="excel-icon" src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Microsoft_Office_Excel_%282019%E2%80%93present%29.svg" />
+    Export Team Availability
+  </button>
 
-<div class="container">
+  <script>
+    // -----------------------------
+    // Firebase Initialization
+    // -----------------------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyC2...",
+      authDomain: "plc-tennis.firebaseapp.com",
+      projectId: "plc-tennis",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-  <!-- LEAGUE FILTER -->
-  <label><strong>League:</strong></label><br>
-  <select id="leagueSelect" onchange="renderFilteredMatches()">
-    <option value="all">All</option>
-    <option value="40">40+</option>
-    <option value="55">55+</option>
-  </select>
+    // -----------------------------
+    // Load Matches from Google Sheet
+    // -----------------------------
+    let allMatches = [];
 
-  <div id="matchesContainer">Loading...</div>
-</div>
+    async function loadMatches() {
+      const sheetUrl =
+        "https://docs.google.com/spreadsheets/d/1Cm3hNVLPbLseLLYZKXj3ld1pLNdU1LHNj0f9uKCK4rY/gviz/tq?tqx=out:json";
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+      const res = await fetch(sheetUrl);
+      const text = await res.text();
+      const json = JSON.parse(text.substring(47, text.length - 2));
 
-<script>
-/* -------------------- FIREBASE CONFIG -------------------- */
-const firebaseConfig = {
-  apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
-  authDomain: "plc-tennis.firebaseapp.com",
-  projectId: "plc-tennis",
-  storageBucket: "plc-tennis.appspot.com",
-  messagingSenderId: "472563332469",
-  appId: "1:472563332469:web:b781075e99cd0f5a3c4f3c"
-};
-
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-/* -------------------- SIDEBAR -------------------- */
-function openNav() {
-  document.getElementById("sidebar").style.width = "260px";
-}
-function closeNav() {
-  document.getElementById("sidebar").style.width = "0";
-}
-
-/* -------------------- CAPTAIN ACCESS -------------------- */
-const CAPTAINS = [
-  "gaylorde@outlook.com"
-];
-
-auth.onAuthStateChanged(user => {
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
-  if (!CAPTAINS.includes(user.email)) {
-    document.body.innerHTML = "<h2>Access Denied</h2><p>You are not a captain.</p>";
-    return;
-  }
-  loadMatches();
-});
-
-function logout() {
-  auth.signOut().then(() => window.location.href = "login.html");
-}
-
-/* -------------------- GOOGLE SHEET LOADING -------------------- */
-
-const SHEET_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
-
-function parseCSV(text) {
-  const rows = [];
-  let row = [];
-  let cell = "";
-  let insideQuotes = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    const next = text[i + 1];
-
-    if (c === '"' && next === '"') {
-      cell += '"';
-      i++;
-    } else if (c === '"') {
-      insideQuotes = !insideQuotes;
-    } else if (c === ',' && !insideQuotes) {
-      row.push(cell);
-      cell = "";
-    } else if (c === '\n' && !insideQuotes) {
-      row.push(cell);
-      rows.push(row);
-      row = [];
-      cell = "";
-    } else {
-      cell += c;
-    }
-  }
-  row.push(cell);
-  rows.push(row);
-
-  return rows;
-}
-
-let allMatches = [];
-
-async function loadMatches() {
-  const res = await fetch(SHEET_URL);
-  const csv = await res.text();
-  const rows = parseCSV(csv);
-
-  const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
-
-  const matches = [];
-  const numMatches = rows[0].length - 1;
-
-  for (let col = 1; col <= numMatches; col++) {
-    const match = {};
-    for (let row = 0; row < fieldNames.length; row++) {
-      const field = fieldNames[row];
-      const value = rows[row][col]?.trim();
-      if (field && value) match[field] = value;
-    }
-    if (match["Match ID"]) matches.push(match);
-  }
-
-  matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
-
-  allMatches = matches;
-  renderFilteredMatches();
-}
-
-/* -------------------- FILTER + RENDER -------------------- */
-
-function renderFilteredMatches() {
-  const league = document.getElementById("leagueSelect").value;
-
-  const filtered = allMatches.filter(m => {
-    if (league === "all") return true;
-    if (league === "40") return m["League"]?.includes("40+");
-    if (league === "55") return m["League"]?.includes("55+");
-    return true;
-  });
-
-  renderMatches(filtered);
-}
-
-async function renderMatches(matches) {
-  const container = document.getElementById("matchesContainer");
-  container.innerHTML = "";
-
-  for (const match of matches) {
-    const matchId = match["Match ID"];
-    const matchName = `${match["League"]} — ${match["Schedule Date"]} ${match["Schedule Time"]} — ${match["Home Team"]} vs ${match["Visiting Team"]}`;
-
-    const box = document.createElement("div");
-    box.className = "box";
-    box.innerHTML = `<h2>${matchName}</h2><p>Loading availability...</p>`;
-    container.appendChild(box);
-
-    const snapshot = await db
-      .collection("availability")
-      .doc(matchId)
-      .collection("players")
-      .get();
-
-    const yes = [];
-    const no = [];
-    const maybe = [];
-    const conflict = [];
-
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const entry = `
-        <div>
-          <strong>${data.email}</strong>
-          ${data.notes ? `<div class="note">${data.notes}</div>` : ""}
-        </div>
-      `;
-
-      if (data.status === "Yes") yes.push(entry);
-      else if (data.status === "No") no.push(entry);
-      else if (data.status === "Maybe") maybe.push(entry);
-      else if (data.status === "Maybe - conflict") conflict.push(entry);
-    });
-
-    box.innerHTML = `
-      <h2>${matchName}</h2>
-      <table>
-        <tr>
-          <th>Yes</th>
-          <th>No</th>
-          <th>Maybe</th>
-          <th>Conflict</th>
-        </tr>
-        <tr>
-          <td>${yes.join("") || "-"}</td>
-          <td>${no.join("") || "-"}</td>
-          <td>${maybe.join("") || "-"}</td>
-          <td>${conflict.join("") || "-"}</td>
-        </tr>
-      </table>
-    `;
-  }
-}
-/* -------------------- EXPORT FUNCTION -------------------- */
-  async function exportTeamAvailabilityMatrix() {
-  // 1. Sort matches chronologically
-  const sortedMatches = [...allMatches].sort((a, b) => {
-    return new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]);
-  });
-
-  const matchIds = sortedMatches.map(m => m["Match ID"]);
-
-  // 2. Collect all players across all matches
-  const players = new Set();
-
-  for (const matchId of matchIds) {
-    const snapshot = await db
-      .collection("availability")
-      .doc(matchId)
-      .collection("players")
-      .get();
-
-    snapshot.forEach(doc => players.add(doc.id));
-  }
-
-  const playerList = Array.from(players).sort();
-
-  // 3. Build the matrix structure
-  const matrix = [];
-
-  // Header row
-  const header = ["Player", ...matchIds];
-  matrix.push(header);
-
-  // Metadata rows (bold later)
-  const metaRows = [
-    ["League", ...sortedMatches.map(m => m["League"])],
-    ["Date", ...sortedMatches.map(m => m["Schedule Date"])],
-    ["Time", ...sortedMatches.map(m => m["Schedule Time"])],
-    ["Home Team", ...sortedMatches.map(m => m["Home Team"])],
-    ["Visiting Team", ...sortedMatches.map(m => m["Visiting Team"])]
-  ];
-
-  metaRows.forEach(r => matrix.push(r));
-
-  // Player rows
-  for (const player of playerList) {
-    const row = [player];
-
-    for (const matchId of matchIds) {
-      const doc = await db
-        .collection("availability")
-        .doc(matchId)
-        .collection("players")
-        .doc(player)
-        .get();
-
-      row.push(doc.exists ? doc.data().status : "");
+      allMatches = json.table.rows.map((r) => ({
+        "Match ID": r.c[0]?.v,
+        "League": r.c[1]?.v,
+        "Schedule Date": r.c[2]?.v,
+        "Schedule Time": r.c[3]?.v,
+        "Home Team": r.c[4]?.v,
+        "Visiting Team": r.c[5]?.v,
+      }));
     }
 
-    matrix.push(row);
-  }
+    loadMatches();
 
-  // Blank row before totals
-  matrix.push([""]);
+    // ---------------------------------------------------------
+    // EXPORT TEAM AVAILABILITY MATRIX (FULL ENHANCED VERSION)
+    // ---------------------------------------------------------
+    async function exportTeamAvailabilityMatrix() {
+      // 1. Sort matches chronologically
+      const sortedMatches = [...allMatches].sort(
+        (a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"])
+      );
 
-  // Totals block
-  const totals = {
-    "Responses": [],
-    "Yes": [],
-    "No": [],
-    "Maybe": [],
-    "Conflict": [],
-    "No Response": []
-  };
+      const matchIds = sortedMatches.map((m) => m["Match ID"]);
 
-  for (const matchId of matchIds) {
-    const snapshot = await db
-      .collection("availability")
-      .doc(matchId)
-      .collection("players")
-      .get();
-
-    let yes = 0, no = 0, maybe = 0, conflict = 0, blank = 0;
-
-    snapshot.forEach(doc => {
-      const status = doc.data().status;
-      if (status === "Yes") yes++;
-      else if (status === "No") no++;
-      else if (status === "Maybe") maybe++;
-      else if (status === "Conflict") conflict++;
-      else blank++;
-    });
-
-    const totalPlayers = playerList.length;
-    const responses = yes + no + maybe + conflict;
-
-    totals["Responses"].push(`${responses}/${totalPlayers}`);
-    totals["Yes"].push(yes);
-    totals["No"].push(no);
-    totals["Maybe"].push(maybe);
-    totals["Conflict"].push(conflict);
-    totals["No Response"].push(blank);
-  }
-
-  for (const label in totals) {
-    matrix.push([label, ...totals[label]]);
-  }
-
-  // 4. Convert to worksheet
-  const ws = XLSX.utils.aoa_to_sheet(matrix);
-
-  // 5. Apply formatting
-  const range = XLSX.utils.decode_range(ws["!ref"]);
-
-  // Bold metadata rows (rows 1–5)
-  for (let r = 1; r <= 5; r++) {
-    for (let c = 0; c <= matchIds.length; c++) {
-      const cell = ws[XLSX.utils.encode_cell({ r, c })];
-      if (cell) cell.s = { font: { bold: true } };
-    }
-  }
-
-  // Conditional formatting (status colors)
-  const statusColors = {
-    "Yes": "00C6EFCE",
-    "No": "00FFC7CE",
-    "Maybe": "00FFEB9C",
-    "Conflict": "00F4B084",
-    "": "00E7E6E6"
-  };
-
-  for (let r = 6; r <= 6 + playerList.length - 1; r++) {
-    for (let c = 1; c <= matchIds.length; c++) {
-      const cell = ws[XLSX.utils.encode_cell({ r, c })];
-      if (cell) {
-        const color = statusColors[cell.v] || "00FFFFFF";
-        cell.s = { fill: { fgColor: { rgb: color } } };
+      // 2. Collect all players
+      const players = new Set();
+      for (const matchId of matchIds) {
+        const snapshot = await db
+          .collection("availability")
+          .doc(matchId)
+          .collection("players")
+          .get();
+        snapshot.forEach((doc) => players.add(doc.id));
       }
+      const playerList = Array.from(players).sort();
+
+      // 3. Build matrix
+      const matrix = [];
+      matrix.push(["Player", ...matchIds]);
+
+      // Metadata rows (bold later)
+      const metaRows = [
+        ["League", ...sortedMatches.map((m) => m["League"])],
+        ["Date", ...sortedMatches.map((m) => m["Schedule Date"])],
+        ["Time", ...sortedMatches.map((m) => m["Schedule Time"])],
+        ["Home Team", ...sortedMatches.map((m) => m["Home Team"])],
+        ["Visiting Team", ...sortedMatches.map((m) => m["Visiting Team"])],
+      ];
+      metaRows.forEach((r) => matrix.push(r));
+
+      // Player rows
+      for (const player of playerList) {
+        const row = [player];
+        for (const matchId of matchIds) {
+          const doc = await db
+            .collection("availability")
+            .doc(matchId)
+            .collection("players")
+            .doc(player)
+            .get();
+          row.push(doc.exists ? doc.data().status : "");
+        }
+        matrix.push(row);
+      }
+
+      // Blank row
+      matrix.push([""]);
+
+      // Totals block
+      const totals = {
+        "Responses": [],
+        "Yes": [],
+        "No": [],
+        "Maybe": [],
+        "Conflict": [],
+        "No Response": [],
+      };
+
+      for (const matchId of matchIds) {
+        const snapshot = await db
+          .collection("availability")
+          .doc(matchId)
+          .collection("players")
+          .get();
+
+        let yes = 0,
+          no = 0,
+          maybe = 0,
+          conflict = 0,
+          blank = 0;
+
+        snapshot.forEach((doc) => {
+          const status = doc.data().status;
+          if (status === "Yes") yes++;
+          else if (status === "No") no++;
+          else if (status === "Maybe") maybe++;
+          else if (status === "Conflict") conflict++;
+          else blank++;
+        });
+
+        const totalPlayers = playerList.length;
+        const responses = yes + no + maybe + conflict;
+
+        totals["Responses"].push(`${responses}/${totalPlayers}`);
+        totals["Yes"].push(yes);
+        totals["No"].push(no);
+        totals["Maybe"].push(maybe);
+        totals["Conflict"].push(conflict);
+        totals["No Response"].push(blank);
+      }
+
+      for (const label in totals) {
+        matrix.push([label, ...totals[label]]);
+      }
+
+      // Convert to worksheet
+      const ws = XLSX.utils.aoa_to_sheet(matrix);
+
+      // Bold metadata rows
+      for (let r = 1; r <= 5; r++) {
+        for (let c = 0; c <= matchIds.length; c++) {
+          const cell = ws[XLSX.utils.encode_cell({ r, c })];
+          if (cell) cell.s = { font: { bold: true } };
+        }
+      }
+
+      // Conditional formatting colors
+      const statusColors = {
+        Yes: "00C6EFCE",
+        No: "00FFC7CE",
+        Maybe: "00FFEB9C",
+        Conflict: "00F4B084",
+        "": "00E7E6E6",
+      };
+
+      for (let r = 6; r < 6 + playerList.length; r++) {
+        for (let c = 1; c <= matchIds.length; c++) {
+          const cell = ws[XLSX.utils.encode_cell({ r, c })];
+          if (cell) {
+            const color = statusColors[cell.v] || "00FFFFFF";
+            cell.s = { fill: { fgColor: { rgb: color } } };
+          }
+        }
+      }
+
+      // Freeze panes
+      ws["!freeze"] = { xSplit: 1, ySplit: 6 };
+
+      // Auto column widths
+      ws["!cols"] = [{ wch: 30 }, ...matchIds.map(() => ({ wch: 18 }))];
+
+      // Workbook
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Team Availability");
+
+      // Missing Responses sheet
+      const missing = [["Player", "Missing For"]];
+      for (const player of playerList) {
+        const missingMatches = [];
+        for (const matchId of matchIds) {
+          const doc = await db
+            .collection("availability")
+            .doc(matchId)
+            .collection("players")
+            .doc(player)
+            .get();
+          if (!doc.exists) missingMatches.push(matchId);
+        }
+        if (missingMatches.length > 0) {
+          missing.push([player, missingMatches.join(", ")]);
+        }
+      }
+      XLSX.utils.book_append_sheet(
+        wb,
+        XLSX.utils.aoa_to_sheet(missing),
+        "Missing Responses"
+      );
+
+      // Match Summary sheet
+      const summary = [];
+      for (const match of sortedMatches) {
+        summary.push([
+          "Match ID",
+          match["Match ID"],
+          "League",
+          match["League"],
+          "Date",
+          match["Schedule Date"],
+          "Time",
+          match["Schedule Time"],
+          "Home",
+          match["Home Team"],
+          "Visiting",
+          match["Visiting Team"],
+        ]);
+        summary.push([]);
+      }
+      XLSX.utils.book_append_sheet(
+        wb,
+        XLSX.utils.aoa_to_sheet(summary),
+        "Match Summary"
+      );
+
+      // Captain Notes
+      XLSX.utils.book_append_sheet(
+        wb,
+        XLSX.utils.aoa_to_sheet([["Captain Notes"], [""]]),
+        "Captain Notes"
+      );
+
+      // Legend
+      const legend = [
+        ["Legend"],
+        ["Yes = Green"],
+        ["No = Red"],
+        ["Maybe = Yellow"],
+        ["Conflict = Orange"],
+        ["No Response = Gray"],
+      ];
+      XLSX.utils.book_append_sheet(
+        wb,
+        XLSX.utils.aoa_to_sheet(legend),
+        "Legend"
+      );
+
+      // Save file
+      XLSX.writeFile(wb, "team_availability.xlsx");
     }
-  }
-
-  // Freeze panes
-  ws["!freeze"] = { xSplit: 1, ySplit: 6 };
-
-  // Auto column widths
-  ws["!cols"] = [{ wch: 30 }, ...matchIds.map(() => ({ wch: 18 }))];
-
-  // 6. Create workbook
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Team Availability");
-
-  // 7. Missing Responses sheet
-  const missing = [["Player", "Missing For"]];
-  for (const player of playerList) {
-    const missingMatches = [];
-
-    for (const matchId of matchIds) {
-      const doc = await db
-        .collection("availability")
-        .doc(matchId)
-        .collection("players")
-        .doc(player)
-        .get();
-
-      if (!doc.exists) missingMatches.push(matchId);
-    }
-
-    if (missingMatches.length > 0) {
-      missing.push([player, missingMatches.join(", ")]);
-    }
-  }
-
-  const wsMissing = XLSX.utils.aoa_to_sheet(missing);
-  XLSX.utils.book_append_sheet(wb, wsMissing, "Missing Responses");
-
-  // 8. Match Summary sheet
-  const summary = [];
-
-  for (const match of sortedMatches) {
-    const matchId = match["Match ID"];
-
-    summary.push([
-      "Match ID", matchId,
-      "League", match["League"],
-      "Date", match["Schedule Date"],
-      "Time", match["Schedule Time"],
-      "Home", match["Home Team"],
-      "Visiting", match["Visiting Team"]
-    ]);
-
-    summary.push([]);
-  }
-
-  const wsSummary = XLSX.utils.aoa_to_sheet(summary);
-  XLSX.utils.book_append_sheet(wb, wsSummary, "Match Summary");
-
-  // 9. Captain Notes sheet
-  const wsNotes = XLSX.utils.aoa_to_sheet([["Captain Notes"], [""]]);
-  XLSX.utils.book_append_sheet(wb, wsNotes, "Captain Notes");
-
-  // 10. Legend sheet
-  const legend = [
-    ["Legend"],
-    ["Yes = Green"],
-    ["No = Red"],
-    ["Maybe = Yellow"],
-    ["Conflict = Orange"],
-    ["No Response = Gray"]
-  ];
-
-  const wsLegend = XLSX.utils.aoa_to_sheet(legend);
-  XLSX.utils.book_append_sheet(wb, wsLegend, "Legend");
-
-  // 11. Save file
-  XLSX.writeFile(wb, "team_availability.xlsx");
-}
-
-</script>
-
+  </script>
 </body>
 </html>

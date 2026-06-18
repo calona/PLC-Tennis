@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -27,6 +28,7 @@
       border: 1px solid #ccc;
       padding: 8px;
       text-align: left;
+      vertical-align: top;
     }
 
     th {
@@ -42,6 +44,14 @@
       border-radius: 6px;
       cursor: pointer;
       margin-bottom: 20px;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #444;
+      margin-top: 4px;
+      padding-left: 10px;
+      border-left: 3px solid #ccc;
     }
   </style>
 </head>
@@ -60,6 +70,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
+/* -------------------- FIREBASE CONFIG -------------------- */
 const firebaseConfig = {
   apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
   authDomain: "plc-tennis.firebaseapp.com",
@@ -73,13 +84,11 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Captain allow-list
+/* -------------------- CAPTAIN ACCESS -------------------- */
 const CAPTAINS = [
-  "g@calona.com",     // <-- Add your real captain emails here
-  "anothercaptain@example.com"
+  "g@calona.com"
 ];
 
-// Protect page
 auth.onAuthStateChanged(user => {
   if (!user) {
     window.location.href = "login.html";
@@ -96,11 +105,11 @@ function logout() {
   auth.signOut().then(() => window.location.href = "login.html");
 }
 
-// Google Sheet CSV
+/* -------------------- GOOGLE SHEET LOADING -------------------- */
+
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
-// CSV parser
 function parseCSV(text) {
   const rows = [];
   let row = [];
@@ -159,6 +168,8 @@ async function loadMatches() {
   renderMatches(matches);
 }
 
+/* -------------------- RENDER MATCHES -------------------- */
+
 async function renderMatches(matches) {
   const container = document.getElementById("matchesContainer");
   container.innerHTML = "";
@@ -181,12 +192,16 @@ async function renderMatches(matches) {
     const yes = [];
     const no = [];
     const maybe = [];
+    const conflict = [];
 
     snapshot.forEach(doc => {
       const data = doc.data();
-      if (data.status === "Yes") yes.push(data.email);
-      else if (data.status === "No") no.push(data.email);
-      else if (data.status === "Maybe") maybe.push(data.email);
+      const entry = `<div><strong>${data.email}</strong>${data.notes ? `<div class="note">${data.notes}</div>` : ""}</div>`;
+
+      if (data.status === "Yes") yes.push(entry);
+      else if (data.status === "No") no.push(entry);
+      else if (data.status === "Maybe") maybe.push(entry);
+      else if (data.status === "Maybe - conflict") conflict.push(entry);
     });
 
     box.innerHTML = `
@@ -196,11 +211,13 @@ async function renderMatches(matches) {
           <th>Yes</th>
           <th>No</th>
           <th>Maybe</th>
+          <th>Conflict</th>
         </tr>
         <tr>
-          <td>${yes.join("<br>") || "-"}</td>
-          <td>${no.join("<br>") || "-"}</td>
-          <td>${maybe.join("<br>") || "-"}</td>
+          <td>${yes.join("") || "-"}</td>
+          <td>${no.join("") || "-"}</td>
+          <td>${maybe.join("") || "-"}</td>
+          <td>${conflict.join("") || "-"}</td>
         </tr>
       </table>
     `;

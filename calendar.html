@@ -60,12 +60,10 @@
       color: white;
     }
 
-    /* Page content */
     .content {
       padding: 30px;
     }
 
-    /* Filter + view buttons */
     .filter-bar button,
     .view-toggle button {
       padding: 8px 14px;
@@ -83,7 +81,6 @@
       background: #1d3563;
     }
 
-    /* List view match cards */
     .match {
       padding: 12px;
       background: #eee;
@@ -94,7 +91,6 @@
 
     .match:hover { background: #ddd; }
 
-    /* Calendar view */
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -141,7 +137,7 @@
 
 <body>
 
-<!-- SLIDE-OUT SIDEBAR -->
+<!-- SIDEBAR -->
 <div id="sidebar" class="sidebar">
   <span class="sidebar-close" onclick="closeNav()">&times;</span>
   <a href="index.html">Home</a>
@@ -151,7 +147,7 @@
   <a href="#" onclick="logout()">Logout</a>
 </div>
 
-<!-- TOP HEADER -->
+<!-- HEADER -->
 <div class="header">
   <span class="hamburger" onclick="openNav()">&#9776;</span>
   PLC Tennis Team
@@ -160,20 +156,17 @@
 <div class="content">
   <h1>Match Calendar</h1>
 
-  <!-- FILTER BAR -->
   <div class="filter-bar" style="margin-bottom: 20px;">
     <button onclick="setFilter('all')">All</button>
     <button onclick="setFilter('40')">40+</button>
     <button onclick="setFilter('55')">55+</button>
   </div>
 
-  <!-- VIEW TOGGLE -->
   <div class="view-toggle" style="margin-bottom: 20px;">
     <button onclick="setView('list')">List View</button>
     <button onclick="setView('calendar')">Calendar View</button>
   </div>
 
-  <!-- SCROLLABLE AREA FOR BOTH VIEWS -->
   <div id="calendarScroll" style="overflow-y:auto; max-height:70vh; padding-right:10px;">
     <div id="matchList">Loading matches...</div>
   </div>
@@ -185,18 +178,18 @@
 
 <script>
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
   authDomain: "plc-tennis.firebaseapp.com",
   projectId: "plc-tennis",
   storageBucket: "plc-tennis.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  messagingSenderId: "472563332469",
+  appId: "1:472563332469:web:b781075e99cd0f5a3c4f3c"
 };
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-// Redirect if not logged in
+// Protect page
 auth.onAuthStateChanged(user => {
   if (!user) window.location.href = "login.html";
 });
@@ -210,7 +203,6 @@ function logout() {
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
-// CSV parser
 function parseCSV(text) {
   const rows = [];
   let row = [];

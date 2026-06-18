@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,7 +5,65 @@
   <title>Captain Dashboard</title>
 
   <style>
-    body { font-family: Arial; padding: 20px; background: #f4f4f4; }
+    body { font-family: Arial; margin: 0; padding: 0; background: #f4f4f4; }
+
+    /* HEADER */
+    .header {
+      width: 100%;
+      background: #1d3563;
+      color: white;
+      padding: 16px 24px;
+      font-size: 22px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+    }
+
+    .hamburger {
+      font-size: 26px;
+      cursor: pointer;
+      margin-right: 20px;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      height: 100%;
+      width: 0;
+      position: fixed;
+      z-index: 1000;
+      top: 0;
+      left: 0;
+      background-color: #1d3563;
+      overflow-x: hidden;
+      transition: 0.3s;
+      padding-top: 60px;
+    }
+
+    .sidebar a {
+      padding: 12px 24px;
+      text-decoration: none;
+      font-size: 20px;
+      color: white;
+      display: block;
+    }
+
+    .sidebar a:hover {
+      background: #2a4d8f;
+    }
+
+    .sidebar-close {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 30px;
+      cursor: pointer;
+      color: white;
+    }
+
+    /* CONTENT */
+    .container {
+      padding: 20px;
+    }
 
     .box {
       background: white;
@@ -15,8 +72,6 @@
       margin-bottom: 30px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
-    h2 { margin-top: 0; }
 
     table {
       width: 100%;
@@ -27,23 +82,12 @@
     th, td {
       border: 1px solid #ccc;
       padding: 8px;
-      text-align: left;
       vertical-align: top;
     }
 
     th {
       background: #1d3563;
       color: white;
-    }
-
-    .logout {
-      background: #8b0000;
-      color: white;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-bottom: 20px;
     }
 
     .note {
@@ -53,16 +97,46 @@
       padding-left: 10px;
       border-left: 3px solid #ccc;
     }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      width: 200px;
+    }
   </style>
 </head>
 
 <body>
 
-<button class="logout" onclick="logout()">Logout</button>
-<h1>Captain Dashboard</h1>
-<p>Viewing player availability for all matches.</p>
+<!-- SIDEBAR -->
+<div id="sidebar" class="sidebar">
+  <span class="sidebar-close" onclick="closeNav()">&times;</span>
+  <a href="index.html">Home</a>
+  <a href="calendar.html">Calendar</a>
+  <a href="availability.html">Availability</a>
+  <a href="captain.html">Captain Dashboard</a>
+  <a href="#" onclick="logout()">Logout</a>
+</div>
 
-<div id="matchesContainer">Loading...</div>
+<!-- HEADER -->
+<div class="header">
+  <span class="hamburger" onclick="openNav()">&#9776;</span>
+  PLC Tennis Team — Captain Dashboard
+</div>
+
+<div class="container">
+
+  <!-- LEAGUE FILTER -->
+  <label><strong>League:</strong></label><br>
+  <select id="leagueSelect" onchange="renderFilteredMatches()">
+    <option value="all">All</option>
+    <option value="40">40+</option>
+    <option value="55">55+</option>
+  </select>
+
+  <div id="matchesContainer">Loading...</div>
+</div>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -84,9 +158,17 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+/* -------------------- SIDEBAR -------------------- */
+function openNav() {
+  document.getElementById("sidebar").style.width = "260px";
+}
+function closeNav() {
+  document.getElementById("sidebar").style.width = "0";
+}
+
 /* -------------------- CAPTAIN ACCESS -------------------- */
 const CAPTAINS = [
-  "gaylorde@outlook.com"
+  "g@calona.com"
 ];
 
 auth.onAuthStateChanged(user => {
@@ -143,6 +225,8 @@ function parseCSV(text) {
   return rows;
 }
 
+let allMatches = [];
+
 async function loadMatches() {
   const res = await fetch(SHEET_URL);
   const csv = await res.text();
@@ -165,10 +249,24 @@ async function loadMatches() {
 
   matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
 
-  renderMatches(matches);
+  allMatches = matches;
+  renderFilteredMatches();
 }
 
-/* -------------------- RENDER MATCHES -------------------- */
+/* -------------------- FILTER + RENDER -------------------- */
+
+function renderFilteredMatches() {
+  const league = document.getElementById("leagueSelect").value;
+
+  const filtered = allMatches.filter(m => {
+    if (league === "all") return true;
+    if (league === "40") return m["League"]?.includes("40+");
+    if (league === "55") return m["League"]?.includes("55+");
+    return true;
+  });
+
+  renderMatches(filtered);
+}
 
 async function renderMatches(matches) {
   const container = document.getElementById("matchesContainer");
@@ -196,7 +294,12 @@ async function renderMatches(matches) {
 
     snapshot.forEach(doc => {
       const data = doc.data();
-      const entry = `<div><strong>${data.email}</strong>${data.notes ? `<div class="note">${data.notes}</div>` : ""}</div>`;
+      const entry = `
+        <div>
+          <strong>${data.email}</strong>
+          ${data.notes ? `<div class="note">${data.notes}</div>` : ""}
+        </div>
+      `;
 
       if (data.status === "Yes") yes.push(entry);
       else if (data.status === "No") no.push(entry);

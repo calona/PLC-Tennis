@@ -4,164 +4,59 @@
   <meta charset="UTF-8">
   <title>Captain Dashboard</title>
 
-  <!-- NAVIGATION CSS -->
   <style>
-    body { font-family: Arial; margin: 0; padding: 0; }
+    body { font-family: Arial; padding: 20px; background: #f4f4f4; }
 
-    /* Header */
-    .header {
-      width: 100%;
-      background: #1d3563;
-      color: white;
-      padding: 16px 20px;
-      font-size: 22px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
-    /* Hamburger */
-    .hamburger {
-      font-size: 26px;
-      cursor: pointer;
-      margin-right: 20px;
-    }
+    h2 { margin-top: 0; }
 
-    /* Slide-out menu */
-    .sidebar {
-      height: 100%;
-      width: 0;
-      position: fixed;
-      z-index: 1000;
-      top: 0;
-      left: 0;
-      background-color: #1d3563;
-      overflow-x: hidden;
-      transition: 0.3s;
-      padding-top: 60px;
-    }
-
-    .sidebar a {
-      padding: 12px 24px;
-      text-decoration: none;
-      font-size: 20px;
-      color: white;
-      display: block;
-    }
-
-    .sidebar a:hover {
-      background: #2a4d8f;
-    }
-
-    .sidebar-close {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      font-size: 30px;
-      cursor: pointer;
-      color: white;
-    }
-
-    /* Page content */
-    .content {
-      padding: 30px;
-    }
-
-    /* Match cards */
-    .match {
-      padding: 12px;
-      background: #eee;
-      margin: 10px 0;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .match:hover { background: #ddd; }
-
-    /* Availability table */
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      margin-top: 10px;
     }
+
     th, td {
-      padding: 10px;
-      border-bottom: 1px solid #ccc;
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
     }
 
-    .Available { background: #4CAF50; color: white; padding: 6px 12px; border-radius: 4px; }
-    .Maybe { background: #FFC107; color: black; padding: 6px 12px; border-radius: 4px; }
-    .Unavailable { background: #F44336; color: white; padding: 6px 12px; border-radius: 4px; }
+    th {
+      background: #1d3563;
+      color: white;
+    }
 
-    /* Filter buttons */
-    .filter-bar button {
-      padding: 8px 14px;
-      margin-right: 10px;
+    .logout {
+      background: #8b0000;
+      color: white;
+      padding: 10px 16px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      background: #2a4d8f;
-      color: white;
-      font-weight: bold;
-    }
-    .filter-bar button:hover {
-      background: #1d3563;
+      margin-bottom: 20px;
     }
   </style>
-
-  <!-- NAVIGATION JS -->
-  <script>
-    function openNav() {
-      document.getElementById("sidebar").style.width = "260px";
-    }
-    function closeNav() {
-      document.getElementById("sidebar").style.width = "0";
-    }
-  </script>
 </head>
 
 <body>
 
-<!-- SLIDE-OUT SIDEBAR -->
-<div id="sidebar" class="sidebar">
-  <span class="sidebar-close" onclick="closeNav()">&times;</span>
-  <a href="index.html">Home</a>
-  <a href="calendar.html">Calendar</a>
-  <a href="availability.html">Availability</a>
-  <a href="captain.html">Captain Dashboard</a>
-</div>
-
-<!-- TOP HEADER -->
-<div class="header">
-  <span class="hamburger" onclick="openNav()">&#9776;</span>
-  PLC Tennis Team
-</div>
-
-<div class="content">
-
+<button class="logout" onclick="logout()">Logout</button>
 <h1>Captain Dashboard</h1>
+<p>Viewing player availability for all matches.</p>
 
-<!-- FILTER BAR -->
-<div class="filter-bar" style="margin-bottom: 20px;">
-  <button onclick="setFilter('all')">All</button>
-  <button onclick="setFilter('40')">40+</button>
-  <button onclick="setFilter('55')">55+</button>
-</div>
+<div id="matchesContainer">Loading...</div>
 
-<h2>Matches</h2>
-<div id="matchList">Loading matches...</div>
-
-<h2>Availability</h2>
-<table>
-  <thead>
-    <tr><th>Player</th><th>Status</th><th>Updated</th></tr>
-  </thead>
-  <tbody id="availabilityBody"></tbody>
-</table>
-
-</div>
-
-<!-- FIREBASE -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
@@ -175,12 +70,37 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 const db = firebase.firestore();
 
+// Captain allow-list
+const CAPTAINS = [
+  "your-email@example.com",
+  "another-captain@example.com"
+];
+
+// Redirect if not logged in or not captain
+auth.onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+  if (!CAPTAINS.includes(user.email)) {
+    document.body.innerHTML = "<h2>Access Denied</h2><p>You are not a captain.</p>";
+    return;
+  }
+  loadMatches();
+});
+
+function logout() {
+  auth.signOut().then(() => window.location.href = "login.html");
+}
+
+// Google Sheet CSV
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
-// Robust CSV parser
+// CSV parser
 function parseCSV(text) {
   const rows = [];
   let row = [];
@@ -214,14 +134,6 @@ function parseCSV(text) {
   return rows;
 }
 
-let allMatches = [];
-let leagueFilter = "all";
-
-function setFilter(filter) {
-  leagueFilter = filter;
-  renderMatches();
-}
-
 async function loadMatches() {
   const res = await fetch(SHEET_URL);
   const csv = await res.text();
@@ -242,68 +154,61 @@ async function loadMatches() {
     if (match["Match ID"]) matches.push(match);
   }
 
-  return matches;
+  matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
+
+  renderMatches(matches);
 }
 
-function renderMatches() {
-  const list = document.getElementById("matchList");
-  list.innerHTML = "";
+async function renderMatches(matches) {
+  const container = document.getElementById("matchesContainer");
+  container.innerHTML = "";
 
-  const filtered = allMatches.filter(m => {
-    if (leagueFilter === "all") return true;
-    if (leagueFilter === "40") return m["League"]?.includes("40+");
-    if (leagueFilter === "55") return m["League"]?.includes("55+");
-    return true;
-  });
+  for (const match of matches) {
+    const matchId = match["Match ID"];
+    const matchName = `${match["League"]} — ${match["Schedule Date"]} ${match["Schedule Time"]} — ${match["Home Team"]} vs ${match["Visiting Team"]}`;
 
-  filtered.forEach(m => {
-    const league = m["League"] || "";
-    const date = m["Schedule Date"] || "";
-    const time = m["Schedule Time"] || "";
-    const home = m["Home Team"] || "";
-    const away = m["Visiting Team"] || "";
-    const site = m["Facility/Match Site"] || "";
-    const id = m["Match ID"];
+    // Create match box
+    const box = document.createElement("div");
+    box.className = "box";
+    box.innerHTML = `<h2>${matchName}</h2><p>Loading availability...</p>`;
+    container.appendChild(box);
 
-    const display = `${league} — ${date} ${time} — ${home} vs ${away} @ ${site}`;
+    // Load availability
+    const snapshot = await db
+      .collection("availability")
+      .doc(matchId)
+      .collection("players")
+      .get();
 
-    const div = document.createElement("div");
-    div.className = "match";
-    div.innerHTML = `<strong>${display}</strong>`;
+    const yes = [];
+    const no = [];
+    const maybe = [];
 
-    div.onclick = () => loadAvailability(id);
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.status === "Yes") yes.push(data.email);
+      else if (data.status === "No") no.push(data.email);
+      else if (data.status === "Maybe") maybe.push(data.email);
+    });
 
-    list.appendChild(div);
-  });
-}
-
-async function loadAvailability(matchId) {
-  const tbody = document.getElementById("availabilityBody");
-  tbody.innerHTML = "";
-
-  const snap = await db.collection("availability")
-    .where("matchId", "==", matchId)
-    .orderBy("timestamp", "desc")
-    .get();
-
-  snap.forEach(doc => {
-    const d = doc.data();
-    const row = document.createElement("tr");
-
-    row.innerHTML = `
-      <td>${d.player}</td>
-      <td><span class="${d.status}">${d.status}</span></td>
-      <td>${d.timestamp.toDate().toLocaleString()}</td>
+    // Build table
+    box.innerHTML = `
+      <h2>${matchName}</h2>
+      <table>
+        <tr>
+          <th>Yes</th>
+          <th>No</th>
+          <th>Maybe</th>
+        </tr>
+        <tr>
+          <td>${yes.join("<br>") || "-"}</td>
+          <td>${no.join("<br>") || "-"}</td>
+          <td>${maybe.join("<br>") || "-"}</td>
+        </tr>
+      </table>
     `;
-
-    tbody.appendChild(row);
-  });
+  }
 }
-
-loadMatches().then(matches => {
-  allMatches = matches;
-  renderMatches();
-});
 </script>
 
 </body>

@@ -50,10 +50,44 @@ const db = firebase.firestore();
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
+// Robust CSV parser (handles multi-line quoted fields)
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let insideQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    const next = text[i + 1];
+
+    if (c === '"' && next === '"') {
+      cell += '"';
+      i++;
+    } else if (c === '"') {
+      insideQuotes = !insideQuotes;
+    } else if (c === ',' && !insideQuotes) {
+      row.push(cell);
+      cell = "";
+    } else if (c === '\n' && !insideQuotes) {
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = "";
+    } else {
+      cell += c;
+    }
+  }
+  row.push(cell);
+  rows.push(row);
+
+  return rows;
+}
+
 async function loadMatches() {
   const res = await fetch(SHEET_URL);
   const csv = await res.text();
-  const rows = csv.split("\n").map(r => r.split(","));
+  const rows = parseCSV(csv);
 
   const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
 
@@ -67,7 +101,7 @@ async function loadMatches() {
       const value = rows[row][col]?.trim();
       if (field && value) match[field] = value;
     }
-    if (match["Match #"]) matches.push(match);
+    if (match["Match ID"]) matches.push(match);
   }
 
   return matches;
@@ -78,12 +112,21 @@ loadMatches().then(matches => {
   list.innerHTML = "";
 
   matches.forEach(m => {
+    const league = m["League"] || "";
+    const date = m["Schedule Date"] || "";
+    const time = m["Schedule Time"] || "";
+    const home = m["Home Team"] || "";
+    const away = m["Visiting Team"] || "";
+    const site = m["Facility/Match Site"] || "";
+    const id = m["Match ID"];
+
+    const display = `${league} — ${date} ${time} — ${home} vs ${away} @ ${site}`;
+
     const div = document.createElement("div");
     div.className = "match";
-    div.innerText =
-      `${m["Team"]} Match ${m["Match #"]} — ${m["Date"]} — ${m["Home/Away"]} vs ${m["Opponent"]}`;
+    div.innerHTML = `<strong>${display}</strong>`;
 
-    div.onclick = () => loadAvailability(m["Match #"]);
+    div.onclick = () => loadAvailability(id);
     list.appendChild(div);
   });
 });

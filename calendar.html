@@ -7,12 +7,33 @@
     body { font-family: Arial; margin: 40px; }
     .match { padding: 12px; background: #eee; margin: 10px 0; border-radius: 6px; cursor: pointer; }
     .match:hover { background: #ddd; }
+    .filter-bar button {
+      padding: 8px 14px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #2a4d8f;
+      color: white;
+      font-weight: bold;
+    }
+    .filter-bar button:hover {
+      background: #1d3563;
+    }
   </style>
 </head>
 
 <body>
 
 <h1>Match Calendar</h1>
+
+<!-- FILTER BAR -->
+<div class="filter-bar" style="margin-bottom: 20px;">
+  <button onclick="setFilter('all')">All</button>
+  <button onclick="setFilter('40')">40+</button>
+  <button onclick="setFilter('55')">55+</button>
+</div>
+
 <div id="matchList">Loading matches...</div>
 
 <script>
@@ -53,6 +74,14 @@ function parseCSV(text) {
   return rows;
 }
 
+let allMatches = [];
+let leagueFilter = "all";
+
+function setFilter(filter) {
+  leagueFilter = filter;
+  renderMatches();
+}
+
 async function loadMatches() {
   const res = await fetch(SHEET_URL);
   const csv = await res.text();
@@ -77,11 +106,18 @@ async function loadMatches() {
   return matches;
 }
 
-loadMatches().then(matches => {
+function renderMatches() {
   const list = document.getElementById("matchList");
   list.innerHTML = "";
 
-  matches.forEach(m => {
+  const filtered = allMatches.filter(m => {
+    if (leagueFilter === "all") return true;
+    if (leagueFilter === "40") return m["League"]?.includes("40+");
+    if (leagueFilter === "55") return m["League"]?.includes("55+");
+    return true;
+  });
+
+  filtered.forEach(m => {
     const league = m["League"] || "";
     const date = m["Schedule Date"] || "";
     const time = m["Schedule Time"] || "";
@@ -104,6 +140,11 @@ loadMatches().then(matches => {
 
     list.appendChild(div);
   });
+}
+
+loadMatches().then(matches => {
+  allMatches = matches;
+  renderMatches();
 });
 </script>
 

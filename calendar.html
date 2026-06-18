@@ -16,35 +16,33 @@
 <div id="matchList">Loading matches...</div>
 
 <script>
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
+const SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
 async function loadMatches() {
   const res = await fetch(SHEET_URL);
   const csv = await res.text();
   const rows = csv.split("\n").map(r => r.split(","));
 
-  // Find header row dynamically (first row containing "Match #")
-  const headerRowIndex = rows.findIndex(r => r.some(c => c.trim() === "Match #"));
-  const rawHeaders = rows[headerRowIndex].map(h => h.trim());
+  // Column A = field names
+  const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
 
-  const headers = [];
-  const headerIndexMap = [];
-  rawHeaders.forEach((h, i) => {
-    if (h !== "") {
-      headers.push(h);
-      headerIndexMap.push(i);
+  // Columns B+ = matches
+  const matches = [];
+
+  const numMatches = rows[0].length - 1;
+
+  for (let col = 1; col <= numMatches; col++) {
+    const match = {};
+    for (let row = 0; row < fieldNames.length; row++) {
+      const field = fieldNames[row];
+      const value = rows[row][col]?.trim();
+      if (field && value) match[field] = value;
     }
-  });
+    if (match["Match #"]) matches.push(match);
+  }
 
-  const dataRows = rows.slice(headerRowIndex + 1);
-
-  return dataRows.map(r => {
-    const obj = {};
-    headers.forEach((h, idx) => {
-      obj[h] = r[headerIndexMap[idx]]?.trim();
-    });
-    return obj;
-  });
+  return matches;
 }
 
 loadMatches().then(matches => {
@@ -52,11 +50,8 @@ loadMatches().then(matches => {
   list.innerHTML = "";
 
   matches.forEach(m => {
-    if (!m["Match #"]) return;
-
     const div = document.createElement("div");
     div.className = "match";
-    div.dataset.matchId = m["Match #"];
 
     div.innerHTML = `
       <strong>${m["Team"]} Match ${m["Match #"]}</strong><br>
@@ -65,7 +60,8 @@ loadMatches().then(matches => {
 
     div.onclick = () => {
       localStorage.setItem("selectedMatchId", m["Match #"]);
-      localStorage.setItem("selectedMatchName",
+      localStorage.setItem(
+        "selectedMatchName",
         `${m["Team"]} Match ${m["Match #"]} — ${m["Date"]} — ${m["Home/Away"]} vs ${m["Opponent"]}`
       );
       window.location.href = "availability.html";

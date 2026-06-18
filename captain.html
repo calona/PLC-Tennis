@@ -328,6 +328,221 @@ async function renderMatches(matches) {
     `;
   }
 }
+/* -------------------- EXPORT FUNCTION -------------------- */
+  async function exportTeamAvailabilityMatrix() {
+  // 1. Sort matches chronologically
+  const sortedMatches = [...allMatches].sort((a, b) => {
+    return new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]);
+  });
+
+  const matchIds = sortedMatches.map(m => m["Match ID"]);
+
+  // 2. Collect all players across all matches
+  const players = new Set();
+
+  for (const matchId of matchIds) {
+    const snapshot = await db
+      .collection("availability")
+      .doc(matchId)
+      .collection("players")
+      .get();
+
+    snapshot.forEach(doc => players.add(doc.id));
+  }
+
+  const playerList = Array.from(players).sort();
+
+  // 3. Build the matrix structure
+  const matrix = [];
+
+  // Header row
+  const header = ["Player", ...matchIds];
+  matrix.push(header);
+
+  // Metadata rows (bold later)
+  const metaRows = [
+    ["League", ...sortedMatches.map(m => m["League"])],
+    ["Date", ...sortedMatches.map(m => m["Schedule Date"])],
+    ["Time", ...sortedMatches.map(m => m["Schedule Time"])],
+    ["Home Team", ...sortedMatches.map(m => m["Home Team"])],
+    ["Visiting Team", ...sortedMatches.map(m => m["Visiting Team"])]
+  ];
+
+  metaRows.forEach(r => matrix.push(r));
+
+  // Player rows
+  for (const player of playerList) {
+    const row = [player];
+
+    for (const matchId of matchIds) {
+      const doc = await db
+        .collection("availability")
+        .doc(matchId)
+        .collection("players")
+        .doc(player)
+        .get();
+
+      row.push(doc.exists ? doc.data().status : "");
+    }
+
+    matrix.push(row);
+  }
+
+  // Blank row before totals
+  matrix.push([""]);
+
+  // Totals block
+  const totals = {
+    "Responses": [],
+    "Yes": [],
+    "No": [],
+    "Maybe": [],
+    "Conflict": [],
+    "No Response": []
+  };
+
+  for (const matchId of matchIds) {
+    const snapshot = await db
+      .collection("availability")
+      .doc(matchId)
+      .collection("players")
+      .get();
+
+    let yes = 0, no = 0, maybe = 0, conflict = 0, blank = 0;
+
+    snapshot.forEach(doc => {
+      const status = doc.data().status;
+      if (status === "Yes") yes++;
+      else if (status === "No") no++;
+      else if (status === "Maybe") maybe++;
+      else if (status === "Conflict") conflict++;
+      else blank++;
+    });
+
+    const totalPlayers = playerList.length;
+    const responses = yes + no + maybe + conflict;
+
+    totals["Responses"].push(`${responses}/${totalPlayers}`);
+    totals["Yes"].push(yes);
+    totals["No"].push(no);
+    totals["Maybe"].push(maybe);
+    totals["Conflict"].push(conflict);
+    totals["No Response"].push(blank);
+  }
+
+  for (const label in totals) {
+    matrix.push([label, ...totals[label]]);
+  }
+
+  // 4. Convert to worksheet
+  const ws = XLSX.utils.aoa_to_sheet(matrix);
+
+  // 5. Apply formatting
+  const range = XLSX.utils.decode_range(ws["!ref"]);
+
+  // Bold metadata rows (rows 1–5)
+  for (let r = 1; r <= 5; r++) {
+    for (let c = 0; c <= matchIds.length; c++) {
+      const cell = ws[XLSX.utils.encode_cell({ r, c })];
+      if (cell) cell.s = { font: { bold: true } };
+    }
+  }
+
+  // Conditional formatting (status colors)
+  const statusColors = {
+    "Yes": "00C6EFCE",
+    "No": "00FFC7CE",
+    "Maybe": "00FFEB9C",
+    "Conflict": "00F4B084",
+    "": "00E7E6E6"
+  };
+
+  for (let r = 6; r <= 6 + playerList.length - 1; r++) {
+    for (let c = 1; c <= matchIds.length; c++) {
+      const cell = ws[XLSX.utils.encode_cell({ r, c })];
+      if (cell) {
+        const color = statusColors[cell.v] || "00FFFFFF";
+        cell.s = { fill: { fgColor: { rgb: color } } };
+      }
+    }
+  }
+
+  // Freeze panes
+  ws["!freeze"] = { xSplit: 1, ySplit: 6 };
+
+  // Auto column widths
+  ws["!cols"] = [{ wch: 30 }, ...matchIds.map(() => ({ wch: 18 }))];
+
+  // 6. Create workbook
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Team Availability");
+
+  // 7. Missing Responses sheet
+  const missing = [["Player", "Missing For"]];
+  for (const player of playerList) {
+    const missingMatches = [];
+
+    for (const matchId of matchIds) {
+      const doc = await db
+        .collection("availability")
+        .doc(matchId)
+        .collection("players")
+        .doc(player)
+        .get();
+
+      if (!doc.exists) missingMatches.push(matchId);
+    }
+
+    if (missingMatches.length > 0) {
+      missing.push([player, missingMatches.join(", ")]);
+    }
+  }
+
+  const wsMissing = XLSX.utils.aoa_to_sheet(missing);
+  XLSX.utils.book_append_sheet(wb, wsMissing, "Missing Responses");
+
+  // 8. Match Summary sheet
+  const summary = [];
+
+  for (const match of sortedMatches) {
+    const matchId = match["Match ID"];
+
+    summary.push([
+      "Match ID", matchId,
+      "League", match["League"],
+      "Date", match["Schedule Date"],
+      "Time", match["Schedule Time"],
+      "Home", match["Home Team"],
+      "Visiting", match["Visiting Team"]
+    ]);
+
+    summary.push([]);
+  }
+
+  const wsSummary = XLSX.utils.aoa_to_sheet(summary);
+  XLSX.utils.book_append_sheet(wb, wsSummary, "Match Summary");
+
+  // 9. Captain Notes sheet
+  const wsNotes = XLSX.utils.aoa_to_sheet([["Captain Notes"], [""]]);
+  XLSX.utils.book_append_sheet(wb, wsNotes, "Captain Notes");
+
+  // 10. Legend sheet
+  const legend = [
+    ["Legend"],
+    ["Yes = Green"],
+    ["No = Red"],
+    ["Maybe = Yellow"],
+    ["Conflict = Orange"],
+    ["No Response = Gray"]
+  ];
+
+  const wsLegend = XLSX.utils.aoa_to_sheet(legend);
+  XLSX.utils.book_append_sheet(wb, wsLegend, "Legend");
+
+  // 11. Save file
+  XLSX.writeFile(wb, "team_availability.xlsx");
+}
+
 </script>
 
 </body>

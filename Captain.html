@@ -55,4 +55,62 @@ async function loadMatches() {
   const csv = await res.text();
   const rows = csv.split("\n").map(r => r.split(","));
 
-  const headerRowIndex = rows
+  const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
+
+  const matches = [];
+  const numMatches = rows[0].length - 1;
+
+  for (let col = 1; col <= numMatches; col++) {
+    const match = {};
+    for (let row = 0; row < fieldNames.length; row++) {
+      const field = fieldNames[row];
+      const value = rows[row][col]?.trim();
+      if (field && value) match[field] = value;
+    }
+    if (match["Match #"]) matches.push(match);
+  }
+
+  return matches;
+}
+
+loadMatches().then(matches => {
+  const list = document.getElementById("matchList");
+  list.innerHTML = "";
+
+  matches.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "match";
+    div.innerText =
+      `${m["Team"]} Match ${m["Match #"]} — ${m["Date"]} — ${m["Home/Away"]} vs ${m["Opponent"]}`;
+
+    div.onclick = () => loadAvailability(m["Match #"]);
+    list.appendChild(div);
+  });
+});
+
+async function loadAvailability(matchId) {
+  const tbody = document.getElementById("availabilityBody");
+  tbody.innerHTML = "";
+
+  const snap = await db.collection("availability")
+    .where("matchId", "==", matchId)
+    .orderBy("timestamp", "desc")
+    .get();
+
+  snap.forEach(doc => {
+    const d = doc.data();
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${d.player}</td>
+      <td><span class="${d.status}">${d.status}</span></td>
+      <td>${d.timestamp.toDate().toLocaleString()}</td>
+    `;
+
+    tbody.appendChild(row);
+  });
+}
+</script>
+
+</body>
+</html>

@@ -35,7 +35,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
-// Firebase config
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "plc-tennis.firebaseapp.com",
@@ -56,68 +55,4 @@ async function loadMatches() {
   const csv = await res.text();
   const rows = csv.split("\n").map(r => r.split(","));
 
-  let rawHeaders = rows[2].map(h => h.trim());
-  const headers = [];
-  const headerIndexMap = [];
-
-  rawHeaders.forEach((h, i) => {
-    if (h !== "") {
-      headers.push(h);
-      headerIndexMap.push(i);
-    }
-  });
-
-  const dataRows = rows.slice(3);
-
-  return dataRows.map(r => {
-    const obj = {};
-    headers.forEach((h, idx) => {
-      obj[h] = r[headerIndexMap[idx]]?.trim();
-    });
-    return obj;
-  });
-}
-
-loadMatches().then(matches => {
-  const list = document.getElementById("matchList");
-  list.innerHTML = "";
-
-  matches.forEach(m => {
-    if (!m["Match #"]) return;
-
-    const div = document.createElement("div");
-    div.className = "match";
-    div.innerText =
-      `${m["Team"]} Match ${m["Match #"]} — ${m["Date"]} — ${m["Home/Away"]} vs ${m["Opponent"]}`;
-
-    div.onclick = () => loadAvailability(m["Match #"]);
-    list.appendChild(div);
-  });
-});
-
-async function loadAvailability(matchId) {
-  const tbody = document.getElementById("availabilityBody");
-  tbody.innerHTML = "";
-
-  const snap = await db.collection("availability")
-    .where("matchId", "==", matchId)
-    .orderBy("timestamp", "desc")
-    .get();
-
-  snap.forEach(doc => {
-    const d = doc.data();
-    const row = document.createElement("tr");
-
-    row.innerHTML = `
-      <td>${d.player}</td>
-      <td><span class="${d.status}">${d.status}</span></td>
-      <td>${d.timestamp.toDate().toLocaleString()}</td>
-    `;
-
-    tbody.appendChild(row);
-  });
-}
-</script>
-
-</body>
-</html>
+  const headerRowIndex = rows

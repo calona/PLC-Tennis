@@ -148,6 +148,7 @@
   <a href="calendar.html">Calendar</a>
   <a href="availability.html">Availability</a>
   <a href="captain.html">Captain Dashboard</a>
+  <a href="#" onclick="logout()">Logout</a>
 </div>
 
 <!-- TOP HEADER -->
@@ -178,11 +179,38 @@
   </div>
 </div>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "plc-tennis.firebaseapp.com",
+  projectId: "plc-tennis",
+  storageBucket: "plc-tennis.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+// Redirect if not logged in
+auth.onAuthStateChanged(user => {
+  if (!user) window.location.href = "login.html";
+});
+
+function logout() {
+  auth.signOut().then(() => window.location.href = "login.html");
+}
+</script>
+
 <script>
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
-// Robust CSV parser
+// CSV parser
 function parseCSV(text) {
   const rows = [];
   let row = [];
@@ -250,13 +278,7 @@ async function loadMatches() {
     if (match["Match ID"]) matches.push(match);
   }
 
-  // Sort by date
-  matches.sort((a, b) => {
-    const da = new Date(a["Schedule Date"]);
-    const db = new Date(b["Schedule Date"]);
-    return da - db;
-  });
-
+  matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
   return matches;
 }
 

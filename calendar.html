@@ -16,21 +16,19 @@
 <div id="matchList">Loading matches...</div>
 
 <script>
-const SHEET_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
 async function loadMatches() {
   const res = await fetch(SHEET_URL);
   const csv = await res.text();
   const rows = csv.split("\n").map(r => r.split(","));
 
-  // Row 3 = header row
-  let rawHeaders = rows[2].map(h => h.trim());
+  // Find header row dynamically (first row containing "Match #")
+  const headerRowIndex = rows.findIndex(r => r.some(c => c.trim() === "Match #"));
+  const rawHeaders = rows[headerRowIndex].map(h => h.trim());
 
-  // Remove blank headers + map indexes
   const headers = [];
   const headerIndexMap = [];
-
   rawHeaders.forEach((h, i) => {
     if (h !== "") {
       headers.push(h);
@@ -38,8 +36,7 @@ async function loadMatches() {
     }
   });
 
-  // Data rows start at row 4
-  const dataRows = rows.slice(3);
+  const dataRows = rows.slice(headerRowIndex + 1);
 
   return dataRows.map(r => {
     const obj = {};
@@ -68,8 +65,7 @@ loadMatches().then(matches => {
 
     div.onclick = () => {
       localStorage.setItem("selectedMatchId", m["Match #"]);
-      localStorage.setItem(
-        "selectedMatchName",
+      localStorage.setItem("selectedMatchName",
         `${m["Team"]} Match ${m["Match #"]} — ${m["Date"]} — ${m["Home/Away"]} vs ${m["Opponent"]}`
       );
       window.location.href = "availability.html";

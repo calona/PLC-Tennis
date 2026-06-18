@@ -2,82 +2,249 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Player Availability</title>
+  <title>Match Calendar</title>
+
+  <!-- NAVIGATION CSS -->
   <style>
-    body { font-family: Arial; margin: 40px; background: #f7f7f7; }
-    .box { background: white; padding: 25px; border-radius: 8px; max-width: 500px; }
-    button { padding: 10px 20px; margin: 10px 5px 0 0; border: none; border-radius: 6px; cursor: pointer; }
-    .available { background: #4CAF50; color: white; }
-    .maybe { background: #FFC107; color: black; }
-    .unavailable { background: #F44336; color: white; }
+    body { font-family: Arial; margin: 0; padding: 0; }
+
+    /* Header */
+    .header {
+      width: 100%;
+      background: #1d3563;
+      color: white;
+      padding: 16px 20px;
+      font-size: 22px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Hamburger */
+    .hamburger {
+      font-size: 26px;
+      cursor: pointer;
+      margin-right: 20px;
+    }
+
+    /* Slide-out menu */
+    .sidebar {
+      height: 100%;
+      width: 0;
+      position: fixed;
+      z-index: 1000;
+      top: 0;
+      left: 0;
+      background-color: #1d3563;
+      overflow-x: hidden;
+      transition: 0.3s;
+      padding-top: 60px;
+    }
+
+    .sidebar a {
+      padding: 12px 24px;
+      text-decoration: none;
+      font-size: 20px;
+      color: white;
+      display: block;
+    }
+
+    .sidebar a:hover {
+      background: #2a4d8f;
+    }
+
+    .sidebar-close {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 30px;
+      cursor: pointer;
+      color: white;
+    }
+
+    /* Page content */
+    .content {
+      padding: 30px;
+    }
+
+    /* Match cards */
+    .match {
+      padding: 12px;
+      background: #eee;
+      margin: 10px 0;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .match:hover { background: #ddd; }
+
+    /* Filter buttons */
+    .filter-bar button {
+      padding: 8px 14px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #2a4d8f;
+      color: white;
+      font-weight: bold;
+    }
+    .filter-bar button:hover {
+      background: #1d3563;
+    }
   </style>
+
+  <!-- NAVIGATION JS -->
+  <script>
+    function openNav() {
+      document.getElementById("sidebar").style.width = "260px";
+    }
+    function closeNav() {
+      document.getElementById("sidebar").style.width = "0";
+    }
+  </script>
 </head>
 
 <body>
 
-<h1>Set Your Availability</h1>
-
-<div class="box">
-  <div id="matchLabel"></div>
-
-  <label><strong>Select your name:</strong></label><br><br>
-  <select id="playerSelect">
-    <option value="">-- Choose Player --</option>
-    <option>Player1</option>
-    <option>Player2</option>
-    <option>Player3</option>
-  </select>
-
-  <br><br>
-  <strong>Set your availability:</strong><br>
-
-  <button class="available" onclick="setAvailability('Available')">Available</button>
-  <button class="maybe" onclick="setAvailability('Maybe')">Maybe</button>
-  <button class="unavailable" onclick="setAvailability('Unavailable')">Unavailable</button>
-
-  <div id="statusMessage"></div>
+<!-- SLIDE-OUT SIDEBAR -->
+<div id="sidebar" class="sidebar">
+  <span class="sidebar-close" onclick="closeNav()">&times;</span>
+  <a href="index.html">Home</a>
+  <a href="calendar.html">Calendar</a>
+  <a href="availability.html">Availability</a>
+  <a href="captain.html">Captain Dashboard</a>
 </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<!-- TOP HEADER -->
+<div class="header">
+  <span class="hamburger" onclick="openNav()">&#9776;</span>
+  PLC Tennis Team
+</div>
+
+<div class="content">
+
+<h1>Match Calendar</h1>
+
+<!-- FILTER BAR -->
+<div class="filter-bar" style="margin-bottom: 20px;">
+  <button onclick="setFilter('all')">All</button>
+  <button onclick="setFilter('40')">40+</button>
+  <button onclick="setFilter('55')">55+</button>
+</div>
+
+<div id="matchList">Loading matches...</div>
+
+</div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "plc-tennis.firebaseapp.com",
-  projectId: "plc-tennis",
-  storageBucket: "plc-tennis.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
+const SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+// Robust CSV parser
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let insideQuotes = false;
 
-const matchId = localStorage.getItem("selectedMatchId") || "practice";
-const matchName = localStorage.getItem("selectedMatchName") || "Practice";
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    const next = text[i + 1];
 
-document.getElementById("matchLabel").innerHTML =
-  `<strong>Match:</strong> ${matchName}`;
+    if (c === '"' && next === '"') {
+      cell += '"';
+      i++;
+    } else if (c === '"') {
+      insideQuotes = !insideQuotes;
+    } else if (c === ',' && !insideQuotes) {
+      row.push(cell);
+      cell = "";
+    } else if (c === '\n' && !insideQuotes) {
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = "";
+    } else {
+      cell += c;
+    }
+  }
+  row.push(cell);
+  rows.push(row);
 
-async function setAvailability(status) {
-  const player = document.getElementById("playerSelect").value;
-  if (!player) {
-    document.getElementById("statusMessage").innerText = "Select your name first.";
-    return;
+  return rows;
+}
+
+let allMatches = [];
+let leagueFilter = "all";
+
+function setFilter(filter) {
+  leagueFilter = filter;
+  renderMatches();
+}
+
+async function loadMatches() {
+  const res = await fetch(SHEET_URL);
+  const csv = await res.text();
+  const rows = parseCSV(csv);
+
+  const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
+
+  const matches = [];
+  const numMatches = rows[0].length - 1;
+
+  for (let col = 1; col <= numMatches; col++) {
+    const match = {};
+    for (let row = 0; row < fieldNames.length; row++) {
+      const field = fieldNames[row];
+      const value = rows[row][col]?.trim();
+      if (field && value) match[field] = value;
+    }
+    if (match["Match ID"]) matches.push(match);
   }
 
-  await db.collection("availability").add({
-    player,
-    matchId,
-    status,
-    timestamp: new Date()
+  return matches;
+}
+
+function renderMatches() {
+  const list = document.getElementById("matchList");
+  list.innerHTML = "";
+
+  const filtered = allMatches.filter(m => {
+    if (leagueFilter === "all") return true;
+    if (leagueFilter === "40") return m["League"]?.includes("40+");
+    if (leagueFilter === "55") return m["League"]?.includes("55+");
+    return true;
   });
 
-  document.getElementById("statusMessage").innerText =
-    `${player} marked as ${status} for ${matchName}`;
+  filtered.forEach(m => {
+    const league = m["League"] || "";
+    const date = m["Schedule Date"] || "";
+    const time = m["Schedule Time"] || "";
+    const home = m["Home Team"] || "";
+    const away = m["Visiting Team"] || "";
+    const site = m["Facility/Match Site"] || "";
+    const id = m["Match ID"];
+
+    const display = `${league} — ${date} ${time} — ${home} vs ${away} @ ${site}`;
+
+    const div = document.createElement("div");
+    div.className = "match";
+    div.innerHTML = `<strong>${display}</strong>`;
+
+    div.onclick = () => {
+      localStorage.setItem("selectedMatchId", id);
+      localStorage.setItem("selectedMatchName", display);
+      window.location.href = "availability.html";
+    };
+
+    list.appendChild(div);
+  });
 }
+
+loadMatches().then(matches => {
+  allMatches = matches;
+  renderMatches();
+});
 </script>
 
 </body>

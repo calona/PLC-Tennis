@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -44,6 +45,22 @@
 <div class="box">
   <h2 id="matchTitle">Loading match...</h2>
 
+  <!-- NAVIGATION BUTTONS -->
+  <div style="margin-top:15px; margin-bottom:20px;">
+    <button onclick="prevMatch()" style="width:48%;">⬅ Previous</button>
+    <button onclick="nextMatch()" style="width:48%;">Next ➡</button>
+  </div>
+
+  <!-- LEAGUE SELECTOR -->
+  <div style="margin-bottom:20px;">
+    <label><strong>League:</strong></label><br>
+    <select id="leagueSelect" onchange="changeLeague()" style="width:100%; padding:10px; margin-top:8px;">
+      <option value="all">All</option>
+      <option value="40">40+</option>
+      <option value="55">55+</option>
+    </select>
+  </div>
+
   <p>Select your availability:</p>
 
   <button onclick="setAvailability('Yes')">✔ Yes, I can play</button>
@@ -61,6 +78,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
+/* -------------------- FIREBASE CONFIG -------------------- */
 const firebaseConfig = {
   apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
   authDomain: "plc-tennis.firebaseapp.com",
@@ -74,12 +92,12 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Protect page
+/* -------------------- AUTH PROTECTION -------------------- */
 auth.onAuthStateChanged(user => {
   if (!user) {
     window.location.href = "login.html";
   } else {
-    loadMatchInfo();
+    loadAllMatches();
   }
 });
 
@@ -87,10 +105,125 @@ function logout() {
   auth.signOut().then(() => window.location.href = "login.html");
 }
 
-function loadMatchInfo() {
-  const matchName = localStorage.getItem("selectedMatchName") || "Match";
-  document.getElementById("matchTitle").innerText = matchName;
+/* -------------------- MATCH LOADING -------------------- */
+
+let allMatches = [];
+let filteredMatches = [];
+let currentIndex = 0;
+
+const SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let insideQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    const next = text[i + 1];
+
+    if (c === '"' && next === '"') {
+      cell += '"';
+      i++;
+    } else if (c === '"') {
+      insideQuotes = !insideQuotes;
+    } else if (c === ',' && !insideQuotes) {
+      row.push(cell);
+      cell = "";
+    } else if (c === '\n' && !insideQuotes) {
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = "";
+    } else {
+      cell += c;
+    }
+  }
+  row.push(cell);
+  rows.push(row);
+
+  return rows;
 }
+
+async function loadAllMatches() {
+  const res = await fetch(SHEET_URL);
+  const csv = await res.text();
+  const rows = parseCSV(csv);
+
+  const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
+
+  const matches = [];
+  const numMatches = rows[0].length - 1;
+
+  for (let col = 1; col <= numMatches; col++) {
+    const match = {};
+    for (let row = 0; row < fieldNames.length; row++) {
+      const field = fieldNames[row];
+      const value = rows[row][col]?.trim();
+      if (field && value) match[field] = value;
+    }
+    if (match["Match ID"]) matches.push(match);
+  }
+
+  matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
+  allMatches = matches;
+
+  applyLeagueFilter();
+}
+
+function applyLeagueFilter() {
+  const league = document.getElementById("leagueSelect").value;
+
+  filteredMatches = allMatches.filter(m => {
+    if (league === "all") return true;
+    if (league === "40") return m["League"]?.includes("40+");
+    if (league === "55") return m["League"]?.includes("55+");
+    return true;
+  });
+
+  const currentId = localStorage.getItem("selectedMatchId");
+  currentIndex = filteredMatches.findIndex(m => m["Match ID"] === currentId);
+
+  if (currentIndex === -1) currentIndex = 0;
+
+  loadMatchInfo();
+}
+
+function changeLeague() {
+  applyLeagueFilter();
+}
+
+function prevMatch() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    loadMatchInfo();
+  }
+}
+
+function nextMatch() {
+  if (currentIndex < filteredMatches.length - 1) {
+    currentIndex++;
+    loadMatchInfo();
+  }
+}
+
+function loadMatchInfo() {
+  const match = filteredMatches[currentIndex];
+  if (!match) return;
+
+  const matchName =
+    `${match["League"]} — ${match["Schedule Date"]} ${match["Schedule Time"]} — ` +
+    `${match["Home Team"]} vs ${match["Visiting Team"]} @ ${match["Facility/Match Site"]}`;
+
+  document.getElementById("matchTitle").innerText = matchName;
+
+  localStorage.setItem("selectedMatchId", match["Match ID"]);
+  localStorage.setItem("selectedMatchName", matchName);
+}
+
+/* -------------------- SAVE AVAILABILITY -------------------- */
 
 function setAvailability(status) {
   const user = auth.currentUser;

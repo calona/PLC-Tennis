@@ -34,6 +34,8 @@
       margin-top: 20px;
       background: #8b0000;
     }
+
+    #msg { margin-top: 15px; }
   </style>
 </head>
 
@@ -50,7 +52,7 @@
 
   <button class="logout" onclick="logout()">Logout</button>
 
-  <p id="msg" style="color:green; margin-top:15px;"></p>
+  <p id="msg"></p>
 </div>
 
 <!-- Firebase -->
@@ -60,19 +62,19 @@
 
 <script>
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
   authDomain: "plc-tennis.firebaseapp.com",
   projectId: "plc-tennis",
   storageBucket: "plc-tennis.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  messagingSenderId: "472563332469",
+  appId: "1:472563332469:web:b781075e99cd0f5a3c4f3c"
 };
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Redirect if not logged in
+// Protect page
 auth.onAuthStateChanged(user => {
   if (!user) {
     window.location.href = "login.html";
@@ -99,6 +101,7 @@ function setAvailability(status) {
 
   if (!matchId) {
     document.getElementById("msg").innerText = "Error: No match selected.";
+    document.getElementById("msg").style.color = "red";
     return;
   }
 
@@ -113,9 +116,11 @@ function setAvailability(status) {
     })
     .then(() => {
       document.getElementById("msg").innerText = "Availability saved!";
+      document.getElementById("msg").style.color = "green";
     })
     .catch(err => {
       document.getElementById("msg").innerText = "Error: " + err.message;
+      document.getElementById("msg").style.color = "red";
     });
 }
 </script>

@@ -48,19 +48,32 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
+const SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
 async function loadMatches() {
   const res = await fetch(SHEET_URL);
   const csv = await res.text();
   const rows = csv.split("\n").map(r => r.split(","));
 
-  const headers = rows[2].map(h => h.trim());
+  let rawHeaders = rows[2].map(h => h.trim());
+  const headers = [];
+  const headerIndexMap = [];
+
+  rawHeaders.forEach((h, i) => {
+    if (h !== "") {
+      headers.push(h);
+      headerIndexMap.push(i);
+    }
+  });
+
   const dataRows = rows.slice(3);
 
   return dataRows.map(r => {
     const obj = {};
-    headers.forEach((h, i) => obj[h] = r[i]);
+    headers.forEach((h, idx) => {
+      obj[h] = r[headerIndexMap[idx]]?.trim();
+    });
     return obj;
   });
 }

@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -65,58 +67,62 @@
       padding: 20px;
     }
 
-    .view-toggle {
-      margin-bottom: 20px;
+    /* MONTH HEADER */
+    .month-title {
+      font-size: 26px;
+      font-weight: bold;
+      margin-top: 40px;
+      margin-bottom: 10px;
+      color: #1d3563;
     }
 
-    .view-toggle button {
-      padding: 10px 16px;
-      margin-right: 10px;
-      border: none;
-      border-radius: 6px;
-      background: #1d3563;
-      color: white;
-      cursor: pointer;
+    /* CALENDAR GRID */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-bottom: 40px;
     }
 
-    .match-card {
+    .day-header {
+      font-weight: bold;
+      text-align: center;
+      padding: 8px 0;
+      background: #e8e8e8;
+      border-radius: 4px;
+    }
+
+    .day-cell {
       background: white;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    .upcoming {
-      border-left: 6px solid #2ecc71;
-    }
-
-    .my-note {
-      margin-top: 6px;
-      font-size: 13px;
-      color: #444;
-      padding-left: 10px;
-      border-left: 3px solid #ccc;
-    }
-
-    .respond-btn {
-      margin-top: 10px;
-      padding: 8px 14px;
-      background: #1d3563;
-      color: white;
-      border: none;
+      min-height: 120px;
+      padding: 6px;
       border-radius: 6px;
-      cursor: pointer;
+      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+      font-size: 14px;
+      position: relative;
+    }
+
+    .day-number {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .match-entry {
+      margin-top: 4px;
+      padding: 4px;
+      background: #f7f7f7;
+      border-radius: 4px;
+      font-size: 13px;
     }
 
     .status-pill {
       display: inline-block;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 13px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
       font-weight: bold;
       color: white;
-      margin-top: 6px;
+      margin-top: 2px;
     }
 
     .yes { background: #2ecc71; }
@@ -124,18 +130,30 @@
     .maybe { background: #f1c40f; color: black; }
     .conflict { background: #d35400; }
 
+    .my-note {
+      font-size: 11px;
+      color: #444;
+      margin-top: 2px;
+      padding-left: 6px;
+      border-left: 2px solid #ccc;
+    }
+
+    .respond-btn {
+      margin-top: 4px;
+      padding: 4px 8px;
+      background: #1d3563;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
     select {
       padding: 10px;
       font-size: 16px;
       margin-bottom: 20px;
       width: 200px;
-    }
-
-    /* CALENDAR GRID */
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 20px;
     }
   </style>
 </head>
@@ -160,12 +178,6 @@
 
 <div class="container">
 
-  <!-- VIEW TOGGLE -->
-  <div class="view-toggle">
-    <button onclick="setView('list')">List View</button>
-    <button onclick="setView('grid')">Calendar Grid View</button>
-  </div>
-
   <!-- LEAGUE FILTER -->
   <label><strong>League:</strong></label><br>
   <select id="leagueSelect" onchange="renderFilteredMatches()">
@@ -174,7 +186,7 @@
     <option value="55">55+</option>
   </select>
 
-  <div id="matchesContainer">Loading...</div>
+  <div id="calendarContainer">Loading...</div>
 </div>
 
 <!-- Firebase -->
@@ -256,12 +268,6 @@ function parseCSV(text) {
 }
 
 let allMatches = [];
-let currentView = "list";
-
-function setView(view) {
-  currentView = view;
-  renderFilteredMatches();
-}
 
 async function loadMatches() {
   const res = await fetch(SHEET_URL);
@@ -301,89 +307,136 @@ function renderFilteredMatches() {
     return true;
   });
 
-  renderMatches(filtered);
+  renderCalendar(filtered);
 }
 
 /* -------------------- LOAD ONLY MY AVAILABILITY -------------------- */
 
-function loadMyAvailability(matchId, callback) {
+function loadMyAvailability(matchId) {
   const user = firebase.auth().currentUser;
-  if (!user) {
-    callback(null);
-    return;
-  }
+  if (!user) return Promise.resolve(null);
 
-  db.collection("availability")
+  return db.collection("availability")
     .doc(matchId)
     .collection("players")
     .doc(user.email)
     .get()
-    .then(doc => {
-      if (!doc.exists) callback(null);
-      else callback(doc.data());
-    });
+    .then(doc => doc.exists ? doc.data() : null);
 }
 
-/* -------------------- RENDER MATCHES -------------------- */
+/* -------------------- RENDER TRUE MONTHLY CALENDAR -------------------- */
 
-async function renderMatches(matches) {
-  const container = document.getElementById("matchesContainer");
+async function renderCalendar(matches) {
+  const container = document.getElementById("calendarContainer");
   container.innerHTML = "";
 
-  if (currentView === "grid") {
-    container.className = "calendar-grid";
-  } else {
-    container.className = "";
+  if (matches.length === 0) {
+    container.innerHTML = "<p>No matches found.</p>";
+    return;
   }
 
-  const today = new Date();
-
+  // Group matches by month
+  const months = {};
   for (const match of matches) {
-    const matchId = match["Match ID"];
-    const matchDate = new Date(match["Schedule Date"]);
-    const isUpcoming = matchDate >= today;
+    const date = new Date(match["Schedule Date"]);
+    const key = `${date.getFullYear()}-${date.getMonth()}`;
+    if (!months[key]) months[key] = [];
+    months[key].push(match);
+  }
 
-    const matchName =
-      `${match["League"]} — ${match["Schedule Date"]} ${match["Schedule Time"]} — ` +
-      `${match["Home Team"]} vs ${match["Visiting Team"]}`;
+  // Render each month
+  for (const key of Object.keys(months)) {
+    const [year, month] = key.split("-").map(Number);
+    const monthMatches = months[key];
 
-    const card = document.createElement("div");
-    card.className = "match-card";
-    if (isUpcoming) card.classList.add("upcoming");
+    const monthName = new Date(year, month).toLocaleString("default", { month: "long" });
 
-    card.innerHTML = `
-      <h3>${matchName}</h3>
-      <p><strong>Location:</strong> ${match["Facility/Match Site"]}</p>
-      <div id="my-${matchId}">Loading your availability...</div>
-      <button class="respond-btn" onclick="window.location.href='availability.html'">
-        Respond Now
-      </button>
-    `;
+    // Month title
+    const title = document.createElement("div");
+    title.className = "month-title";
+    title.innerText = `${monthName} ${year}`;
+    container.appendChild(title);
 
-    container.appendChild(card);
+    // Day headers
+    const grid = document.createElement("div");
+    grid.className = "calendar-grid";
 
-    loadMyAvailability(matchId, (data) => {
-      const box = document.getElementById(`my-${matchId}`);
+    const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    days.forEach(d => {
+      const h = document.createElement("div");
+      h.className = "day-header";
+      h.innerText = d;
+      grid.appendChild(h);
+    });
 
-      if (!data) {
-        box.innerHTML = `<em>No response yet</em>`;
-        return;
+    // First day offset
+    const firstDay = new Date(year, month, 1).getDay();
+    for (let i = 0; i < firstDay; i++) {
+      const empty = document.createElement("div");
+      grid.appendChild(empty);
+    }
+
+    // Days in month
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const cell = document.createElement("div");
+      cell.className = "day-cell";
+
+      const num = document.createElement("div");
+      num.className = "day-number";
+      num.innerText = day;
+      cell.appendChild(num);
+
+      // Matches on this day
+      const todaysMatches = monthMatches.filter(m => {
+        const d = new Date(m["Schedule Date"]);
+        return d.getDate() === day;
+      });
+
+      for (const match of todaysMatches) {
+        const entry = document.createElement("div");
+        entry.className = "match-entry";
+
+        const matchId = match["Match ID"];
+        const matchLabel =
+          `${match["League"]} — ${match["Schedule Time"]} — ` +
+          `${match["Home Team"]} vs ${match["Visiting Team"]}`;
+
+        entry.innerHTML = `<strong>${matchLabel}</strong>`;
+
+        // Load personal availability
+        loadMyAvailability(matchId).then(data => {
+          if (!data) {
+            entry.innerHTML += `<div><em>No response yet</em></div>`;
+            return;
+          }
+
+          const status = data.status;
+          const notes = data.notes || "";
+
+          const pillClass =
+            status === "Yes" ? "yes" :
+            status === "No" ? "no" :
+            status === "Maybe" ? "maybe" :
+            "conflict";
+
+          entry.innerHTML += `
+            <div class="status-pill ${pillClass}">${status}</div>
+            ${notes ? `<div class="my-note">${notes}</div>` : ""}
+            <button class="respond-btn" onclick="window.location.href='availability.html'">
+              Update
+            </button>
+          `;
+        });
+
+        cell.appendChild(entry);
       }
 
-      const status = data.status;
-      const notes = data.notes || "";
+      grid.appendChild(cell);
+    }
 
-      const pillClass =
-        status === "Yes" ? "yes" :
-        status === "No" ? "no" :
-        status === "Maybe" ? "maybe" :
-        "conflict";
-
-      box.innerHTML = `
-        <span class="status-pill ${pillClass}">${status}</span>
-        ${notes ? `<div class="my-note">${notes}</div>` : ""}
-      `;
-    });
+    container.appendChild(grid);
   }
 }
 </script>

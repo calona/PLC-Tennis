@@ -2,20 +2,51 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Match Calendar</title>
+  <title>Captain Dashboard</title>
   <style>
     body { font-family: Arial; margin: 40px; }
     .match { padding: 12px; background: #eee; margin: 10px 0; border-radius: 6px; cursor: pointer; }
     .match:hover { background: #ddd; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border-bottom: 1px solid #ccc; }
+    .Available { background: #4CAF50; color: white; padding: 6px 12px; border-radius: 4px; }
+    .Maybe { background: #FFC107; color: black; padding: 6px 12px; border-radius: 4px; }
+    .Unavailable { background: #F44336; color: white; padding: 6px 12px; border-radius: 4px; }
   </style>
 </head>
 
 <body>
 
-<h1>Match Calendar</h1>
+<h1>Captain Dashboard</h1>
+
+<h2>Matches</h2>
 <div id="matchList">Loading matches...</div>
 
+<h2>Availability</h2>
+<table>
+  <thead>
+    <tr><th>Player</th><th>Status</th><th>Updated</th></tr>
+  </thead>
+  <tbody id="availabilityBody"></tbody>
+</table>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
 <script>
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "plc-tennis.firebaseapp.com",
+  projectId: "plc-tennis",
+  storageBucket: "plc-tennis.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
@@ -24,12 +55,9 @@ async function loadMatches() {
   const csv = await res.text();
   const rows = csv.split("\n").map(r => r.split(","));
 
-  // Column A = field names
   const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
 
-  // Columns B+ = matches
   const matches = [];
-
   const numMatches = rows[0].length - 1;
 
   for (let col = 1; col <= numMatches; col++) {
@@ -52,24 +80,36 @@ loadMatches().then(matches => {
   matches.forEach(m => {
     const div = document.createElement("div");
     div.className = "match";
+    div.innerText =
+      `${m["Team"]} Match ${m["Match #"]} — ${m["Date"]} — ${m["Home/Away"]} vs ${m["Opponent"]}`;
 
-    div.innerHTML = `
-      <strong>${m["Team"]} Match ${m["Match #"]}</strong><br>
-      ${m["Date"]} — ${m["Home/Away"]} vs ${m["Opponent"]}
-    `;
-
-    div.onclick = () => {
-      localStorage.setItem("selectedMatchId", m["Match #"]);
-      localStorage.setItem(
-        "selectedMatchName",
-        `${m["Team"]} Match ${m["Match #"]} — ${m["Date"]} — ${m["Home/Away"]} vs ${m["Opponent"]}`
-      );
-      window.location.href = "availability.html";
-    };
-
+    div.onclick = () => loadAvailability(m["Match #"]);
     list.appendChild(div);
   });
 });
+
+async function loadAvailability(matchId) {
+  const tbody = document.getElementById("availabilityBody");
+  tbody.innerHTML = "";
+
+  const snap = await db.collection("availability")
+    .where("matchId", "==", matchId)
+    .orderBy("timestamp", "desc")
+    .get();
+
+  snap.forEach(doc => {
+    const d = doc.data();
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${d.player}</td>
+      <td><span class="${d.status}">${d.status}</span></td>
+      <td>${d.timestamp.toDate().toLocaleString()}</td>
+    `;
+
+    tbody.appendChild(row);
+  });
+}
 </script>
 
 </body>

@@ -78,7 +78,8 @@
     .match:hover { background: #ddd; }
 
     /* Filter buttons */
-    .filter-bar button {
+    .filter-bar button,
+    .view-toggle button {
       padding: 8px 14px;
       margin-right: 10px;
       border: none;
@@ -88,8 +89,42 @@
       color: white;
       font-weight: bold;
     }
-    .filter-bar button:hover {
+    .filter-bar button:hover,
+    .view-toggle button:hover {
       background: #1d3563;
+    }
+
+    /* Calendar view */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .calendar-day {
+      border: 1px solid #ccc;
+      padding: 8px;
+      min-height: 100px;
+      border-radius: 6px;
+      background: #f9f9f9;
+    }
+
+    .calendar-day-header {
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .calendar-match {
+      background: #eee;
+      padding: 4px;
+      margin-top: 4px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .calendar-match:hover {
+      background: #ddd;
     }
   </style>
 
@@ -130,6 +165,12 @@
   <button onclick="setFilter('all')">All</button>
   <button onclick="setFilter('40')">40+</button>
   <button onclick="setFilter('55')">55+</button>
+</div>
+
+<!-- VIEW TOGGLE -->
+<div class="view-toggle" style="margin-bottom: 20px;">
+  <button onclick="setView('list')">List View</button>
+  <button onclick="setView('calendar')">Calendar View</button>
 </div>
 
 <div id="matchList">Loading matches...</div>
@@ -176,9 +217,15 @@ function parseCSV(text) {
 
 let allMatches = [];
 let leagueFilter = "all";
+let currentView = "list";
 
 function setFilter(filter) {
   leagueFilter = filter;
+  renderMatches();
+}
+
+function setView(view) {
+  currentView = view;
   renderMatches();
 }
 
@@ -205,6 +252,57 @@ async function loadMatches() {
   return matches;
 }
 
+function buildCalendar(matches) {
+  const container = document.createElement("div");
+  container.className = "calendar-grid";
+
+  const firstDate = new Date(matches[0]["Schedule Date"]);
+  const year = firstDate.getFullYear();
+  const month = firstDate.getMonth();
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  for (let i = 0; i < firstDay; i++) {
+    const blank = document.createElement("div");
+    blank.className = "calendar-day";
+    container.appendChild(blank);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const cell = document.createElement("div");
+    cell.className = "calendar-day";
+
+    const header = document.createElement("div");
+    header.className = "calendar-day-header";
+    header.innerText = day;
+    cell.appendChild(header);
+
+    matches.forEach(m => {
+      const d = new Date(m["Schedule Date"]);
+      if (d.getDate() === day && d.getMonth() === month) {
+        const div = document.createElement("div");
+        div.className = "calendar-match";
+        div.innerText = `${m["Home Team"]} vs ${m["Visiting Team"]} @ ${m["Schedule Time"]}`;
+
+        div.onclick = () => {
+          localStorage.setItem("selectedMatchId", m["Match ID"]);
+          localStorage.setItem("selectedMatchName",
+            `${m["League"]} — ${m["Schedule Date"]} ${m["Schedule Time"]} — ${m["Home Team"]} vs ${m["Visiting Team"]} @ ${m["Facility/Match Site"]}`
+          );
+          window.location.href = "availability.html";
+        };
+
+        cell.appendChild(div);
+      }
+    });
+
+    container.appendChild(cell);
+  }
+
+  return container;
+}
+
 function renderMatches() {
   const list = document.getElementById("matchList");
   list.innerHTML = "";
@@ -215,6 +313,11 @@ function renderMatches() {
     if (leagueFilter === "55") return m["League"]?.includes("55+");
     return true;
   });
+
+  if (currentView === "calendar") {
+    list.appendChild(buildCalendar(filtered));
+    return;
+  }
 
   filtered.forEach(m => {
     const league = m["League"] || "";

@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -90,6 +92,16 @@
       cursor: pointer;
       margin-right: 20px;
     }
+
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+      resize: vertical;
+    }
   </style>
 </head>
 
@@ -135,6 +147,10 @@
   <button onclick="setAvailability('Yes')">✔ Yes, I can play</button>
   <button onclick="setAvailability('No')" style="background:#555;">✖ No, I cannot play</button>
   <button onclick="setAvailability('Maybe')" style="background:#2a4d8f;">❓ Maybe</button>
+  <button onclick="setAvailability('Maybe - conflict')" style="background:#8a6d3b;">⚠ Maybe — conflicts with another match</button>
+
+  <!-- PLAYER NOTES -->
+  <textarea id="playerNotes" rows="3" placeholder="Add a note (optional): e.g., 'I can play only after 6pm'"></textarea>
 
   <button class="logout" onclick="logout()">Logout</button>
 
@@ -308,6 +324,7 @@ function setAvailability(status) {
 
   const email = user.email;
   const matchId = localStorage.getItem("selectedMatchId");
+  const notes = document.getElementById("playerNotes").value.trim();
 
   if (!matchId) {
     document.getElementById("msg").innerText = "Error: No match selected.";
@@ -322,11 +339,19 @@ function setAvailability(status) {
     .set({
       email: email,
       status: status,
+      notes: notes || "",
       timestamp: new Date()
     })
     .then(() => {
-      document.getElementById("msg").innerText = "Availability saved!";
+      document.getElementById("msg").innerText = "Availability saved! Moving to next match...";
       document.getElementById("msg").style.color = "green";
+
+      // Auto‑advance after a short delay
+      setTimeout(() => {
+        nextMatch();
+        document.getElementById("playerNotes").value = ""; // clear notes
+        document.getElementById("msg").innerText = "";
+      }, 800);
     })
     .catch(err => {
       document.getElementById("msg").innerText = "Error: " + err.message;

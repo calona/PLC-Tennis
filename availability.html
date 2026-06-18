@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -32,6 +30,11 @@
     }
 
     button:hover { opacity: 0.9; }
+
+    /* Highlight selected availability */
+    button.selected {
+      box-shadow: 0 0 0 3px #ffa500 inset;
+    }
 
     .logout {
       margin-top: 20px;
@@ -302,6 +305,11 @@ function nextMatch() {
   }
 }
 
+function clearSelectedButtons() {
+  const buttons = document.querySelectorAll('.box button');
+  buttons.forEach(b => b.classList.remove('selected'));
+}
+
 function loadMatchInfo() {
   const match = filteredMatches[currentIndex];
   if (!match) return;
@@ -314,6 +322,51 @@ function loadMatchInfo() {
 
   localStorage.setItem("selectedMatchId", match["Match ID"]);
   localStorage.setItem("selectedMatchName", matchName);
+
+  loadPlayerAvailability(match["Match ID"]);
+}
+
+function loadPlayerAvailability(matchId) {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const email = user.email;
+
+  db.collection("availability")
+    .doc(matchId)
+    .collection("players")
+    .doc(email)
+    .get()
+    .then(doc => {
+      clearSelectedButtons();
+      document.getElementById("playerNotes").value = "";
+      document.getElementById("msg").innerText = "";
+
+      if (!doc.exists) return;
+
+      const data = doc.data();
+      const status = data.status || "";
+      const notes = data.notes || "";
+
+      document.getElementById("playerNotes").value = notes;
+
+      const labelMap = {
+        "Yes": "✔ Yes, I can play",
+        "No": "✖ No, I cannot play",
+        "Maybe": "❓ Maybe",
+        "Maybe - conflict": "⚠ Maybe — conflicts with another match"
+      };
+
+      const label = labelMap[status];
+      if (!label) return;
+
+      const buttons = document.querySelectorAll('.box button');
+      buttons.forEach(b => {
+        if (b.innerText.trim() === label) {
+          b.classList.add('selected');
+        }
+      });
+    });
 }
 
 /* -------------------- SAVE AVAILABILITY -------------------- */
@@ -343,13 +396,29 @@ function setAvailability(status) {
       timestamp: new Date()
     })
     .then(() => {
+      clearSelectedButtons();
+
+      const labelMap = {
+        "Yes": "✔ Yes, I can play",
+        "No": "✖ No, I cannot play",
+        "Maybe": "❓ Maybe",
+        "Maybe - conflict": "⚠ Maybe — conflicts with another match"
+      };
+
+      const label = labelMap[status];
+      const buttons = document.querySelectorAll('.box button');
+      buttons.forEach(b => {
+        if (b.innerText.trim() === label) {
+          b.classList.add('selected');
+        }
+      });
+
       document.getElementById("msg").innerText = "Availability saved! Moving to next match...";
       document.getElementById("msg").style.color = "green";
 
-      // Auto‑advance after a short delay
       setTimeout(() => {
         nextMatch();
-        document.getElementById("playerNotes").value = ""; // clear notes
+        document.getElementById("playerNotes").value = "";
         document.getElementById("msg").innerText = "";
       }, 800);
     })

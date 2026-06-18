@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Match Calendar</title>
+  <title>Captain Dashboard</title>
 
   <!-- NAVIGATION CSS -->
   <style>
@@ -77,6 +77,21 @@
     }
     .match:hover { background: #ddd; }
 
+    /* Availability table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .Available { background: #4CAF50; color: white; padding: 6px 12px; border-radius: 4px; }
+    .Maybe { background: #FFC107; color: black; padding: 6px 12px; border-radius: 4px; }
+    .Unavailable { background: #F44336; color: white; padding: 6px 12px; border-radius: 4px; }
+
     /* Filter buttons */
     .filter-bar button {
       padding: 8px 14px;
@@ -123,7 +138,7 @@
 
 <div class="content">
 
-<h1>Match Calendar</h1>
+<h1>Captain Dashboard</h1>
 
 <!-- FILTER BAR -->
 <div class="filter-bar" style="margin-bottom: 20px;">
@@ -132,11 +147,36 @@
   <button onclick="setFilter('55')">55+</button>
 </div>
 
+<h2>Matches</h2>
 <div id="matchList">Loading matches...</div>
+
+<h2>Availability</h2>
+<table>
+  <thead>
+    <tr><th>Player</th><th>Status</th><th>Updated</th></tr>
+  </thead>
+  <tbody id="availabilityBody"></tbody>
+</table>
 
 </div>
 
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
 <script>
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "plc-tennis.firebaseapp.com",
+  projectId: "plc-tennis",
+  storageBucket: "plc-tennis.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
@@ -231,13 +271,32 @@ function renderMatches() {
     div.className = "match";
     div.innerHTML = `<strong>${display}</strong>`;
 
-    div.onclick = () => {
-      localStorage.setItem("selectedMatchId", id);
-      localStorage.setItem("selectedMatchName", display);
-      window.location.href = "availability.html";
-    };
+    div.onclick = () => loadAvailability(id);
 
     list.appendChild(div);
+  });
+}
+
+async function loadAvailability(matchId) {
+  const tbody = document.getElementById("availabilityBody");
+  tbody.innerHTML = "";
+
+  const snap = await db.collection("availability")
+    .where("matchId", "==", matchId)
+    .orderBy("timestamp", "desc")
+    .get();
+
+  snap.forEach(doc => {
+    const d = doc.data();
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${d.player}</td>
+      <td><span class="${d.status}">${d.status}</span></td>
+      <td>${d.timestamp.toDate().toLocaleString()}</td>
+    `;
+
+    tbody.appendChild(row);
   });
 }
 

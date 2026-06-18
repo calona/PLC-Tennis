@@ -82,6 +82,7 @@ loadMatches().then(matches => {
   list.innerHTML = "";
 
   matches.forEach(m => {
+    const league = m["League"] || "";
     const date = m["Schedule Date"] || "";
     const time = m["Schedule Time"] || "";
     const home = m["Home Team"] || "";
@@ -89,7 +90,7 @@ loadMatches().then(matches => {
     const site = m["Facility/Match Site"] || "";
     const id = m["Match ID"];
 
-    const display = `${date} ${time} — ${home} vs ${away} @ ${site}`;
+    const display = `${league} — ${date} ${time} — ${home} vs ${away} @ ${site}`;
 
     const div = document.createElement("div");
     div.className = "match";

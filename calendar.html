@@ -2,11 +2,12 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>PLC Tennis Team</title>
+  <title>Match Calendar</title>
 
   <style>
     body { font-family: Arial; margin: 0; padding: 0; }
 
+    /* Header */
     .header {
       width: 100%;
       background: #1d3563;
@@ -24,6 +25,7 @@
       margin-right: 20px;
     }
 
+    /* Slide-out menu */
     .sidebar {
       height: 100%;
       width: 0;
@@ -58,22 +60,72 @@
       color: white;
     }
 
+    /* Page content */
     .content {
       padding: 30px;
     }
 
-    .home-box {
-      background: #f4f4f4;
-      padding: 20px;
-      border-radius: 8px;
-      margin-top: 20px;
-      font-size: 18px;
+    /* Filter + view buttons */
+    .filter-bar button,
+    .view-toggle button {
+      padding: 8px 14px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #2a4d8f;
+      color: white;
+      font-weight: bold;
     }
 
-    .home-box a {
-      color: #1d3563;
+    .filter-bar button:hover,
+    .view-toggle button:hover {
+      background: #1d3563;
+    }
+
+    /* List view match cards */
+    .match {
+      padding: 12px;
+      background: #eee;
+      margin: 10px 0;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .match:hover { background: #ddd; }
+
+    /* Calendar view */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .calendar-day {
+      border: 1px solid #ccc;
+      padding: 8px;
+      min-height: 100px;
+      border-radius: 6px;
+      background: #f9f9f9;
+    }
+
+    .calendar-day-header {
       font-weight: bold;
-      text-decoration: none;
+      margin-bottom: 6px;
+    }
+
+    .calendar-match {
+      background: #eee;
+      padding: 4px;
+      margin-top: 4px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .calendar-match:hover {
+      background: #ddd;
     }
   </style>
 
@@ -89,6 +141,7 @@
 
 <body>
 
+<!-- SLIDE-OUT SIDEBAR -->
 <div id="sidebar" class="sidebar">
   <span class="sidebar-close" onclick="closeNav()">&times;</span>
   <a href="index.html">Home</a>
@@ -97,25 +150,264 @@
   <a href="captain.html">Captain Dashboard</a>
 </div>
 
+<!-- TOP HEADER -->
 <div class="header">
   <span class="hamburger" onclick="openNav()">&#9776;</span>
   PLC Tennis Team
 </div>
 
 <div class="content">
-  <h1>Welcome to PLC Tennis</h1>
+  <h1>Match Calendar</h1>
 
-  <div class="home-box">
-    <p>This site helps our team stay organized throughout the season.</p>
+  <!-- FILTER BAR -->
+  <div class="filter-bar" style="margin-bottom: 20px;">
+    <button onclick="setFilter('all')">All</button>
+    <button onclick="setFilter('40')">40+</button>
+    <button onclick="setFilter('55')">55+</button>
+  </div>
 
-    <p><strong>Quick Links:</strong></p>
-    <ul>
-      <li><a href="calendar.html">View Match Calendar</a></li>
-      <li><a href="availability.html">Submit Your Availability</a></li>
-      <li><a href="captain.html">Captain Dashboard</a></li>
-    </ul>
+  <!-- VIEW TOGGLE -->
+  <div class="view-toggle" style="margin-bottom: 20px;">
+    <button onclick="setView('list')">List View</button>
+    <button onclick="setView('calendar')">Calendar View</button>
+  </div>
+
+  <!-- SCROLLABLE AREA FOR BOTH VIEWS -->
+  <div id="calendarScroll" style="overflow-y:auto; max-height:70vh; padding-right:10px;">
+    <div id="matchList">Loading matches...</div>
   </div>
 </div>
+
+<script>
+const SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
+
+// Robust CSV parser
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let insideQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    const next = text[i + 1];
+
+    if (c === '"' && next === '"') {
+      cell += '"';
+      i++;
+    } else if (c === '"') {
+      insideQuotes = !insideQuotes;
+    } else if (c === ',' && !insideQuotes) {
+      row.push(cell);
+      cell = "";
+    } else if (c === '\n' && !insideQuotes) {
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = "";
+    } else {
+      cell += c;
+    }
+  }
+  row.push(cell);
+  rows.push(row);
+
+  return rows;
+}
+
+let allMatches = [];
+let leagueFilter = "all";
+let currentView = "list";
+
+function setFilter(filter) {
+  leagueFilter = filter;
+  renderMatches();
+}
+
+function setView(view) {
+  currentView = view;
+  renderMatches();
+}
+
+async function loadMatches() {
+  const res = await fetch(SHEET_URL);
+  const csv = await res.text();
+  const rows = parseCSV(csv);
+
+  const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
+
+  const matches = [];
+  const numMatches = rows[0].length - 1;
+
+  for (let col = 1; col <= numMatches; col++) {
+    const match = {};
+    for (let row = 0; row < fieldNames.length; row++) {
+      const field = fieldNames[row];
+      const value = rows[row][col]?.trim();
+      if (field && value) match[field] = value;
+    }
+    if (match["Match ID"]) matches.push(match);
+  }
+
+  // Sort by date
+  matches.sort((a, b) => {
+    const da = new Date(a["Schedule Date"]);
+    const db = new Date(b["Schedule Date"]);
+    return da - db;
+  });
+
+  return matches;
+}
+
+function buildMonthBlock(matches, year, month) {
+  const wrapper = document.createElement("div");
+  wrapper.style.marginBottom = "40px";
+
+  const monthNames = [
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December"
+  ];
+
+  const title = document.createElement("h2");
+  title.innerText = `${monthNames[month]} ${year}`;
+  wrapper.appendChild(title);
+
+  const labels = document.createElement("div");
+  labels.className = "calendar-grid";
+  labels.style.fontWeight = "bold";
+  labels.style.textAlign = "center";
+  labels.innerHTML = `
+    <div>Sun</div><div>Mon</div><div>Tue</div>
+    <div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+  `;
+  wrapper.appendChild(labels);
+
+  const grid = document.createElement("div");
+  grid.className = "calendar-grid";
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  for (let i = 0; i < firstDay; i++) {
+    const blank = document.createElement("div");
+    blank.className = "calendar-day";
+    grid.appendChild(blank);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const cell = document.createElement("div");
+    cell.className = "calendar-day";
+
+    const header = document.createElement("div");
+    header.className = "calendar-day-header";
+    header.innerText = day;
+    cell.appendChild(header);
+
+    matches.forEach(m => {
+      const d = new Date(m["Schedule Date"]);
+      if (
+        d.getDate() === day &&
+        d.getMonth() === month &&
+        d.getFullYear() === year
+      ) {
+        const div = document.createElement("div");
+        div.className = "calendar-match";
+        div.innerText = `${m["Home Team"]} vs ${m["Visiting Team"]} @ ${m["Schedule Time"]}`;
+
+        div.onclick = () => {
+          localStorage.setItem("selectedMatchId", m["Match ID"]);
+          localStorage.setItem(
+            "selectedMatchName",
+            `${m["League"]} — ${m["Schedule Date"]} ${m["Schedule Time"]} — ${m["Home Team"]} vs ${m["Visiting Team"]} @ ${m["Facility/Match Site"]}`
+          );
+          window.location.href = "availability.html";
+        };
+
+        cell.appendChild(div);
+      }
+    });
+
+    grid.appendChild(cell);
+  }
+
+  wrapper.appendChild(grid);
+  return wrapper;
+}
+
+function renderMatches() {
+  const scroll = document.getElementById("calendarScroll");
+  scroll.innerHTML = "";
+
+  const filtered = allMatches.filter(m => {
+    if (leagueFilter === "all") return true;
+    if (leagueFilter === "40") return m["League"]?.includes("40+");
+    if (leagueFilter === "55") return m["League"]?.includes("55+");
+    return true;
+  });
+
+  if (currentView === "calendar") {
+    if (!filtered.length) {
+      scroll.innerText = "No matches found.";
+      return;
+    }
+
+    const firstMatch = new Date(filtered[0]["Schedule Date"]);
+    const lastMatch = new Date(filtered[filtered.length - 1]["Schedule Date"]);
+
+    let y = firstMatch.getFullYear();
+    let m = firstMatch.getMonth();
+    const endY = lastMatch.getFullYear();
+    const endM = lastMatch.getMonth();
+
+    while (y < endY || (y === endY && m <= endM)) {
+      scroll.appendChild(buildMonthBlock(filtered, y, m));
+      m++;
+      if (m > 11) {
+        m = 0;
+        y++;
+      }
+    }
+
+    return;
+  }
+
+  // LIST VIEW
+  if (!filtered.length) {
+    scroll.innerText = "No matches found.";
+    return;
+  }
+
+  filtered.forEach(m => {
+    const league = m["League"] || "";
+    const date = m["Schedule Date"] || "";
+    const time = m["Schedule Time"] || "";
+    const home = m["Home Team"] || "";
+    const away = m["Visiting Team"] || "";
+    const site = m["Facility/Match Site"] || "";
+    const id = m["Match ID"];
+
+    const display = `${league} — ${date} ${time} — ${home} vs ${away} @ ${site}`;
+
+    const div = document.createElement("div");
+    div.className = "match";
+    div.innerHTML = `<strong>${display}</strong>`;
+
+    div.onclick = () => {
+      localStorage.setItem("selectedMatchId", id);
+      localStorage.setItem("selectedMatchName", display);
+      window.location.href = "availability.html";
+    };
+
+    scroll.appendChild(div);
+  });
+}
+
+loadMatches().then(matches => {
+  allMatches = matches;
+  renderMatches();
+});
+</script>
 
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
+  <title>PLC Tennis Login</title>
 
   <style>
     body { font-family: Arial; padding: 40px; background: #f4f4f4; }
@@ -32,8 +32,11 @@
       font-size: 16px;
     }
     button:hover { opacity: 0.9; }
-    .link { text-align: center; margin-top: 10px; }
-    a { color: #1d3563; }
+    .secondary {
+      margin-top: 10px;
+      background: #2a4d8f;
+    }
+    #msg { margin-top: 10px; color: red; }
   </style>
 </head>
 
@@ -43,12 +46,12 @@
   <h2>PLC Tennis Login</h2>
 
   <input id="email" type="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
+  <input id="password" type="password" placeholder="Password (6+ characters)">
 
   <button onclick="login()">Login</button>
-  <button onclick="signup()" style="margin-top:10px; background:#2a4d8f;">Create Account</button>
+  <button class="secondary" onclick="signup()">Create Account</button>
 
-  <div id="msg" style="color:red; margin-top:10px;"></div>
+  <div id="msg"></div>
 </div>
 
 <!-- Firebase -->
@@ -57,36 +60,61 @@
 
 <script>
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
   authDomain: "plc-tennis.firebaseapp.com",
   projectId: "plc-tennis",
-  storageBucket: "plc-tennis.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  storageBucket: "plc-tennis.firebasestorage.app",
+  messagingSenderId: "472563332469",
+  appId: "1:472563332469:web:b781075e99cd0f5a3c4f3c"
 };
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
+function showError(msg) {
+  document.getElementById("msg").style.color = "red";
+  document.getElementById("msg").innerText = msg;
+}
+
+function showSuccess(msg) {
+  document.getElementById("msg").style.color = "green";
+  document.getElementById("msg").innerText = msg;
+}
+
 function login() {
-  const email = document.getElementById("email").value;
+  const email = document.getElementById("email").value.trim();
   const pass = document.getElementById("password").value;
 
+  if (!email || !pass) {
+    showError("Please enter email and password.");
+    return;
+  }
+
   auth.signInWithEmailAndPassword(email, pass)
-    .then(() => window.location.href = "calendar.html")
-    .catch(err => document.getElementById("msg").innerText = err.message);
+    .then(() => {
+      showSuccess("Logged in. Redirecting...");
+      window.location.href = "calendar.html";
+    })
+    .catch(err => showError(err.message));
 }
 
 function signup() {
-  const email = document.getElementById("email").value;
+  const email = document.getElementById("email").value.trim();
   const pass = document.getElementById("password").value;
 
+  if (!email || !pass) {
+    showError("Please enter email and password.");
+    return;
+  }
+
   auth.createUserWithEmailAndPassword(email, pass)
-    .then(() => window.location.href = "calendar.html")
-    .catch(err => document.getElementById("msg").innerText = err.message);
+    .then(() => {
+      showSuccess("Account created. Redirecting...");
+      window.location.href = "calendar.html";
+    })
+    .catch(err => showError(err.message));
 }
 </script>
 
 </body>
 </html>
-

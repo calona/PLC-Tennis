@@ -1,121 +1,749 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>PLC Tennis Team</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 
   <style>
-    body { font-family: Arial; margin: 0; padding: 0; }
+    :root {
+      --navy: #1d3563;
+      --navy-soft: #243c6f;
+      --blue: #4a6fa5;
+      --green: #1d6f42;
+      --bg: #f5f7fa;
+      --card-bg: #ffffff;
+      --text-main: #1f2933;
+      --text-muted: #6b7280;
+      --border-subtle: #e5e7eb;
+      --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
+      --radius-lg: 18px;
+      --radius-pill: 999px;
+    }
 
-    .header {
-      width: 100%;
-      background: #1d3563;
-      color: white;
-      padding: 16px 20px;
-      font-size: 22px;
-      font-weight: bold;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top left, #e0ecff 0, #f5f7fa 40%, #f5f7fa 100%);
+      color: var(--text-main);
+      min-height: 100vh;
       display: flex;
+      flex-direction: column;
+    }
+
+    /* NAVBAR */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(12px);
+      background: linear-gradient(to right, rgba(245,247,250,0.95), rgba(245,247,250,0.9));
+      border-bottom: 1px solid rgba(148,163,184,0.25);
+    }
+
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 30% 20%, #facc15, #f97316 40%, #b91c1c 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 18px;
+      box-shadow: 0 6px 14px rgba(15,23,42,0.25);
+    }
+
+    .nav-title {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .nav-title-main {
+      font-family: "Poppins", system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--navy);
+    }
+
+    .nav-title-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .nav-link {
+      padding: 6px 12px;
+      border-radius: 999px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(148,163,184,0.12);
+      color: var(--navy);
+    }
+
+    .nav-link.active {
+      background: var(--navy);
+      color: #fff;
+      box-shadow: 0 6px 14px rgba(15,23,42,0.25);
+    }
+
+    .nav-cta {
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.5);
+      font-size: 12px;
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.8);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-cta span {
+      font-size: 16px;
+    }
+
+    /* MAIN LAYOUT */
+    .page {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      padding: 24px 16px 32px;
+    }
+
+    .page-inner {
+      max-width: 1100px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.4fr);
+      gap: 22px;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 900px) {
+      .page-inner {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .nav-inner {
+        flex-wrap: wrap;
+      }
+      .nav-links {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+    }
+
+    /* HERO CARD */
+    .hero-card {
+      background: linear-gradient(135deg, #1d3563, #4a6fa5);
+      border-radius: 26px;
+      padding: 22px 22px 20px;
+      color: #e5ecff;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .hero-main {
+      max-width: 70%;
+    }
+
+    .hero-kicker {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #bfdbfe;
+      margin-bottom: 6px;
+    }
+
+    .hero-title {
+      font-family: "Poppins", system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 26px;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+
+    .hero-subtitle {
+      font-size: 14px;
+      color: #dbeafe;
+      margin-bottom: 14px;
+    }
+
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .hero-tag {
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.35);
+      border: 1px solid rgba(191,219,254,0.4);
+      color: #e5ecff;
+    }
+
+    .hero-cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .hero-cta-primary {
+      background: #facc15;
+      color: #1f2933;
+      border-radius: var(--radius-pill);
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 18px rgba(15,23,42,0.35);
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .hero-cta-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(15,23,42,0.45);
+      background: #fde047;
+    }
+
+    .hero-cta-secondary {
+      background: rgba(15,23,42,0.35);
+      color: #e5ecff;
+      border-radius: var(--radius-pill);
+      padding: 7px 14px;
+      font-size: 12px;
+      border: 1px solid rgba(191,219,254,0.5);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .hero-cta-secondary:hover {
+      background: rgba(15,23,42,0.55);
+    }
+
+    .hero-pill {
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 160px;
+      height: 160px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #facc15, #f97316 40%, #b91c1c 100%);
+      opacity: 0.18;
+    }
+
+    .hero-badge {
+      position: absolute;
+      right: 18px;
+      bottom: 18px;
+      background: rgba(15,23,42,0.65);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 11px;
+      color: #e5ecff;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(191,219,254,0.4);
+    }
+
+    .hero-badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34,197,94,0.35);
+    }
+
+    /* QUICK ACTIONS */
+    .section {
+      margin-top: 18px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    .section-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    @media (max-width: 800px) {
+      .card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      .card-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .action-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 12px 12px 11px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148,163,184,0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .action-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(15,23,42,0.12);
+      border-color: rgba(59,130,246,0.55);
+    }
+
+    .action-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+
+    .action-icon.calendar {
+      background: rgba(59,130,246,0.12);
+      color: #2563eb;
+    }
+
+    .action-icon.check {
+      background: rgba(34,197,94,0.12);
+      color: #16a34a;
+    }
+
+    .action-icon.clipboard {
+      background: rgba(234,179,8,0.12);
+      color: #ca8a04;
+    }
+
+    .action-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy-soft);
+    }
+
+    .action-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .action-meta {
+      font-size: 11px;
+      color: #6b7280;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .action-pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      background: rgba(15,23,42,0.04);
+      color: var(--text-muted);
+    }
+
+    /* RIGHT COLUMN: NEXT MATCH + INFO */
+    .side-column {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 22px;
+      padding: 14px 14px 12px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148,163,184,0.25);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--navy-soft);
+    }
+
+    .card-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .next-match-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 6px;
       align-items: center;
     }
 
-    .hamburger {
-      font-size: 26px;
+    .next-match-main {
+      font-size: 12px;
+      color: var(--text-main);
+    }
+
+    .next-match-main strong {
+      color: var(--navy-soft);
+    }
+
+    .next-match-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .next-match-cta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .pill-status {
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(34,197,94,0.08);
+      color: #15803d;
+      border: 1px solid rgba(34,197,94,0.35);
+    }
+
+    .btn-small {
+      border-radius: 999px;
+      padding: 6px 11px;
+      font-size: 11px;
+      border: none;
       cursor: pointer;
-      margin-right: 20px;
-    }
-
-    .sidebar {
-      height: 100%;
-      width: 0;
-      position: fixed;
-      z-index: 1000;
-      top: 0;
-      left: 0;
-      background-color: #1d3563;
-      overflow-x: hidden;
-      transition: 0.3s;
-      padding-top: 60px;
-    }
-
-    .sidebar a {
-      padding: 12px 24px;
+      background: var(--green);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 8px 18px rgba(22,163,74,0.35);
       text-decoration: none;
-      font-size: 20px;
-      color: white;
-      display: block;
     }
 
-    .sidebar a:hover {
-      background: #2a4d8f;
+    .btn-small:hover {
+      background: #166534;
     }
 
-    .sidebar-close {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      font-size: 30px;
-      cursor: pointer;
-      color: white;
+    .list {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+      list-style: none;
     }
 
-    .content {
-      padding: 30px;
+    .list li {
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .home-box {
-      background: #f4f4f4;
-      padding: 20px;
-      border-radius: 8px;
-      margin-top: 20px;
-      font-size: 18px;
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #9ca3af;
     }
 
-    .home-box a {
-      color: #1d3563;
-      font-weight: bold;
+    /* FOOTER */
+    .footer {
+      border-top: 1px solid rgba(148,163,184,0.3);
+      padding: 10px 16px 14px;
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: center;
+    }
+
+    .footer-inner {
+      max-width: 1100px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .footer-link {
+      color: var(--text-muted);
       text-decoration: none;
+    }
+
+    .footer-link:hover {
+      text-decoration: underline;
     }
   </style>
-
-  <script>
-    function openNav() {
-      document.getElementById("sidebar").style.width = "260px";
-    }
-    function closeNav() {
-      document.getElementById("sidebar").style.width = "0";
-    }
-  </script>
 </head>
-
 <body>
 
-<div id="sidebar" class="sidebar">
-  <span class="sidebar-close" onclick="closeNav()">&times;</span>
-  <a href="index.html">Home</a>
-  <a href="calendar.html">Calendar</a>
-  <a href="availability.html">Availability</a>
-  <a href="captain.html">Captain Dashboard</a>
-</div>
+  <!-- NAVBAR -->
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="nav-left">
+        <div class="nav-logo">PLC</div>
+        <div class="nav-title">
+          <div class="nav-title-main">PLC Tennis</div>
+          <div class="nav-title-sub">USTA Team Hub · 2026 Season</div>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link active">Home</a>
+        <a href="calendar.html" class="nav-link">Calendar</a>
+        <a href="availability.html" class="nav-link">Availability</a>
+        <a href="captain.html" class="nav-link">Captain Dashboard</a>
+        <button class="nav-cta" type="button">
+          <span>🎾</span> Match day ready
+        </button>
+      </div>
+    </div>
+  </header>
 
-<div class="header">
-  <span class="hamburger" onclick="openNav()">&#9776;</span>
-  PLC Tennis Team
-</div>
+  <!-- MAIN CONTENT -->
+  <main class="page">
+    <div class="page-inner">
 
-<div class="content">
-  <h1>Welcome to PLC Tennis</h1>
+      <!-- LEFT: HERO + QUICK ACTIONS -->
+      <section>
+        <div class="hero-card">
+          <div class="hero-pill"></div>
+          <div class="hero-top">
+            <div class="hero-main">
+              <div class="hero-kicker">Welcome back, captain & team</div>
+              <h1 class="hero-title">Your PLC Tennis control center.</h1>
+              <p class="hero-subtitle">
+                Check the schedule, submit availability, and keep the team aligned for every USTA match this season.
+              </p>
+              <div class="hero-tags">
+                <span class="hero-tag">USTA League</span>
+                <span class="hero-tag">Match Calendar</span>
+                <span class="hero-tag">Availability Matrix</span>
+              </div>
+              <div class="hero-cta-row">
+                <a href="availability.html" class="hero-cta-primary">
+                  Submit Availability
+                  <span>→</span>
+                </a>
+                <a href="calendar.html" class="hero-cta-secondary">
+                  View Match Calendar
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="hero-badge">
+            <span class="hero-badge-dot"></span>
+            Season status: In progress · Mixed 7.0 / 8.0
+          </div>
+        </div>
 
-  <div class="home-box">
-    <p>This site helps our team stay organized throughout the season.</p>
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Quick actions</div>
+              <div class="section-subtitle">Jump straight into what you do most.</div>
+            </div>
+          </div>
 
-    <p><strong>Quick Links:</strong></p>
-    <ul>
-      <li><a href="calendar.html">View Match Calendar</a></li>
-      <li><a href="availability.html">Submit Your Availability</a></li>
-      <li><a href="captain.html">Captain Dashboard</a></li>
-    </ul>
-  </div>
-</div>
+          <div class="card-grid">
+            <a href="calendar.html" class="action-card">
+              <div class="action-icon calendar">📅</div>
+              <div class="action-title">Match Calendar</div>
+              <div class="action-desc">See all upcoming matches, locations, and start times.</div>
+              <div class="action-meta">
+                <span>Next 4 weeks at a glance</span>
+                <span class="action-pill">Schedule</span>
+              </div>
+            </a>
+
+            <a href="availability.html" class="action-card">
+              <div class="action-icon check">✅</div>
+              <div class="action-title">Submit Availability</div>
+              <div class="action-desc">Tell the captain which matches you can play.</div>
+              <div class="action-meta">
+                <span>Keep your status up to date</span>
+                <span class="action-pill">Players</span>
+              </div>
+            </a>
+
+            <a href="captain.html" class="action-card">
+              <div class="action-icon clipboard">📊</div>
+              <div class="action-title">Captain Dashboard</div>
+              <div class="action-desc">View responses, export lineups, and plan rosters.</div>
+              <div class="action-meta">
+                <span>Matrix & Excel export</span>
+                <span class="action-pill">Captains</span>
+              </div>
+            </a>
+          </div>
+        </section>
+      </section>
+
+      <!-- RIGHT: NEXT MATCH + INFO -->
+      <aside class="side-column">
+
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Next match</div>
+              <div class="card-subtitle">Pulled from your 2026 schedule.</div>
+            </div>
+          </div>
+          <!-- Placeholder content; you can wire this to live data later -->
+          <div class="next-match-row">
+            <div class="next-match-main">
+              <strong>PLC vs TBD Opponent</strong><br />
+              <span class="next-match-meta">Date: TBA · Time: TBA · Location: Home</span>
+            </div>
+            <div class="next-match-cta">
+              <span class="pill-status">Responses: TBA</span>
+              <a href="availability.html" class="btn-small">
+                Update availability
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Team links</div>
+              <div class="card-subtitle">Useful places you’ll visit often.</div>
+            </div>
+          </div>
+          <ul class="list">
+            <li>
+              <span class="dot"></span>
+              <a class="footer-link" href="https://tennislink.usta.com" target="_blank" rel="noopener">
+                USTA TennisLink
+              </a>
+            </li>
+            <li>
+              <span class="dot"></span>
+              <a class="footer-link" href="https://www.teamcowboy.com" target="_blank" rel="noopener">
+                Team Cowboy
+              </a>
+            </li>
+            <li>
+              <span class="dot"></span>
+              <span>Captain contact: <strong>add email here</strong></span>
+            </li>
+          </ul>
+        </section>
+
+      </aside>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>© 2026 PLC Tennis Team · Sammamish, WA</span>
+      <div class="footer-links">
+        <a href="calendar.html" class="footer-link">Calendar</a>
+        <a href="availability.html" class="footer-link">Availability</a>
+        <a href="captain.html" class="footer-link">Captain Dashboard</a>
+      </div>
+    </div>
+  </footer>
 
 </body>
 </html>

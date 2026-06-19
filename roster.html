@@ -224,6 +224,9 @@
         <div class="page-header-text">
           <h1>🎾 Team Roster</h1>
           <p id="headerSubtext">All players across 40+ and 55+ leagues. Log in to claim your profile.</p>
+          <p id="changePassLink" style="display:none; margin-top:6px; font-size:13px;">
+            <a href="#" onclick="sendPasswordReset(); return false;" style="color:var(--blue); text-decoration:underline;">🔑 Change Password</a>
+          </p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="seed-btn" id="seedBtn" onclick="seedRoster()" style="display:none;">🌱 Seed Initial Roster</button>
@@ -451,8 +454,9 @@
       if (!myClaim && allPlayers.length > 0) {
         showClaimModal();
       } else if (myClaim) {
-        document.getElementById("headerSubtext").innerHTML =
+        document.getElementById("headerSubtext").textContent =
           `Welcome back, ${myClaim.name}! You're on the ${myClaim.teams.join(" & ")} team${myClaim.teams.length > 1 ? "s" : ""}.`;
+        document.getElementById("changePassLink").style.display = "block";
       }
     }
 
@@ -686,6 +690,14 @@
       let h = 0;
       for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
       return h;
+    }
+
+    function sendPasswordReset() {
+      const user = auth.currentUser;
+      if (!user) return;
+      auth.sendPasswordResetEmail(user.email)
+        .then(() => alert("Password reset email sent to " + user.email + "! Check your inbox."))
+        .catch(err => alert("Error: " + err.message));
     }
   </script>
 </body>

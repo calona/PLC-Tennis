@@ -592,6 +592,7 @@
         <a href="captain.html" class="nav-link">Captain</a>
         <a href="roster.html" class="nav-link">Roster</a>
         <a href="practice.html" class="nav-link">Practice</a>
+
       </div>
     </div>
   </header>
@@ -690,8 +691,8 @@
         <section class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">🏋️ Upcoming practices</div>
-              <div class="card-subtitle">Thursdays · 6:45 PM · PLC Indoor</div>
+              <div class="card-title">🏋️ Practice schedule</div>
+              <div class="card-subtitle">Thursdays · 6:45 PM · PLC Indoor · 3 courts</div>
             </div>
           </div>
           <div id="practiceContent">
@@ -747,7 +748,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script>
-    // Firebase init
     firebase.initializeApp({
       apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
       authDomain: "plc-tennis.firebaseapp.com",
@@ -857,13 +857,12 @@
 
     loadNextMatches();
 
-    /* ===== UPCOMING PRACTICES ===== */
+    /* ===== PRACTICE SCHEDULE ===== */
     function getNextThursdays(count) {
       const dates = [];
       const d = new Date();
       d.setHours(0, 0, 0, 0);
       const day = d.getDay();
-      // Find this Thursday (or today if Thursday)
       if (day !== 4) {
         const diff = (4 - day + 7) % 7;
         d.setDate(d.getDate() + diff);
@@ -875,19 +874,17 @@
       return dates;
     }
 
-    async function loadUpcomingPractices() {
+    async function loadPracticeSchedule() {
       const container = document.getElementById("practiceContent");
       try {
-        const thursdays = getNextThursdays(3);
+        const thursdays = getNextThursdays(4);
         let html = "";
-
         for (let i = 0; i < thursdays.length; i++) {
           const dt = thursdays[i];
           const key = dt.toISOString().split("T")[0];
           const dateStr = dt.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
           const border = i > 0 ? "border-top:1px solid var(--border-subtle);margin-top:8px;padding-top:8px;" : "";
 
-          // Fetch practice meta + RSVPs from Firestore
           let yesCount = 0, maybeCount = 0, cancelled = false, cancelReason = "";
           try {
             const metaDoc = await db.collection("practice").doc(key).get();
@@ -902,44 +899,25 @@
               if (s === "yes") yesCount++;
               else if (s === "maybe") maybeCount++;
             });
-          } catch (e) { /* Firestore read may fail without auth */ }
+          } catch (e) {}
 
           if (cancelled) {
-            html += `<div style="${border}">
-              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-                <div class="next-match-main">
-                  <strong style="text-decoration:line-through;color:var(--text-muted);">${dateStr}</strong><br/>
-                  <span class="next-match-meta" style="color:#dc2626;">🚫 Cancelled${cancelReason ? " — " + cancelReason : ""}</span>
-                </div>
-              </div>
-            </div>`;
+            html += `<div style="${border}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div class="next-match-main"><strong style="text-decoration:line-through;color:var(--text-muted);">${dateStr} · 6:45 PM</strong><br/><span class="next-match-meta" style="color:#dc2626;">🚫 Cancelled${cancelReason ? " — " + cancelReason : ""}</span></div></div></div>`;
           } else {
             const spots = Math.max(0, 12 - yesCount);
             const spotColor = spots === 0 ? "#dc2626" : spots <= 4 ? "#a16207" : "#15803d";
             const spotBg = spots === 0 ? "rgba(239,68,68,.1)" : spots <= 4 ? "rgba(234,179,8,.1)" : "rgba(34,197,94,.1)";
-            html += `<div style="${border}">
-              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-                <div class="next-match-main">
-                  <strong>${dateStr}</strong><br/>
-                  <span class="next-match-meta">✔ ${yesCount} confirmed${maybeCount > 0 ? " · ? " + maybeCount + " maybe" : ""}</span>
-                </div>
-                <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:999px;background:${spotBg};color:${spotColor};white-space:nowrap;flex-shrink:0;">${spots === 0 ? "Full" : spots + " spots"}</span>
-              </div>
-            </div>`;
+            html += `<div style="${border}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div class="next-match-main"><strong>${dateStr} · 6:45 PM</strong><br/><span class="next-match-meta">✔ ${yesCount}/12 playing${maybeCount > 0 ? " · ? " + maybeCount + " maybe" : ""}</span></div><span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:999px;background:${spotBg};color:${spotColor};white-space:nowrap;flex-shrink:0;">${spots === 0 ? "Full" : spots + " open"}</span></div></div>`;
           }
         }
-
-        html += `<div style="border-top:1px solid var(--border-subtle);margin-top:10px;padding-top:8px;text-align:center;">
-          <a href="practice.html" class="btn-small">RSVP for practice</a>
-        </div>`;
-
+        html += `<div style="border-top:1px solid var(--border-subtle);margin-top:10px;padding-top:8px;text-align:center;"><a href="practice.html" class="btn-small">RSVP for practice</a></div>`;
         container.innerHTML = html;
       } catch (e) {
         container.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Could not load practice data.</div>';
       }
     }
 
-    loadUpcomingPractices();
+    loadPracticeSchedule();
   </script>
 </body>
 </html>

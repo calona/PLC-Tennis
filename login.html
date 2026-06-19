@@ -125,6 +125,13 @@
       border-color: var(--blue);
     }
 
+    .forgot-link {
+      display: inline-block; margin-top: 10px;
+      font-size: 13px; color: var(--blue); cursor: pointer;
+      text-decoration: none;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+
     .divider {
       display: flex; align-items: center; gap: 12px;
       margin: 18px 0; color: var(--text-muted); font-size: 12px;
@@ -194,6 +201,8 @@
 
         <button class="btn-primary" onclick="login()">Sign In</button>
 
+        <a href="#" class="forgot-link" onclick="resetPassword(); return false;">Forgot password?</a>
+
         <div class="divider">or</div>
 
         <button class="btn-secondary" onclick="signup()">Create New Account</button>
@@ -206,9 +215,13 @@
   <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-inner">
-      <span>&copy; 2026 PLC Tennis Team · Sammamish, WA</span>
+      <span>&copy; 2026 Calona Consulting · Sammamish, WA</span>
       <div class="footer-links">
         <a href="index.html" class="footer-link">Home</a>
+        <a href="calendar.html" class="footer-link">Calendar</a>
+        <a href="availability.html" class="footer-link">Availability</a>
+        <a href="practice.html" class="footer-link">Practice</a>
+        <a href="roster.html" class="footer-link">Roster</a>
       </div>
     </div>
   </footer>
@@ -255,6 +268,14 @@
           showSuccess("Account created! Redirecting…");
           setTimeout(() => { window.location.href = "calendar.html"; }, 1000);
         })
+        .catch(err => showError(err.message));
+    }
+
+    function resetPassword() {
+      const email = document.getElementById("email").value;
+      if (!email) { showError("Please enter your email address first."); return; }
+      auth.sendPasswordResetEmail(email)
+        .then(() => showSuccess("Password reset email sent! Check your inbox."))
         .catch(err => showError(err.message));
     }
 

@@ -410,12 +410,14 @@
 
     /* ===== AUTH ===== */
     auth.onAuthStateChanged(user => {
+      if (user && user.email.toLowerCase() === "gaylorde@outlook.com") { var cn = document.getElementById("captainNav"); if(cn) cn.style.display=""; }
       if (!user) { window.location.href = "login.html"; return; }
       currentUser = user;
       document.getElementById("addPlayerBtn").style.display = "";
       loadRoster();
     });
     function logout() { auth.signOut().then(() => window.location.href = "login.html"); }
+    function changePassword() { auth.sendPasswordResetEmail(currentUser.email).then(() => alert("Password reset email sent to " + currentUser.email + "! Check your inbox.")).catch(err => alert(err.message)); }
 
     /* ===== LOAD ROSTER ===== */
     async function loadRoster() {
@@ -452,7 +454,7 @@
         showClaimModal();
       } else if (myClaim) {
         document.getElementById("headerSubtext").textContent =
-          `Welcome back, ${myClaim.name}! You're on the ${myClaim.teams.join(" & ")} team${myClaim.teams.length > 1 ? "s" : ""}.`;
+          `Welcome back, ${myClaim.name}! You're on the ${myClaim.teams.join(" & ")} team${myClaim.teams.length > 1 ? "s" : ""}. <a href="#" onclick="changePassword(); return false;" style="color:var(--blue);font-size:13px;margin-left:8px;">🔑 Change Password</a>`;
       }
     }
 

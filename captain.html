@@ -33,8 +33,6 @@
       display: flex;
       flex-direction: column;
     }
-
-    /* NAVBAR */
     .nav {
       position: sticky; top: 0; z-index: 20;
       backdrop-filter: blur(12px);
@@ -63,12 +61,16 @@
     }
     .nav-link:hover { background: rgba(148,163,184,0.12); color: var(--navy); }
     .nav-link.active { background: var(--navy); color: #fff; box-shadow: 0 6px 14px rgba(15,23,42,0.25); }
-
-    /* PAGE */
+    .nav-cta {
+      padding: 7px 14px; border-radius: var(--radius-pill);
+      border: 1px solid rgba(148,163,184,0.5); font-size: 12px;
+      color: var(--text-muted); background: rgba(255,255,255,0.8);
+      display: flex; align-items: center; gap: 6px; cursor: pointer;
+      text-decoration: none;
+    }
+    .nav-cta span { font-size: 16px; }
     .page { flex: 1; display: flex; justify-content: center; padding: 24px 16px 32px; }
     .page-inner { max-width: 1100px; width: 100%; }
-
-    /* PAGE HEADER */
     .page-header {
       display: flex; justify-content: space-between; align-items: center;
       flex-wrap: wrap; gap: 16px; margin-bottom: 20px;
@@ -78,8 +80,6 @@
       font-size: 24px; color: var(--navy); margin-bottom: 4px;
     }
     .page-header-text p { font-size: 13px; color: var(--text-muted); }
-
-    /* CONTROLS */
     .controls {
       display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;
     }
@@ -105,11 +105,7 @@
       background: #145a33; transform: translateY(-1px);
       box-shadow: 0 8px 18px rgba(29,111,66,0.4);
     }
-    .excel-btn:disabled {
-      opacity: 0.6; cursor: wait; transform: none;
-    }
-
-    /* MATCH CARD */
+    .excel-btn:disabled { opacity: 0.6; cursor: wait; transform: none; }
     .match-card {
       background: var(--card-bg); border-radius: 18px;
       box-shadow: var(--shadow-soft);
@@ -155,17 +151,12 @@
       flex-shrink: 0;
     }
     .match-card.expanded .expand-icon { transform: rotate(180deg); }
-
-    /* MATCH BODY */
-    .match-card-body {
-      display: none; padding: 16px 20px;
-    }
+    .match-card-body { display: none; padding: 16px 20px; }
     .match-card.expanded .match-card-body { display: block; }
     .player-groups {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 14px;
     }
-    .player-group { }
     .group-title {
       font-size: 11px; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.05em; margin-bottom: 8px; padding-bottom: 6px;
@@ -194,8 +185,6 @@
     }
     .tag-conflict { background: rgba(249,115,22,0.12); color: #c2410c; }
     .no-players { font-size: 12px; color: var(--text-muted); font-style: italic; padding: 4px 0; }
-
-    /* LOADING */
     .loading { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; }
     .loading-spinner {
       display: inline-block; width: 20px; height: 20px;
@@ -204,8 +193,6 @@
       margin-right: 8px; vertical-align: middle;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* FOOTER */
     .footer {
       border-top: 1px solid rgba(148,163,184,0.3);
       padding: 10px 16px 14px; font-size: 11px; color: var(--text-muted);
@@ -218,8 +205,6 @@
     .footer-links { display: flex; gap: 10px; flex-wrap: wrap; }
     .footer-link { color: var(--text-muted); text-decoration: none; }
     .footer-link:hover { text-decoration: underline; }
-
-    /* RESPONSIVE */
     @media (max-width: 900px) {
       .nav-inner { flex-wrap: wrap; }
       .nav-links { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
@@ -250,7 +235,7 @@
         <a href="availability.html" class="nav-link">Availability</a>
         <a href="practice.html" class="nav-link">Practice</a>
         <a href="roster.html" class="nav-link">Roster</a>
-        <a href="captain.html" class="nav-link active">Captain</a>
+        <a href="captain.html" class="nav-link active" id="captainNav">Captain</a>
         <a href="#" class="nav-cta" onclick="logout()"><span>🔒</span> Logout</a>
       </div>
     </div>
@@ -310,7 +295,7 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // Captain-only guard
+    // Captain-only guard: redirect non-captains
     auth.onAuthStateChanged(user => {
       if (!user || user.email.toLowerCase() !== "gaylorde@outlook.com") {
         window.location.href = "index.html";
@@ -343,12 +328,11 @@
     }
 
     let allMatches = [];
-    let allAvailability = {}; // { matchId: [ {player, status, notes} ] }
+    let allAvailability = {};
     let currentFilter = "upcoming";
 
     async function loadEverything() {
       try {
-        // Load matches from CSV
         const res = await fetch(SHEET_URL);
         const csv = await res.text();
         const rows = parseCSV(csv);
@@ -366,7 +350,6 @@
         matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
         allMatches = matches;
 
-        // Load availability for all matches
         for (const match of allMatches) {
           const matchId = match["Match ID"];
           const snapshot = await db.collection("availability").doc(matchId).collection("players").get();
@@ -405,7 +388,7 @@
         if (currentFilter === "upcoming") return matchDate >= today;
         if (currentFilter === "40") return league.includes("40+");
         if (currentFilter === "55") return league.includes("55+");
-        return true; // "all"
+        return true;
       });
 
       if (filtered.length === 0) {
@@ -434,13 +417,11 @@
         else if (visitOurs && !homeOurs) { opponent = homeTeam || "TBD"; homeAway = "Away"; isHome = false; }
         else { opponent = homeTeam + " vs " + visitTeam; homeAway = ""; isHome = true; }
 
-        // Count statuses
         const yes = players.filter(p => p.status === "Yes");
         const maybe = players.filter(p => p.status === "Maybe" || p.status === "Maybe - conflict");
         const no = players.filter(p => p.status === "No");
         const blank = players.filter(p => !p.status || p.status === "");
 
-        // Auto-expand first match
         const expanded = idx === 0 ? " expanded" : "";
 
         const card = document.createElement("div");
@@ -519,7 +500,6 @@
     }
 
     function formatName(email) {
-      // Turn "john.doe@email.com" into "John Doe"
       const local = email.split("@")[0];
       return local.replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase());
     }
@@ -540,18 +520,14 @@
         );
         const matchIds = sortedMatches.map(m => m["Match ID"]);
 
-        // Collect all players
         const playerSet = new Set();
         for (const mid of matchIds) {
           (allAvailability[mid] || []).forEach(p => playerSet.add(p.player));
         }
         const playerList = Array.from(playerSet).sort();
 
-        // Build matrix
         const data = [];
-        // Header row
         data.push(["Player", ...matchIds]);
-        // Metadata rows
         data.push(["League", ...sortedMatches.map(m => m["League"] || "")]);
         data.push(["Date", ...sortedMatches.map(m => m["Schedule Date"] || "")]);
         data.push(["Time", ...sortedMatches.map(m => m["Schedule Time"] || "")]);
@@ -559,7 +535,6 @@
         data.push(["Visiting Team", ...sortedMatches.map(m => m["Visiting Team"] || "")]);
         data.push(["Location", ...sortedMatches.map(m => m["Facility/Match Site"] || "")]);
 
-        // Player rows
         for (const player of playerList) {
           const row = [player];
           for (const mid of matchIds) {
@@ -569,13 +544,8 @@
           data.push(row);
         }
 
-        // Blank row
         data.push([]);
 
-        // Totals
-        for (const mid of matchIds) {
-          // already loaded
-        }
         const totalsLabels = ["Yes", "No", "Maybe", "Maybe - conflict", "No Response", "Total Responses"];
         for (const label of totalsLabels) {
           const row = [label];
@@ -600,7 +570,6 @@
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Team Availability");
 
-        // Missing Responses sheet
         const missing = [["Player", "Missing For"]];
         for (const player of playerList) {
           const missingMatches = matchIds.filter(mid => {
@@ -613,7 +582,6 @@
         }
         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(missing), "Missing Responses");
 
-        // Match Details sheet
         const details = [["Match ID", "League", "Date", "Time", "Home Team", "Visiting Team", "Location"]];
         for (const m of sortedMatches) {
           details.push([

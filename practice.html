@@ -222,8 +222,12 @@
       </div>
 
       <!-- COURT ASSIGNMENTS -->
-      <div class="courts-header">🎾 Court Assignments <span style="font-size:12px;color:var(--text-muted);font-weight:400;">(auto-assigned for mixed doubles)</span></div>
+      <div class="courts-header">🎾 Court Assignments <span style="font-size:12px;color:var(--text-muted);font-weight:400;">(assigned by captain)</span></div>
       <div class="courts-grid" id="courtsGrid"></div>
+      <div id="unassignedSection" style="display:none;margin-bottom:20px;">
+        <div style="font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;color:var(--navy);margin-bottom:8px;">📋 Unassigned Confirmed Players</div>
+        <div id="unassignedList" style="background:var(--card-bg);border-radius:14px;padding:12px 16px;box-shadow:var(--shadow-soft);border:1px solid rgba(148,163,184,.25);"></div>
+      </div>
 
       <!-- WAITLIST -->
       <div class="waitlist-card" id="waitlistCard">
@@ -285,12 +289,13 @@
     let rsvps = [];
     let practiceCancelled = false;
     let cancelReason = "";
+    let courtAssignments = [[], [], []]; // saved court assignments (arrays of emails)
 
     auth.onAuthStateChanged(user => {
       if (!user) { window.location.href = "login.html"; return; }
       currentUser = user;
       isCaptain = user.email.toLowerCase() === CAPTAIN_EMAIL.toLowerCase();
-      if (isCaptain) document.getElementById("captainBar").classList.add("show");
+      if (isCaptain) { document.getElementById("captainBar").classList.add("show"); var cn = document.getElementById("captainNav"); if(cn) cn.style.display=""; }
       loadRosterThenPractice();
     });
     function logout() { auth.signOut().then(() => window.location.href = "login.html"); }
@@ -335,14 +340,17 @@
     async function loadPractice() {
       const key = practiceKey(practiceDate);
 
-      // Check cancel status
+      // Check cancel status + court assignments
       const metaDoc = await db.collection("practice").doc(key).get();
-      if (metaDoc.exists && metaDoc.data().cancelled) {
-        practiceCancelled = true;
-        cancelReason = metaDoc.data().cancelReason || "No practice this week.";
+      if (metaDoc.exists) {
+        const md = metaDoc.data();
+        practiceCancelled = !!md.cancelled;
+        cancelReason = md.cancelReason || "No practice this week.";
+        courtAssignments = md.courts || [[], [], []];
       } else {
         practiceCancelled = false;
         cancelReason = "";
+        courtAssignments = [[], [], []];
       }
 
       // Load RSVPs
@@ -461,36 +469,88 @@
 
     function renderCourts() {
       const confirmed = rsvps.filter(r => r.status === "yes").slice(0, MAX_COURTS);
-      const men = confirmed.filter(r => r.gender === "M");
-      const women = confirmed.filter(r => r.gender === "F");
-      const courts = [[], [], []];
-      let mi = 0, fi = 0, ci = 0;
-      while (mi < men.length || fi < women.length) {
-        if (courts[ci].length >= 4) { ci = (ci + 1) % 3; if (courts[ci].length >= 4) break; continue; }
-        if (fi < women.length && courts[ci].filter(p => p.gender === "F").length < 2) courts[ci].push(women[fi++]);
-        else if (mi < men.length && courts[ci].filter(p => p.gender === "M").length < 2) courts[ci].push(men[mi++]);
-        else if (fi < women.length) courts[ci].push(women[fi++]);
-        else if (mi < men.length) courts[ci].push(men[mi++]);
-        if (courts[ci].length >= 4) ci = (ci + 1) % 3;
-      }
-      const placed = new Set(courts.flat().map(p => p.email));
-      confirmed.filter(p => !placed.has(p.email)).forEach(p => {
-        const s = courts.reduce((a, b, i) => courts[a].length <= b.length ? a : i, 0);
-        if (courts[s].length < 4) courts[s].push(p);
-      });
+      const assignedEmails = new Set(courtAssignments.flat());
+      const confirmedEmails = new Set(confirmed.map(r => r.email.toLowerCase()));
 
-      document.getElementById("courtsGrid").innerHTML = courts.map((court, i) => {
-        const mc = court.filter(p => p.gender === "M").length;
-        const fc = court.filter(p => p.gender === "F").length;
+      // Clean stale assignments (player may have changed RSVP)
+      for (let c = 0; c < 3; c++) {
+        courtAssignments[c] = (courtAssignments[c] || []).filter(e => confirmedEmails.has(e.toLowerCase()));
+      }
+
+      const grid = document.getElementById("courtsGrid");
+      grid.innerHTML = courtAssignments.map((courtEmails, i) => {
+        const courtPlayers = courtEmails.map(e => rsvps.find(r => r.email.toLowerCase() === e.toLowerCase())).filter(Boolean);
+        const mc = courtPlayers.filter(p => p.gender === "M").length;
+        const fc = courtPlayers.filter(p => p.gender === "F").length;
         const isMixed = mc > 0 && fc > 0;
-        const typeLabel = court.length === 0 ? "" : isMixed ? "Mixed" : "Same Gender";
+        const typeLabel = courtPlayers.length === 0 ? "" : isMixed ? "Mixed" : "Same Gender";
         const typeClass = isMixed ? "" : "not-mixed";
-        const players = court.length > 0
-          ? court.map(p => `<div class="court-player"><span class="gender-icon">${p.gender === "M" ? "♂" : p.gender === "F" ? "♀" : "•"}</span><span>${escHtml(p.name)}</span></div>`).join("")
-          : '<div class="court-empty">Needs players</div>';
-        return `<div class="court-card"><div class="court-label">Court ${i+1} ${typeLabel ? `<span class="court-type ${typeClass}">${typeLabel}</span>` : ""}</div><div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">${court.length}/4 players</div><div class="court-players">${players}</div></div>`;
+
+        let playersHtml;
+        if (courtPlayers.length > 0) {
+          playersHtml = courtPlayers.map(p => {
+            const removeBtn = isCaptain ? ` <button onclick="removeFromCourt(${i},'${escAttr(p.email)}')" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:14px;padding:0 4px;" title="Remove">✕</button>` : "";
+            return `<div class="court-player"><span class="gender-icon">${p.gender === "M" ? "♂" : p.gender === "F" ? "♀" : "•"}</span><span>${escHtml(p.name)}</span>${removeBtn}</div>`;
+          }).join("");
+        } else {
+          playersHtml = '<div class="court-empty">No players assigned</div>';
+        }
+
+        // Captain: add player selector if court not full
+        let addHtml = "";
+        if (isCaptain && courtPlayers.length < 4) {
+          addHtml = `<div style="margin-top:8px;"><select id="addSelect${i}" style="width:100%;padding:7px 10px;border-radius:10px;border:1px solid var(--border-subtle);font-family:'Inter',sans-serif;font-size:12px;color:var(--text-main);background:var(--card-bg);cursor:pointer;outline:none;" onchange="addToCourt(${i}, this.value); this.value='';">
+            <option value="">+ Add player…</option>
+            ${getUnassignedOptions(i)}
+          </select></div>`;
+        }
+
+        return `<div class="court-card"><div class="court-label">Court ${i+1} ${typeLabel ? `<span class="court-type ${typeClass}">${typeLabel}</span>` : ""}</div><div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">${courtPlayers.length}/4 players</div><div class="court-players">${playersHtml}</div>${addHtml}</div>`;
       }).join("");
+
+      // Show unassigned confirmed players
+      const allAssigned = new Set(courtAssignments.flat().map(e => e.toLowerCase()));
+      const unassigned = confirmed.filter(r => !allAssigned.has(r.email.toLowerCase()));
+      const section = document.getElementById("unassignedSection");
+      const listEl = document.getElementById("unassignedList");
+      if (unassigned.length > 0) {
+        section.style.display = "block";
+        listEl.innerHTML = unassigned.map(p =>
+          `<div style="padding:5px 0;border-bottom:1px solid rgba(148,163,184,.08);font-size:13px;display:flex;align-items:center;gap:6px;"><span class="gender-icon">${p.gender === "M" ? "♂" : p.gender === "F" ? "♀" : "•"}</span><span>${escHtml(p.name)}</span></div>`
+        ).join("");
+      } else {
+        section.style.display = "none";
+      }
     }
+
+    function getUnassignedOptions(courtIdx) {
+      const confirmed = rsvps.filter(r => r.status === "yes").slice(0, MAX_COURTS);
+      const allAssigned = new Set(courtAssignments.flat().map(e => e.toLowerCase()));
+      return confirmed
+        .filter(r => !allAssigned.has(r.email.toLowerCase()))
+        .map(r => `<option value="${escAttr(r.email)}">${r.gender === "M" ? "♂" : "♀"} ${escHtml(r.name)}</option>`)
+        .join("");
+    }
+
+    async function addToCourt(courtIdx, email) {
+      if (!email) return;
+      courtAssignments[courtIdx].push(email.toLowerCase());
+      await saveCourtAssignments();
+      renderCourts();
+    }
+
+    async function removeFromCourt(courtIdx, email) {
+      courtAssignments[courtIdx] = courtAssignments[courtIdx].filter(e => e.toLowerCase() !== email.toLowerCase());
+      await saveCourtAssignments();
+      renderCourts();
+    }
+
+    async function saveCourtAssignments() {
+      const key = practiceKey(practiceDate);
+      await db.collection("practice").doc(key).set({ courts: courtAssignments }, { merge: true });
+    }
+
+    function escAttr(s) { return (s||"").replace(/'/g,"\\'").replace(/"/g,"&quot;"); }
 
     /* ===== WAITLIST ===== */
     function renderWaitlist() {

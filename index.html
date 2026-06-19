@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Calona Consulting</title>
+  <title>PLC Tennis Team</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Google Fonts -->
@@ -171,7 +171,7 @@
 
     /* HERO CARD */
     .hero-card {
-      background: linear-gradient(135deg, #1d3563, #4a6fa5);
+      background: linear-gradient(135deg, #3b5998, #6b8cce);
       border-radius: 26px;
       padding: 22px 22px 20px;
       color: #e5ecff;
@@ -761,6 +761,7 @@
     const auth = firebase.auth();
     auth.onAuthStateChanged(user => {
       if (user && user.email.toLowerCase() === "gaylorde@outlook.com") {
+        var cn = document.getElementById("captainNav"); if(cn) cn.style.display="";
       }
     });
     function logout() { firebase.auth().signOut().then(() => window.location.href = "login.html"); }

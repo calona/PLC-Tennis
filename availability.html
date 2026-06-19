@@ -93,9 +93,8 @@
     .match-league-pill {
       display: inline-block;
       background: rgba(255,255,255,0.15);
-      color: #c7d8ff;
-      font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
-      text-transform: uppercase;
+      color: #c7d8ff; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.05em; text-transform: uppercase;
       padding: 3px 10px; border-radius: 999px;
       margin-bottom: 10px; position: relative; z-index: 1;
     }
@@ -105,11 +104,11 @@
     }
     .match-date {
       font-family: "Poppins", sans-serif; font-weight: 700;
-      font-size: 22px; color: #ffffff; letter-spacing: -0.01em;
+      font-size: 20px; color: #ffffff; letter-spacing: -0.01em;
     }
     .match-time {
       font-family: "Poppins", sans-serif; font-weight: 600;
-      font-size: 18px; color: #facc15;
+      font-size: 17px; color: #facc15;
       background: rgba(255,255,255,0.1);
       padding: 2px 10px; border-radius: 8px;
     }
@@ -119,7 +118,7 @@
     }
     .match-venue {
       font-size: 12px; color: rgba(210,225,255,0.75);
-      position: relative; z-index: 1; display: flex; align-items: center; gap: 4px;
+      position: relative; z-index: 1;
     }
     .match-counter {
       position: absolute; top: 14px; right: 16px;
@@ -254,7 +253,7 @@
     <div class="page-inner">
       <div class="card">
 
-        <!-- League filter — moved above match card -->
+        <!-- League filter — above match card -->
         <div class="filter-row">
           <span class="filter-label">League:</span>
           <select id="leagueSelect" class="filter-select" onchange="changeLeague()">
@@ -402,23 +401,41 @@
       document.querySelectorAll('.avail-btn').forEach(b => b.classList.remove('selected'));
     }
 
+    function parseMatchDate(raw) {
+      // Handles "6/14/2026", "2026-06-14", "06/14/2026"
+      if (!raw) return null;
+      // Try M/D/YYYY or MM/DD/YYYY
+      const mdy = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (mdy) return new Date(parseInt(mdy[3]), parseInt(mdy[1])-1, parseInt(mdy[2]));
+      // Try YYYY-MM-DD
+      const ymd = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (ymd) return new Date(parseInt(ymd[1]), parseInt(ymd[2])-1, parseInt(ymd[3]));
+      return null;
+    }
+    function parseMatchTime(raw) {
+      // If already has AM/PM just return it cleaned up
+      if (!raw) return "—";
+      if (/[AP]M/i.test(raw)) return raw.trim();
+      // HH:MM 24h format
+      const parts = raw.match(/^(\d{1,2}):(\d{2})/);
+      if (parts) {
+        const h = parseInt(parts[1]), m = parts[2];
+        const ampm = h >= 12 ? "PM" : "AM";
+        return `${h % 12 || 12}:${m} ${ampm}`;
+      }
+      return raw;
+    }
     function loadMatchInfo() {
       const match = filteredMatches[currentIndex]; if (!match) return;
 
-      // Format date nicely e.g. "Sat, Jun 14, 2026"
-      let dateStr = match["Schedule Date"] || "—";
-      try {
-        const d = new Date(match["Schedule Date"] + "T12:00:00");
-        dateStr = d.toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric", year:"numeric" });
-      } catch(e) {}
+      // Date
+      const d = parseMatchDate(match["Schedule Date"]);
+      const dateStr = d
+        ? d.toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric", year:"numeric" })
+        : (match["Schedule Date"] || "—");
 
-      // Format time nicely e.g. "4:15 PM"
-      let timeStr = match["Schedule Time"] || "—";
-      try {
-        const [h, m] = match["Schedule Time"].split(":");
-        const hrs = parseInt(h); const ampm = hrs >= 12 ? "PM" : "AM";
-        timeStr = `${hrs % 12 || 12}:${m} ${ampm}`;
-      } catch(e) {}
+      // Time
+      const timeStr = parseMatchTime(match["Schedule Time"]);
 
       document.getElementById("matchLeaguePill").textContent = match["League"] || "Match";
       document.getElementById("matchDate").textContent = dateStr;

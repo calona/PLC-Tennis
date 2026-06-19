@@ -90,25 +90,10 @@
       background: radial-gradient(circle at 30% 30%, #facc15, #f97316 40%, #b91c1c 100%);
       opacity: 0.15;
     }
-    .match-header-content { position: relative; z-index: 1; }
-    .match-league {
-      font-family: "Poppins", sans-serif; font-weight: 700;
-      font-size: 16px; color: #fff; margin-bottom: 6px;
-      display: flex; align-items: center; gap: 8px;
+    .match-header h2 {
+      font-family: "Poppins", sans-serif; font-weight: 600;
+      font-size: 15px; line-height: 1.45; position: relative; z-index: 1;
     }
-    .league-pill {
-      font-size: 10px; font-weight: 700; padding: 2px 9px;
-      border-radius: 999px; background: rgba(255,255,255,0.2);
-      color: #fff; letter-spacing: 0.03em;
-    }
-    .match-datetime {
-      font-size: 14px; font-weight: 500; color: #bfdbfe;
-      margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
-    }
-    .match-teams {
-      font-size: 13px; color: #93b4e0; line-height: 1.4;
-    }
-    .match-teams strong { color: #fff; font-weight: 600; }
 
     /* NAV BUTTONS */
     .match-nav {
@@ -224,9 +209,9 @@
         <a href="index.html" class="nav-link">Home</a>
         <a href="calendar.html" class="nav-link">Calendar</a>
         <a href="availability.html" class="nav-link active">Availability</a>
-        <a href="captain.html" class="nav-link">Captain</a>
-        <a href="roster.html" class="nav-link">Roster</a>
         <a href="practice.html" class="nav-link">Practice</a>
+        <a href="roster.html" class="nav-link">Roster</a>
+        <a href="captain.html" class="nav-link" id="captainNav" style="display:none;">Captain</a>
         <a href="#" class="nav-cta" onclick="logout()"><span>🔒</span> Logout</a>
       </div>
     </div>
@@ -240,11 +225,7 @@
         <!-- Match info header -->
         <div class="match-header">
           <div class="match-header-pill"></div>
-          <div class="match-header-content">
-            <div class="match-league" id="matchLeague">Loading…</div>
-            <div class="match-datetime" id="matchDatetime"></div>
-            <div class="match-teams" id="matchTeams"></div>
-          </div>
+          <h2 id="matchTitle">Loading match…</h2>
         </div>
 
         <!-- Previous / Next -->
@@ -292,13 +273,12 @@
   <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-inner">
-      <span>&copy; 2026 Calona Consulting · Sammamish, WA</span>
+      <span>&copy; 2026 PLC Tennis Team · Sammamish, WA</span>
       <div class="footer-links">
         <a href="calendar.html" class="footer-link">Calendar</a>
         <a href="availability.html" class="footer-link">Availability</a>
-        <a href="captain.html" class="footer-link">Captain</a>
-        <a href="roster.html" class="footer-link">Roster</a>
         <a href="practice.html" class="footer-link">Practice</a>
+        <a href="roster.html" class="footer-link">Roster</a>
       </div>
     </div>
   </footer>
@@ -321,6 +301,7 @@
     const db = firebase.firestore();
 
     auth.onAuthStateChanged(user => {
+      if (user && user.email.toLowerCase() === "gaylorde@outlook.com") { var cn = document.getElementById("captainNav"); if(cn) cn.style.display=""; }
       if (!user) { window.location.href = "login.html"; } else { loadAllMatches(); }
     });
     function logout() { auth.signOut().then(() => window.location.href = "login.html"); }
@@ -383,48 +364,12 @@
       document.querySelectorAll('.avail-btn').forEach(b => b.classList.remove('selected'));
     }
 
-    function isOurTeam(name) {
-      const n = (name || "").toLowerCase();
-      return n.includes("escalona") || n.includes("pine lake");
-    }
-
     function loadMatchInfo() {
       const match = filteredMatches[currentIndex]; if (!match) return;
-
-      // Line 1: League
-      const league = match["League"] || "Match";
-      const leagueShort = league.includes("55") ? "55+" : league.includes("40") ? "40+" : "";
-      document.getElementById("matchLeague").innerHTML = league
-        + (leagueShort ? ` <span class="league-pill">${leagueShort}</span>` : "");
-
-      // Line 2: Date and Time (formatted)
-      const dateRaw = match["Schedule Date"] || "";
-      const time = match["Schedule Time"] || "TBA";
-      let dateStr = dateRaw;
-      try {
-        const d = new Date(dateRaw);
-        if (!isNaN(d)) dateStr = d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-      } catch (e) {}
-      document.getElementById("matchDatetime").innerHTML = `📅 ${dateStr} · 🕐 ${time}`;
-
-      // Line 3: Teams & Location
-      const home = match["Home Team"] || "";
-      const visit = match["Visiting Team"] || "";
-      const location = match["Facility/Match Site"] || "TBA";
-      const homeOurs = isOurTeam(home);
-      const visitOurs = isOurTeam(visit);
-      let teamsHtml;
-      if (homeOurs && !visitOurs) {
-        teamsHtml = `<strong>${home}</strong> vs ${visit} · 🏠 Home`;
-      } else if (visitOurs && !homeOurs) {
-        teamsHtml = `<strong>${visit}</strong> vs ${home} · ✈️ Away`;
-      } else {
-        teamsHtml = `${home} vs ${visit}`;
-      }
-      document.getElementById("matchTeams").innerHTML = teamsHtml + `<br/>📍 ${location}`;
-
+      const matchName = `${match["League"]} — ${match["Schedule Date"]} ${match["Schedule Time"]} — ${match["Home Team"]} vs ${match["Visiting Team"]} @ ${match["Facility/Match Site"]}`;
+      document.getElementById("matchTitle").innerText = matchName;
       localStorage.setItem("selectedMatchId", match["Match ID"]);
-      localStorage.setItem("selectedMatchName", league + " — " + dateStr);
+      localStorage.setItem("selectedMatchName", matchName);
       loadPlayerAvailability(match["Match ID"]);
     }
 

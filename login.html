@@ -125,13 +125,6 @@
       border-color: var(--blue);
     }
 
-    .forgot-link {
-      display: inline-block; margin-top: 10px;
-      font-size: 13px; color: var(--blue); cursor: pointer;
-      text-decoration: none;
-    }
-    .forgot-link:hover { text-decoration: underline; }
-
     .divider {
       display: flex; align-items: center; gap: 12px;
       margin: 18px 0; color: var(--text-muted); font-size: 12px;
@@ -187,8 +180,19 @@
     <div class="page-inner">
       <div class="login-card">
         <div class="login-icon">🎾</div>
-        <h2>Welcome Back</h2>
+        <h2>PLC Tennis Hub</h2>
         <p class="subtitle">Sign in to manage your match availability</p>
+
+        <div class="first-time-banner">
+          <div class="ftb-title">🎾 First time here? Here's how to get started:</div>
+          <ol>
+            <li>Enter your <strong>email address</strong> and choose a <strong>password</strong></li>
+            <li>Click <strong>"Create New Account"</strong> below</li>
+            <li>You'll be taken to the <strong>Team Roster</strong> to find and claim your name</li>
+          </ol>
+        </div>
+
+        <div class="divider">Returning member? Sign in below</div>
 
         <div class="form-group">
           <label class="form-label" for="email">Email</label>
@@ -200,8 +204,6 @@
         </div>
 
         <button class="btn-primary" onclick="login()">Sign In</button>
-
-        <a href="#" class="forgot-link" onclick="resetPassword(); return false;">Forgot password?</a>
 
         <div class="divider">or</div>
 
@@ -218,10 +220,6 @@
       <span>&copy; 2026 Calona Consulting · Sammamish, WA</span>
       <div class="footer-links">
         <a href="index.html" class="footer-link">Home</a>
-        <a href="calendar.html" class="footer-link">Calendar</a>
-        <a href="availability.html" class="footer-link">Availability</a>
-        <a href="practice.html" class="footer-link">Practice</a>
-        <a href="roster.html" class="footer-link">Roster</a>
       </div>
     </div>
   </footer>
@@ -241,6 +239,26 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
+    function friendlyError(err) {
+      const code = err.code || "";
+      const msg  = (err.message || "").toUpperCase();
+      if (code === "auth/invalid-credential"   || msg.includes("INVALID_LOGIN_CREDENTIALS") ||
+          code === "auth/wrong-password"        || msg.includes("WRONG_PASSWORD"))
+        return "Incorrect email or password. Please try again, or use \"Forgot password?\" to reset it.";
+      if (code === "auth/user-not-found"        || msg.includes("EMAIL_NOT_FOUND"))
+        return "No account found with that email. Use \"Create New Account\" to register first.";
+      if (code === "auth/email-already-in-use"  || msg.includes("EMAIL_EXISTS"))
+        return "An account already exists with this email. Sign in instead, or reset your password.";
+      if (code === "auth/weak-password"         || msg.includes("WEAK_PASSWORD"))
+        return "Password must be at least 6 characters. Please choose a stronger password.";
+      if (code === "auth/invalid-email"         || msg.includes("INVALID_EMAIL"))
+        return "Please enter a valid email address.";
+      if (code === "auth/too-many-requests"     || msg.includes("TOO_MANY_ATTEMPTS"))
+        return "Too many failed attempts. Please wait a few minutes and try again.";
+      if (code === "auth/network-request-failed")
+        return "Network error. Please check your connection and try again.";
+      return "Sign in failed. Please check your email and password and try again.";
+    }
     function showError(text) {
       const el = document.getElementById("msg");
       el.textContent = text;
@@ -257,7 +275,7 @@
       const password = document.getElementById("password").value;
       auth.signInWithEmailAndPassword(email, password)
         .then(() => { window.location.href = "calendar.html"; })
-        .catch(err => showError(err.message));
+        .catch(err => showError(friendlyError(err)));
     }
 
     function signup() {
@@ -265,18 +283,10 @@
       const password = document.getElementById("password").value;
       auth.createUserWithEmailAndPassword(email, password)
         .then(() => {
-          showSuccess("Account created! Redirecting…");
-          setTimeout(() => { window.location.href = "calendar.html"; }, 1000);
+          showSuccess("Account created! Taking you to the roster to claim your name…");
+          setTimeout(() => { window.location.href = "roster.html"; }, 1000);
         })
-        .catch(err => showError(err.message));
-    }
-
-    function resetPassword() {
-      const email = document.getElementById("email").value;
-      if (!email) { showError("Please enter your email address first."); return; }
-      auth.sendPasswordResetEmail(email)
-        .then(() => showSuccess("Password reset email sent! Check your inbox."))
-        .catch(err => showError(err.message));
+        .catch(err => showError(friendlyError(err)));
     }
 
     /* Allow Enter key to submit */

@@ -210,9 +210,8 @@
         <a href="index.html" class="nav-link">Home</a>
         <a href="calendar.html" class="nav-link">Calendar</a>
         <a href="availability.html" class="nav-link">Availability</a>
-        <a href="practice.html" class="nav-link">Practice</a>
+        <a href="captain.html" class="nav-link">Captain</a>
         <a href="roster.html" class="nav-link active">Roster</a>
-        <a href="captain.html" class="nav-link" id="captainNav" style="display:none;">Captain</a>
         <a href="#" class="nav-cta" onclick="logout()"><span>🔒</span> Logout</a>
       </div>
     </div>
@@ -333,7 +332,7 @@
       <div class="footer-links">
         <a href="calendar.html" class="footer-link">Calendar</a>
         <a href="availability.html" class="footer-link">Availability</a>
-        <a href="practice.html" class="footer-link">Practice</a>
+        <a href="captain.html" class="footer-link">Captain</a>
         <a href="roster.html" class="footer-link">Roster</a>
       </div>
     </div>
@@ -410,13 +409,19 @@
 
     /* ===== AUTH ===== */
     auth.onAuthStateChanged(user => {
-      if (user && user.email.toLowerCase() === "gaylorde@outlook.com") { var cn = document.getElementById("captainNav"); if(cn) cn.style.display=""; }
       if (!user) { window.location.href = "login.html"; return; }
       currentUser = user;
       document.getElementById("addPlayerBtn").style.display = "";
       loadRoster();
     });
     function logout() { auth.signOut().then(() => window.location.href = "login.html"); }
+
+    function changePassword() {
+      const email = currentUser.email;
+      auth.sendPasswordResetEmail(email).then(() => {
+        alert("Password reset email sent to " + email + ". Check your inbox!");
+      }).catch(err => alert("Error: " + err.message));
+    }
 
     /* ===== LOAD ROSTER ===== */
     async function loadRoster() {
@@ -452,8 +457,9 @@
       if (!myClaim && allPlayers.length > 0) {
         showClaimModal();
       } else if (myClaim) {
-        document.getElementById("headerSubtext").textContent =
-          `Welcome back, ${myClaim.name}! You're on the ${myClaim.teams.join(" & ")} team${myClaim.teams.length > 1 ? "s" : ""}.`;
+        document.getElementById("headerSubtext").innerHTML =
+          `Welcome back, ${myClaim.name}! You're on the ${myClaim.teams.join(" & ")} team${myClaim.teams.length > 1 ? "s" : ""}.` +
+          ` <a href="#" onclick="changePassword(); return false;" style="font-size:12px;color:var(--blue);text-decoration:none;margin-left:8px;">🔑 Change Password</a>`;
       }
     }
 

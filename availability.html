@@ -1,433 +1,433 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Set Availability</title>
-
+  <meta charset="UTF-8" />
+  <title>Set Availability — PLC Tennis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: Arial; padding: 0; margin: 0; background: #f4f4f4; }
-
-    .box {
-      max-width: 500px;
-      margin: auto;
-      background: white;
-      padding: 25px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-top: 20px;
+    :root {
+      --navy: #1d3563;
+      --navy-soft: #243c6f;
+      --blue: #4a6fa5;
+      --green: #1d6f42;
+      --bg: #f5f7fa;
+      --card-bg: #ffffff;
+      --text-main: #1f2933;
+      --text-muted: #6b7280;
+      --border-subtle: #e5e7eb;
+      --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
+      --radius-lg: 18px;
+      --radius-pill: 999px;
     }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 12px;
-      border: none;
-      border-radius: 6px;
-      background: #1d3563;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover { opacity: 0.9; }
-
-    /* Highlight selected availability */
-    button.selected {
-      box-shadow: 0 0 0 3px #ffa500 inset;
-    }
-
-    .logout {
-      margin-top: 20px;
-      background: #8b0000;
-    }
-
-    #msg { margin-top: 15px; }
-
-    /* Sidebar */
-    .sidebar {
-      height: 100%;
-      width: 0;
-      position: fixed;
-      z-index: 1000;
-      top: 0;
-      left: 0;
-      background-color: #1d3563;
-      overflow-x: hidden;
-      transition: 0.3s;
-      padding-top: 60px;
-    }
-
-    .sidebar a {
-      padding: 12px 24px;
-      text-decoration: none;
-      font-size: 20px;
-      color: white;
-      display: block;
-    }
-
-    .sidebar a:hover {
-      background: #2a4d8f;
-    }
-
-    .sidebar-close {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      font-size: 30px;
-      cursor: pointer;
-      color: white;
-    }
-
-    /* Header */
-    .header {
-      width: 100%;
-      background: #1d3563;
-      color: white;
-      padding: 16px 24px;
-      font-size: 22px;
-      font-weight: bold;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top left, #e0ecff 0, var(--bg) 40%, var(--bg) 100%);
+      color: var(--text-main);
+      min-height: 100vh;
       display: flex;
-      align-items: center;
+      flex-direction: column;
     }
 
-    .hamburger {
-      font-size: 26px;
-      cursor: pointer;
-      margin-right: 20px;
+    /* NAVBAR */
+    .nav {
+      position: sticky; top: 0; z-index: 20;
+      backdrop-filter: blur(12px);
+      background: linear-gradient(to right, rgba(245,247,250,0.95), rgba(245,247,250,0.9));
+      border-bottom: 1px solid rgba(148,163,184,0.25);
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto; padding: 12px 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .nav-left { display: flex; align-items: center; gap: 10px; }
+    .nav-logo {
+      width: 34px; height: 34px; border-radius: 12px;
+      background: radial-gradient(circle at 30% 20%, #facc15, #f97316 40%, #b91c1c 100%);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 18px;
+      box-shadow: 0 6px 14px rgba(15,23,42,0.25);
+    }
+    .nav-title { display: flex; flex-direction: column; }
+    .nav-title-main { font-family: "Poppins", sans-serif; font-weight: 700; font-size: 18px; color: var(--navy); }
+    .nav-title-sub { font-size: 12px; color: var(--text-muted); }
+    .nav-links { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+    .nav-link {
+      padding: 6px 12px; border-radius: var(--radius-pill);
+      color: var(--text-muted); text-decoration: none; transition: all 0.2s ease;
+    }
+    .nav-link:hover { background: rgba(148,163,184,0.12); color: var(--navy); }
+    .nav-link.active { background: var(--navy); color: #fff; box-shadow: 0 6px 14px rgba(15,23,42,0.25); }
+    .nav-cta {
+      padding: 7px 14px; border-radius: var(--radius-pill);
+      border: 1px solid rgba(148,163,184,0.5); font-size: 12px;
+      color: var(--text-muted); background: rgba(255,255,255,0.8);
+      display: flex; align-items: center; gap: 6px; cursor: pointer;
+    }
+    .nav-cta span { font-size: 16px; }
+
+    /* PAGE */
+    .page { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 32px 16px 48px; }
+    .page-inner { max-width: 560px; width: 100%; }
+
+    /* CARD */
+    .card {
+      background: var(--card-bg); border-radius: 22px;
+      padding: 28px 26px; box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148,163,184,0.25);
     }
 
-    textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 12px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 15px;
-      resize: vertical;
+    /* MATCH HEADER */
+    .match-header {
+      background: linear-gradient(135deg, var(--navy), var(--blue));
+      border-radius: 16px; padding: 18px 20px; color: #e5ecff;
+      margin-bottom: 20px; position: relative; overflow: hidden;
+    }
+    .match-header-pill {
+      position: absolute; right: -30px; top: -30px;
+      width: 100px; height: 100px; border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #facc15, #f97316 40%, #b91c1c 100%);
+      opacity: 0.15;
+    }
+    .match-header h2 {
+      font-family: "Poppins", sans-serif; font-weight: 600;
+      font-size: 15px; line-height: 1.45; position: relative; z-index: 1;
+    }
+
+    /* NAV BUTTONS */
+    .match-nav {
+      display: flex; gap: 10px; margin-bottom: 20px;
+    }
+    .match-nav-btn {
+      flex: 1; padding: 10px; border: 1px solid var(--border-subtle);
+      border-radius: 12px; background: var(--card-bg);
+      font-family: "Inter", sans-serif; font-size: 13px; font-weight: 500;
+      color: var(--navy-soft); cursor: pointer;
+      transition: all 0.2s ease; text-align: center;
+    }
+    .match-nav-btn:hover {
+      background: rgba(74,111,165,0.06); border-color: var(--blue);
+    }
+
+    /* LEAGUE FILTER */
+    .filter-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+    }
+    .filter-label { font-size: 13px; font-weight: 500; color: var(--navy-soft); }
+    .filter-select {
+      flex: 1; padding: 10px 14px; font-size: 14px; border-radius: 12px;
+      border: 1px solid var(--border-subtle); background: var(--card-bg);
+      color: var(--text-main); font-family: "Inter", sans-serif;
+      cursor: pointer; outline: none; transition: border-color 0.2s;
+    }
+    .filter-select:focus { border-color: var(--blue); }
+
+    /* SECTION TITLE */
+    .section-label {
+      font-size: 13px; font-weight: 500; color: var(--text-muted);
+      margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+
+    /* AVAILABILITY BUTTONS */
+    .avail-buttons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+    .avail-btn {
+      width: 100%; padding: 13px 16px; border: 2px solid var(--border-subtle);
+      border-radius: 14px; background: var(--card-bg);
+      font-family: "Inter", sans-serif; font-size: 14px; font-weight: 500;
+      color: var(--text-main); cursor: pointer;
+      transition: all 0.2s ease; text-align: left;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .avail-btn:hover { border-color: var(--blue); background: rgba(74,111,165,0.04); }
+    .avail-btn.selected {
+      border-color: var(--navy); background: rgba(29,53,99,0.06);
+      box-shadow: 0 0 0 3px rgba(29,53,99,0.12);
+    }
+    .avail-btn .icon { font-size: 18px; flex-shrink: 0; }
+    .avail-btn.yes:hover, .avail-btn.yes.selected { border-color: #22c55e; background: rgba(34,197,94,0.06); }
+    .avail-btn.no:hover, .avail-btn.no.selected { border-color: #ef4444; background: rgba(239,68,68,0.06); }
+    .avail-btn.maybe:hover, .avail-btn.maybe.selected { border-color: var(--blue); background: rgba(74,111,165,0.06); }
+    .avail-btn.conflict:hover, .avail-btn.conflict.selected { border-color: #f59e0b; background: rgba(245,158,11,0.06); }
+
+    /* NOTES */
+    .notes-textarea {
+      width: 100%; padding: 12px 14px; border-radius: 12px;
+      border: 1px solid var(--border-subtle); background: var(--card-bg);
+      font-family: "Inter", sans-serif; font-size: 14px;
+      color: var(--text-main); resize: vertical; min-height: 70px;
+      outline: none; transition: border-color 0.2s; margin-bottom: 18px;
+    }
+    .notes-textarea:focus { border-color: var(--blue); }
+
+    /* MESSAGE */
+    #msg {
+      margin-top: 12px; font-size: 13px; font-weight: 500;
+      padding: 10px 14px; border-radius: 10px; display: none;
+    }
+    #msg.success { display: block; background: rgba(34,197,94,0.08); color: #15803d; }
+    #msg.error { display: block; background: rgba(239,68,68,0.08); color: #dc2626; }
+
+    /* FOOTER */
+    .footer {
+      border-top: 1px solid rgba(148,163,184,0.3);
+      padding: 10px 16px 14px; font-size: 11px; color: var(--text-muted);
+      display: flex; justify-content: center;
+    }
+    .footer-inner {
+      max-width: 1100px; width: 100%;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+    }
+    .footer-links { display: flex; gap: 10px; flex-wrap: wrap; }
+    .footer-link { color: var(--text-muted); text-decoration: none; }
+    .footer-link:hover { text-decoration: underline; }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .nav-inner { flex-wrap: wrap; }
+      .nav-links { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+    }
+    @media (max-width: 600px) {
+      .card { padding: 20px 16px; }
+      .match-header h2 { font-size: 13px; }
     }
   </style>
 </head>
-
 <body>
 
-<!-- SIDEBAR -->
-<div id="sidebar" class="sidebar">
-  <span class="sidebar-close" onclick="closeNav()">&times;</span>
-  <a href="index.html">Home</a>
-  <a href="calendar.html">Calendar</a>
-  <a href="availability.html">Availability</a>
-  <a href="captain.html">Captain Dashboard</a>
-  <a href="#" onclick="logout()">Logout</a>
-</div>
+  <!-- NAVBAR -->
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="nav-left">
+        <div class="nav-logo">PLC</div>
+        <div class="nav-title">
+          <div class="nav-title-main">PLC Tennis</div>
+          <div class="nav-title-sub">USTA Team Hub · 2026 Season</div>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="calendar.html" class="nav-link">Calendar</a>
+        <a href="availability.html" class="nav-link active">Availability</a>
+        <a href="captain.html" class="nav-link">Captain Dashboard</a>
+        <a href="#" class="nav-cta" onclick="logout()"><span>🔒</span> Logout</a>
+      </div>
+    </div>
+  </header>
 
-<!-- HEADER -->
-<div class="header">
-  <span class="hamburger" onclick="openNav()">&#9776;</span>
-  PLC Tennis Team
-</div>
+  <!-- MAIN -->
+  <main class="page">
+    <div class="page-inner">
+      <div class="card">
 
-<div class="box">
-  <h2 id="matchTitle">Loading match...</h2>
+        <!-- Match info header -->
+        <div class="match-header">
+          <div class="match-header-pill"></div>
+          <h2 id="matchTitle">Loading match…</h2>
+        </div>
 
-  <!-- NAVIGATION BUTTONS -->
-  <div style="margin-top:15px; margin-bottom:20px;">
-    <button onclick="prevMatch()" style="width:48%;">⬅ Previous</button>
-    <button onclick="nextMatch()" style="width:48%;">Next ➡</button>
-  </div>
+        <!-- Previous / Next -->
+        <div class="match-nav">
+          <button class="match-nav-btn" onclick="prevMatch()">⬅ Previous</button>
+          <button class="match-nav-btn" onclick="nextMatch()">Next ➡</button>
+        </div>
 
-  <!-- LEAGUE SELECTOR -->
-  <div style="margin-bottom:20px;">
-    <label><strong>League:</strong></label><br>
-    <select id="leagueSelect" onchange="changeLeague()" style="width:100%; padding:10px; margin-top:8px;">
-      <option value="all">All</option>
-      <option value="40">40+</option>
-      <option value="55">55+</option>
-    </select>
-  </div>
+        <!-- League filter -->
+        <div class="filter-row">
+          <span class="filter-label">League:</span>
+          <select id="leagueSelect" class="filter-select" onchange="changeLeague()">
+            <option value="all">All Leagues</option>
+            <option value="40">40+</option>
+            <option value="55">55+</option>
+          </select>
+        </div>
 
-  <p>Select your availability:</p>
+        <!-- Availability buttons -->
+        <div class="section-label">Your availability</div>
+        <div class="avail-buttons">
+          <button class="avail-btn yes" onclick="setAvailability('Yes')">
+            <span class="icon">✔</span> Yes, I can play
+          </button>
+          <button class="avail-btn no" onclick="setAvailability('No')">
+            <span class="icon">✖</span> No, I cannot play
+          </button>
+          <button class="avail-btn maybe" onclick="setAvailability('Maybe')">
+            <span class="icon">❓</span> Maybe
+          </button>
+          <button class="avail-btn conflict" onclick="setAvailability('Maybe - conflict')">
+            <span class="icon">⚠</span> Maybe — conflicts with another match
+          </button>
+        </div>
 
-  <button onclick="setAvailability('Yes')">✔ Yes, I can play</button>
-  <button onclick="setAvailability('No')" style="background:#555;">✖ No, I cannot play</button>
-  <button onclick="setAvailability('Maybe')" style="background:#2a4d8f;">❓ Maybe</button>
-  <button onclick="setAvailability('Maybe - conflict')" style="background:#8a6d3b;">⚠ Maybe — conflicts with another match</button>
+        <!-- Notes -->
+        <div class="section-label">Notes (optional)</div>
+        <textarea id="playerNotes" class="notes-textarea" rows="3" placeholder="e.g., 'I can play only after 6pm'"></textarea>
 
-  <!-- PLAYER NOTES -->
-  <textarea id="playerNotes" rows="3" placeholder="Add a note (optional): e.g., 'I can play only after 6pm'"></textarea>
+        <div id="msg"></div>
+      </div>
+    </div>
+  </main>
 
-  <button class="logout" onclick="logout()">Logout</button>
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>&copy; 2026 PLC Tennis Team · Sammamish, WA</span>
+      <div class="footer-links">
+        <a href="calendar.html" class="footer-link">Calendar</a>
+        <a href="availability.html" class="footer-link">Availability</a>
+        <a href="captain.html" class="footer-link">Captain Dashboard</a>
+      </div>
+    </div>
+  </footer>
 
-  <p id="msg"></p>
-</div>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
+      authDomain: "plc-tennis.firebaseapp.com",
+      projectId: "plc-tennis",
+      storageBucket: "plc-tennis.appspot.com",
+      messagingSenderId: "472563332469",
+      appId: "1:472563332469:web:b781075e99cd0f5a3c4f3c"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-<script>
-/* -------------------- FIREBASE CONFIG -------------------- */
-const firebaseConfig = {
-  apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
-  authDomain: "plc-tennis.firebaseapp.com",
-  projectId: "plc-tennis",
-  storageBucket: "plc-tennis.appspot.com",
-  messagingSenderId: "472563332469",
-  appId: "1:472563332469:web:b781075e99cd0f5a3c4f3c"
-};
-
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-/* -------------------- SIDEBAR -------------------- */
-function openNav() {
-  document.getElementById("sidebar").style.width = "260px";
-}
-function closeNav() {
-  document.getElementById("sidebar").style.width = "0";
-}
-
-/* -------------------- AUTH PROTECTION -------------------- */
-auth.onAuthStateChanged(user => {
-  if (!user) {
-    window.location.href = "login.html";
-  } else {
-    loadAllMatches();
-  }
-});
-
-function logout() {
-  auth.signOut().then(() => window.location.href = "login.html");
-}
-
-/* -------------------- MATCH LOADING -------------------- */
-
-let allMatches = [];
-let filteredMatches = [];
-let currentIndex = 0;
-
-const SHEET_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
-
-function parseCSV(text) {
-  const rows = [];
-  let row = [];
-  let cell = "";
-  let insideQuotes = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    const next = text[i + 1];
-
-    if (c === '"' && next === '"') {
-      cell += '"';
-      i++;
-    } else if (c === '"') {
-      insideQuotes = !insideQuotes;
-    } else if (c === ',' && !insideQuotes) {
-      row.push(cell);
-      cell = "";
-    } else if (c === '\n' && !insideQuotes) {
-      row.push(cell);
-      rows.push(row);
-      row = [];
-      cell = "";
-    } else {
-      cell += c;
-    }
-  }
-  row.push(cell);
-  rows.push(row);
-
-  return rows;
-}
-
-async function loadAllMatches() {
-  const res = await fetch(SHEET_URL);
-  const csv = await res.text();
-  const rows = parseCSV(csv);
-
-  const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
-
-  const matches = [];
-  const numMatches = rows[0].length - 1;
-
-  for (let col = 1; col <= numMatches; col++) {
-    const match = {};
-    for (let row = 0; row < fieldNames.length; row++) {
-      const field = fieldNames[row];
-      const value = rows[row][col]?.trim();
-      if (field && value) match[field] = value;
-    }
-    if (match["Match ID"]) matches.push(match);
-  }
-
-  matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
-  allMatches = matches;
-
-  applyLeagueFilter();
-}
-
-function applyLeagueFilter() {
-  const league = document.getElementById("leagueSelect").value;
-
-  filteredMatches = allMatches.filter(m => {
-    if (league === "all") return true;
-    if (league === "40") return m["League"]?.includes("40+");
-    if (league === "55") return m["League"]?.includes("55+");
-    return true;
-  });
-
-  const currentId = localStorage.getItem("selectedMatchId");
-  currentIndex = filteredMatches.findIndex(m => m["Match ID"] === currentId);
-
-  if (currentIndex === -1) currentIndex = 0;
-
-  loadMatchInfo();
-}
-
-function changeLeague() {
-  applyLeagueFilter();
-}
-
-function prevMatch() {
-  if (currentIndex > 0) {
-    currentIndex--;
-    loadMatchInfo();
-  }
-}
-
-function nextMatch() {
-  if (currentIndex < filteredMatches.length - 1) {
-    currentIndex++;
-    loadMatchInfo();
-  }
-}
-
-function clearSelectedButtons() {
-  const buttons = document.querySelectorAll('.box button');
-  buttons.forEach(b => b.classList.remove('selected'));
-}
-
-function loadMatchInfo() {
-  const match = filteredMatches[currentIndex];
-  if (!match) return;
-
-  const matchName =
-    `${match["League"]} — ${match["Schedule Date"]} ${match["Schedule Time"]} — ` +
-    `${match["Home Team"]} vs ${match["Visiting Team"]} @ ${match["Facility/Match Site"]}`;
-
-  document.getElementById("matchTitle").innerText = matchName;
-
-  localStorage.setItem("selectedMatchId", match["Match ID"]);
-  localStorage.setItem("selectedMatchName", matchName);
-
-  loadPlayerAvailability(match["Match ID"]);
-}
-
-function loadPlayerAvailability(matchId) {
-  const user = auth.currentUser;
-  if (!user) return;
-
-  const email = user.email;
-
-  db.collection("availability")
-    .doc(matchId)
-    .collection("players")
-    .doc(email)
-    .get()
-    .then(doc => {
-      clearSelectedButtons();
-      document.getElementById("playerNotes").value = "";
-      document.getElementById("msg").innerText = "";
-
-      if (!doc.exists) return;
-
-      const data = doc.data();
-      const status = data.status || "";
-      const notes = data.notes || "";
-
-      document.getElementById("playerNotes").value = notes;
-
-      const labelMap = {
-        "Yes": "✔ Yes, I can play",
-        "No": "✖ No, I cannot play",
-        "Maybe": "❓ Maybe",
-        "Maybe - conflict": "⚠ Maybe — conflicts with another match"
-      };
-
-      const label = labelMap[status];
-      if (!label) return;
-
-      const buttons = document.querySelectorAll('.box button');
-      buttons.forEach(b => {
-        if (b.innerText.trim() === label) {
-          b.classList.add('selected');
-        }
-      });
+    auth.onAuthStateChanged(user => {
+      if (!user) { window.location.href = "login.html"; } else { loadAllMatches(); }
     });
-}
+    function logout() { auth.signOut().then(() => window.location.href = "login.html"); }
 
-/* -------------------- SAVE AVAILABILITY -------------------- */
+    let allMatches = [], filteredMatches = [], currentIndex = 0;
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
-function setAvailability(status) {
-  const user = auth.currentUser;
-  if (!user) return;
+    function parseCSV(text) {
+      const rows = []; let row = []; let cell = ""; let insideQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i]; const next = text[i + 1];
+        if (c === '"' && next === '"') { cell += '"'; i++; }
+        else if (c === '"') { insideQuotes = !insideQuotes; }
+        else if (c === ',' && !insideQuotes) { row.push(cell); cell = ""; }
+        else if (c === '\n' && !insideQuotes) { row.push(cell); rows.push(row); row = []; cell = ""; }
+        else { cell += c; }
+      }
+      row.push(cell); rows.push(row);
+      return rows;
+    }
 
-  const email = user.email;
-  const matchId = localStorage.getItem("selectedMatchId");
-  const notes = document.getElementById("playerNotes").value.trim();
-
-  if (!matchId) {
-    document.getElementById("msg").innerText = "Error: No match selected.";
-    document.getElementById("msg").style.color = "red";
-    return;
-  }
-
-  db.collection("availability")
-    .doc(matchId)
-    .collection("players")
-    .doc(email)
-    .set({
-      email: email,
-      status: status,
-      notes: notes || "",
-      timestamp: new Date()
-    })
-    .then(() => {
-      clearSelectedButtons();
-
-      const labelMap = {
-        "Yes": "✔ Yes, I can play",
-        "No": "✖ No, I cannot play",
-        "Maybe": "❓ Maybe",
-        "Maybe - conflict": "⚠ Maybe — conflicts with another match"
-      };
-
-      const label = labelMap[status];
-      const buttons = document.querySelectorAll('.box button');
-      buttons.forEach(b => {
-        if (b.innerText.trim() === label) {
-          b.classList.add('selected');
+    async function loadAllMatches() {
+      const res = await fetch(SHEET_URL);
+      const csv = await res.text();
+      const rows = parseCSV(csv);
+      const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
+      const matches = []; const numMatches = rows[0].length - 1;
+      for (let col = 1; col <= numMatches; col++) {
+        const match = {};
+        for (let row = 0; row < fieldNames.length; row++) {
+          const field = fieldNames[row]; const value = rows[row][col]?.trim();
+          if (field && value) match[field] = value;
         }
+        if (match["Match ID"]) matches.push(match);
+      }
+      matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
+      allMatches = matches;
+      applyLeagueFilter();
+    }
+
+    function applyLeagueFilter() {
+      const league = document.getElementById("leagueSelect").value;
+      filteredMatches = allMatches.filter(m => {
+        if (league === "all") return true;
+        if (league === "40") return m["League"]?.includes("40+");
+        if (league === "55") return m["League"]?.includes("55+");
+        return true;
       });
+      const currentId = localStorage.getItem("selectedMatchId");
+      currentIndex = filteredMatches.findIndex(m => m["Match ID"] === currentId);
+      if (currentIndex === -1) currentIndex = 0;
+      loadMatchInfo();
+    }
 
-      document.getElementById("msg").innerText = "Availability saved! Moving to next match...";
-      document.getElementById("msg").style.color = "green";
+    function changeLeague() { applyLeagueFilter(); }
+    function prevMatch() { if (currentIndex > 0) { currentIndex--; loadMatchInfo(); } }
+    function nextMatch() { if (currentIndex < filteredMatches.length - 1) { currentIndex++; loadMatchInfo(); } }
 
-      setTimeout(() => {
-        nextMatch();
+    function clearSelectedButtons() {
+      document.querySelectorAll('.avail-btn').forEach(b => b.classList.remove('selected'));
+    }
+
+    function loadMatchInfo() {
+      const match = filteredMatches[currentIndex]; if (!match) return;
+      const matchName = `${match["League"]} — ${match["Schedule Date"]} ${match["Schedule Time"]} — ${match["Home Team"]} vs ${match["Visiting Team"]} @ ${match["Facility/Match Site"]}`;
+      document.getElementById("matchTitle").innerText = matchName;
+      localStorage.setItem("selectedMatchId", match["Match ID"]);
+      localStorage.setItem("selectedMatchName", matchName);
+      loadPlayerAvailability(match["Match ID"]);
+    }
+
+    function loadPlayerAvailability(matchId) {
+      const user = auth.currentUser; if (!user) return;
+      const email = user.email;
+      db.collection("availability").doc(matchId).collection("players").doc(email).get().then(doc => {
+        clearSelectedButtons();
         document.getElementById("playerNotes").value = "";
-        document.getElementById("msg").innerText = "";
-      }, 800);
-    })
-    .catch(err => {
-      document.getElementById("msg").innerText = "Error: " + err.message;
-      document.getElementById("msg").style.color = "red";
-    });
-}
-</script>
+        hideMsg();
+        if (!doc.exists) return;
+        const data = doc.data(); const status = data.status || ""; const notes = data.notes || "";
+        document.getElementById("playerNotes").value = notes;
+        const labelMap = {
+          "Yes": "Yes, I can play",
+          "No": "No, I cannot play",
+          "Maybe": "Maybe",
+          "Maybe - conflict": "Maybe — conflicts with another match"
+        };
+        const label = labelMap[status]; if (!label) return;
+        document.querySelectorAll('.avail-btn').forEach(b => {
+          if (b.textContent.trim().includes(label)) { b.classList.add('selected'); }
+        });
+      });
+    }
 
+    function showMsg(text, type) {
+      const el = document.getElementById("msg");
+      el.textContent = text;
+      el.className = type;
+    }
+    function hideMsg() {
+      const el = document.getElementById("msg");
+      el.textContent = "";
+      el.className = "";
+      el.style.display = "none";
+    }
+
+    function setAvailability(status) {
+      const user = auth.currentUser; if (!user) return;
+      const email = user.email;
+      const matchId = localStorage.getItem("selectedMatchId");
+      const notes = document.getElementById("playerNotes").value.trim();
+      if (!matchId) { showMsg("Error: No match selected.", "error"); return; }
+      db.collection("availability").doc(matchId).collection("players").doc(email).set({
+        email: email, status: status, notes: notes || "", timestamp: new Date()
+      }).then(() => {
+        clearSelectedButtons();
+        const labelMap = {
+          "Yes": "Yes, I can play",
+          "No": "No, I cannot play",
+          "Maybe": "Maybe",
+          "Maybe - conflict": "Maybe — conflicts with another match"
+        };
+        const label = labelMap[status];
+        document.querySelectorAll('.avail-btn').forEach(b => {
+          if (b.textContent.trim().includes(label)) { b.classList.add('selected'); }
+        });
+        showMsg("Availability saved! Moving to next match…", "success");
+        setTimeout(() => { nextMatch(); document.getElementById("playerNotes").value = ""; hideMsg(); }, 800);
+      }).catch(err => { showMsg("Error: " + err.message, "error"); });
+    }
+  </script>
 </body>
 </html>

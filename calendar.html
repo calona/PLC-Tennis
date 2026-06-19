@@ -1,445 +1,399 @@
-
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Match Calendar</title>
-
+  <meta charset="UTF-8" />
+  <title>Match Calendar — PLC Tennis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: Arial; margin: 0; padding: 0; background: #f4f4f4; }
-
-    /* HEADER */
-    .header {
-      width: 100%;
-      background: #1d3563;
-      color: white;
-      padding: 16px 24px;
-      font-size: 22px;
-      font-weight: bold;
+    :root {
+      --navy: #1d3563;
+      --navy-soft: #243c6f;
+      --blue: #4a6fa5;
+      --green: #1d6f42;
+      --bg: #f5f7fa;
+      --card-bg: #ffffff;
+      --text-main: #1f2933;
+      --text-muted: #6b7280;
+      --border-subtle: #e5e7eb;
+      --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
+      --radius-lg: 18px;
+      --radius-pill: 999px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top left, #e0ecff 0, var(--bg) 40%, var(--bg) 100%);
+      color: var(--text-main);
+      min-height: 100vh;
       display: flex;
-      align-items: center;
+      flex-direction: column;
     }
 
-    .hamburger {
-      font-size: 26px;
-      cursor: pointer;
-      margin-right: 20px;
+    /* NAVBAR */
+    .nav {
+      position: sticky; top: 0; z-index: 20;
+      backdrop-filter: blur(12px);
+      background: linear-gradient(to right, rgba(245,247,250,0.95), rgba(245,247,250,0.9));
+      border-bottom: 1px solid rgba(148,163,184,0.25);
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto; padding: 12px 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .nav-left { display: flex; align-items: center; gap: 10px; }
+    .nav-logo {
+      width: 34px; height: 34px; border-radius: 12px;
+      background: radial-gradient(circle at 30% 20%, #facc15, #f97316 40%, #b91c1c 100%);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 18px;
+      box-shadow: 0 6px 14px rgba(15,23,42,0.25);
+    }
+    .nav-title { display: flex; flex-direction: column; }
+    .nav-title-main { font-family: "Poppins", sans-serif; font-weight: 700; font-size: 18px; color: var(--navy); }
+    .nav-title-sub { font-size: 12px; color: var(--text-muted); }
+    .nav-links { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+    .nav-link {
+      padding: 6px 12px; border-radius: var(--radius-pill);
+      color: var(--text-muted); text-decoration: none; transition: all 0.2s ease;
+    }
+    .nav-link:hover { background: rgba(148,163,184,0.12); color: var(--navy); }
+    .nav-link.active { background: var(--navy); color: #fff; box-shadow: 0 6px 14px rgba(15,23,42,0.25); }
+    .nav-cta {
+      padding: 7px 14px; border-radius: var(--radius-pill);
+      border: 1px solid rgba(148,163,184,0.5); font-size: 12px;
+      color: var(--text-muted); background: rgba(255,255,255,0.8);
+      display: flex; align-items: center; gap: 6px; cursor: pointer;
+    }
+    .nav-cta span { font-size: 16px; }
+    #loginBtn { text-decoration: none; }
+
+    /* PAGE */
+    .page { flex: 1; display: flex; justify-content: center; padding: 24px 16px 32px; }
+    .page-inner { max-width: 1100px; width: 100%; }
+
+    /* CARD */
+    .card {
+      background: var(--card-bg); border-radius: 22px;
+      padding: 20px 22px; box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148,163,184,0.25);
     }
 
-    /* SIDEBAR */
-    .sidebar {
-      height: 100%;
-      width: 0;
-      position: fixed;
-      z-index: 1000;
-      top: 0;
-      left: 0;
-      background-color: #1d3563;
-      overflow-x: hidden;
-      transition: 0.3s;
-      padding-top: 60px;
+    /* PAGE HEADER */
+    .page-header {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 16px; margin-bottom: 20px;
     }
-
-    .sidebar a {
-      padding: 12px 24px;
-      text-decoration: none;
-      font-size: 20px;
-      color: white;
-      display: block;
+    .page-header-text h1 {
+      font-family: "Poppins", sans-serif; font-weight: 700;
+      font-size: 24px; color: var(--navy); margin-bottom: 4px;
     }
+    .page-header-text p { font-size: 13px; color: var(--text-muted); }
 
-    .sidebar a:hover {
-      background: #2a4d8f;
+    /* FILTER */
+    .filter-group { display: flex; align-items: center; gap: 8px; }
+    .filter-label { font-size: 13px; font-weight: 500; color: var(--navy-soft); }
+    .filter-select {
+      padding: 8px 14px; font-size: 14px; border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle); background: var(--card-bg);
+      color: var(--text-main); font-family: "Inter", sans-serif;
+      cursor: pointer; outline: none; transition: border-color 0.2s;
     }
+    .filter-select:focus { border-color: var(--blue); }
 
-    .sidebar-close {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      font-size: 30px;
-      cursor: pointer;
-      color: white;
-    }
-
-    /* CONTENT */
-    .container {
-      padding: 20px;
-    }
-
-    /* MONTH HEADER */
+    /* CALENDAR */
     .month-title {
-      font-size: 26px;
-      font-weight: bold;
-      margin-top: 40px;
-      margin-bottom: 10px;
-      color: #1d3563;
+      font-family: "Poppins", sans-serif; font-weight: 700;
+      font-size: 20px; color: var(--navy); margin: 28px 0 12px;
     }
-
-    /* CALENDAR GRID */
+    .month-title:first-of-type { margin-top: 0; }
     .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 6px;
-      margin-bottom: 40px;
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 6px; margin-bottom: 32px;
     }
-
     .day-header {
-      font-weight: bold;
-      text-align: center;
-      padding: 8px 0;
-      background: #e8e8e8;
-      border-radius: 4px;
-    }
-
-    .day-cell {
-      background: white;
-      min-height: 120px;
-      padding: 6px;
-      border-radius: 6px;
-      box-shadow: 0 0 4px rgba(0,0,0,0.1);
-      font-size: 14px;
-      position: relative;
-    }
-
-    .day-number {
-      font-weight: bold;
-      margin-bottom: 4px;
-    }
-
-    .match-entry {
-      margin-top: 4px;
-      padding: 4px;
-      background: #f7f7f7;
-      border-radius: 4px;
-      font-size: 13px;
-    }
-
-    .status-pill {
-      display: inline-block;
-      padding: 2px 8px;
+      font-weight: 600; text-align: center; padding: 10px 0;
+      font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--text-muted); background: rgba(148,163,184,0.08);
       border-radius: 10px;
-      font-size: 11px;
-      font-weight: bold;
-      color: white;
-      margin-top: 2px;
     }
-
-    .yes { background: #2ecc71; }
-    .no { background: #e74c3c; }
-    .maybe { background: #f1c40f; color: black; }
-    .conflict { background: #d35400; }
-
+    .day-cell {
+      background: var(--card-bg); min-height: 110px; padding: 8px;
+      border-radius: 14px; border: 1px solid rgba(148,163,184,0.15);
+      font-size: 13px; position: relative;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .day-cell:hover {
+      box-shadow: 0 6px 18px rgba(15,23,42,0.08);
+      border-color: rgba(59,130,246,0.3);
+    }
+    .day-number {
+      font-weight: 600; font-size: 14px; color: var(--navy-soft);
+      margin-bottom: 6px;
+    }
+    .match-entry {
+      margin-top: 6px; padding: 6px 8px; background: rgba(74,111,165,0.06);
+      border-radius: 8px; font-size: 12px; border-left: 3px solid var(--blue);
+    }
+    .match-entry strong { color: var(--navy-soft); font-weight: 500; font-size: 11px; }
+    .status-pill {
+      display: inline-block; padding: 2px 10px; border-radius: var(--radius-pill);
+      font-size: 10px; font-weight: 600; color: white; margin-top: 4px;
+    }
+    .yes { background: #22c55e; }
+    .no { background: #ef4444; }
+    .maybe { background: #eab308; color: #1f2933; }
+    .conflict { background: #f97316; }
     .my-note {
-      font-size: 11px;
-      color: #444;
-      margin-top: 2px;
-      padding-left: 6px;
-      border-left: 2px solid #ccc;
+      font-size: 10px; color: var(--text-muted); margin-top: 3px;
+      padding-left: 8px; border-left: 2px solid var(--border-subtle);
+      font-style: italic;
     }
-
     .respond-btn {
-      margin-top: 4px;
-      padding: 4px 8px;
-      background: #1d3563;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-size: 11px;
-      cursor: pointer;
+      margin-top: 5px; padding: 3px 10px; background: var(--navy);
+      color: white; border: none; border-radius: var(--radius-pill);
+      font-size: 10px; cursor: pointer; font-family: "Inter", sans-serif;
+      transition: background 0.2s;
     }
+    .respond-btn:hover { background: var(--navy-soft); }
+    .empty-day { opacity: 0; pointer-events: none; }
 
-    select {
-      padding: 10px;
-      font-size: 16px;
-      margin-bottom: 20px;
-      width: 200px;
+    /* FOOTER */
+    .footer {
+      border-top: 1px solid rgba(148,163,184,0.3);
+      padding: 10px 16px 14px; font-size: 11px; color: var(--text-muted);
+      display: flex; justify-content: center;
     }
+    .footer-inner {
+      max-width: 1100px; width: 100%;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+    }
+    .footer-links { display: flex; gap: 10px; flex-wrap: wrap; }
+    .footer-link { color: var(--text-muted); text-decoration: none; }
+    .footer-link:hover { text-decoration: underline; }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .nav-inner { flex-wrap: wrap; }
+      .nav-links { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+      .calendar-grid { grid-template-columns: repeat(7, 1fr); gap: 4px; }
+      .day-cell { min-height: 80px; padding: 5px; font-size: 11px; }
+      .match-entry { font-size: 10px; padding: 4px 5px; }
+    }
+    @media (max-width: 600px) {
+      .calendar-grid { grid-template-columns: repeat(7, 1fr); gap: 2px; }
+      .day-cell { min-height: 60px; padding: 3px; border-radius: 8px; }
+      .day-header { font-size: 10px; padding: 6px 0; }
+      .day-number { font-size: 11px; }
+      .match-entry strong { font-size: 9px; }
+      .page-header { flex-direction: column; align-items: flex-start; }
+    }
+    .loading-msg { text-align: center; padding: 40px; color: var(--text-muted); font-size: 15px; }
   </style>
 </head>
-
 <body>
 
-<!-- SIDEBAR -->
-<div id="sidebar" class="sidebar">
-  <span class="sidebar-close" onclick="closeNav()">&times;</span>
-  <a href="index.html">Home</a>
-  <a href="calendar.html">Calendar</a>
-  <a href="availability.html">Availability</a>
-  <a href="captain.html">Captain Dashboard</a>
-  <a href="#" onclick="logout()">Logout</a>
-</div>
+  <!-- NAVBAR -->
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="nav-left">
+        <div class="nav-logo">PLC</div>
+        <div class="nav-title">
+          <div class="nav-title-main">PLC Tennis</div>
+          <div class="nav-title-sub">USTA Team Hub · 2026 Season</div>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="calendar.html" class="nav-link active">Calendar</a>
+        <a href="availability.html" class="nav-link">Availability</a>
+        <a href="captain.html" class="nav-link">Captain Dashboard</a>
+        <a href="#" id="loginBtn" class="nav-cta" onclick="logout()"><span>🔒</span> Logout</a>
+      </div>
+    </div>
+  </header>
 
-<!-- HEADER -->
-<div class="header">
-  <span class="hamburger" onclick="openNav()">&#9776;</span>
-  PLC Tennis Team — Match Calendar
-</div>
+  <!-- MAIN -->
+  <main class="page">
+    <div class="page-inner">
+      <div class="card">
+        <div class="page-header">
+          <div class="page-header-text">
+            <h1>📅 Match Calendar</h1>
+            <p>View upcoming matches with your availability status at a glance.</p>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">League:</span>
+            <select id="leagueSelect" class="filter-select" onchange="renderFilteredMatches()">
+              <option value="all">All Leagues</option>
+              <option value="40">40+</option>
+              <option value="55">55+</option>
+            </select>
+          </div>
+        </div>
+        <div id="calendarContainer"><p class="loading-msg">Loading matches…</p></div>
+      </div>
+    </div>
+  </main>
 
-<div class="container">
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>&copy; 2026 PLC Tennis Team · Sammamish, WA</span>
+      <div class="footer-links">
+        <a href="calendar.html" class="footer-link">Calendar</a>
+        <a href="availability.html" class="footer-link">Availability</a>
+        <a href="captain.html" class="footer-link">Captain Dashboard</a>
+      </div>
+    </div>
+  </footer>
 
-  <!-- LEAGUE FILTER -->
-  <label><strong>League:</strong></label><br>
-  <select id="leagueSelect" onchange="renderFilteredMatches()">
-    <option value="all">All</option>
-    <option value="40">40+</option>
-    <option value="55">55+</option>
-  </select>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
+      authDomain: "plc-tennis.firebaseapp.com",
+      projectId: "plc-tennis",
+      storageBucket: "plc-tennis.appspot.com",
+      messagingSenderId: "472563332469",
+      appId: "1:472563332469:web:b781075e99cd0f5a3c4f3c"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-  <div id="calendarContainer">Loading...</div>
-</div>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-<script>
-/* -------------------- FIREBASE CONFIG -------------------- */
-const firebaseConfig = {
-  apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
-  authDomain: "plc-tennis.firebaseapp.com",
-  projectId: "plc-tennis",
-  storageBucket: "plc-tennis.appspot.com",
-  messagingSenderId: "472563332469",
-  appId: "1:472563332469:web:b781075e99cd0f5a3c4f3c"
-};
-
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-/* -------------------- SIDEBAR -------------------- */
-function openNav() {
-  document.getElementById("sidebar").style.width = "260px";
-}
-function closeNav() {
-  document.getElementById("sidebar").style.width = "0";
-}
-
-auth.onAuthStateChanged(user => {
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
-  loadMatches();
-});
-
-function logout() {
-  auth.signOut().then(() => window.location.href = "login.html");
-}
-
-/* -------------------- GOOGLE SHEET LOADING -------------------- */
-
-const SHEET_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
-
-function parseCSV(text) {
-  const rows = [];
-  let row = [];
-  let cell = "";
-  let insideQuotes = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    const next = text[i + 1];
-
-    if (c === '"' && next === '"') {
-      cell += '"';
-      i++;
-    } else if (c === '"') {
-      insideQuotes = !insideQuotes;
-    } else if (c === ',' && !insideQuotes) {
-      row.push(cell);
-      cell = "";
-    } else if (c === '\n' && !insideQuotes) {
-      row.push(cell);
-      rows.push(row);
-      row = [];
-      cell = "";
-    } else {
-      cell += c;
-    }
-  }
-  row.push(cell);
-  rows.push(row);
-
-  return rows;
-}
-
-let allMatches = [];
-
-async function loadMatches() {
-  const res = await fetch(SHEET_URL);
-  const csv = await res.text();
-  const rows = parseCSV(csv);
-
-  const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
-
-  const matches = [];
-  const numMatches = rows[0].length - 1;
-
-  for (let col = 1; col <= numMatches; col++) {
-    const match = {};
-    for (let row = 0; row < fieldNames.length; row++) {
-      const field = fieldNames[row];
-      const value = rows[row][col]?.trim();
-      if (field && value) match[field] = value;
-    }
-    if (match["Match ID"]) matches.push(match);
-  }
-
-  matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
-
-  allMatches = matches;
-  renderFilteredMatches();
-}
-
-/* -------------------- FILTER + RENDER -------------------- */
-
-function renderFilteredMatches() {
-  const league = document.getElementById("leagueSelect").value;
-
-  const filtered = allMatches.filter(m => {
-    if (league === "all") return true;
-    if (league === "40") return m["League"]?.includes("40+");
-    if (league === "55") return m["League"]?.includes("55+");
-    return true;
-  });
-
-  renderCalendar(filtered);
-}
-
-/* -------------------- LOAD ONLY MY AVAILABILITY -------------------- */
-
-function loadMyAvailability(matchId) {
-  const user = firebase.auth().currentUser;
-  if (!user) return Promise.resolve(null);
-
-  return db.collection("availability")
-    .doc(matchId)
-    .collection("players")
-    .doc(user.email)
-    .get()
-    .then(doc => doc.exists ? doc.data() : null);
-}
-
-/* -------------------- RENDER TRUE MONTHLY CALENDAR -------------------- */
-
-async function renderCalendar(matches) {
-  const container = document.getElementById("calendarContainer");
-  container.innerHTML = "";
-
-  if (matches.length === 0) {
-    container.innerHTML = "<p>No matches found.</p>";
-    return;
-  }
-
-  // Group matches by month
-  const months = {};
-  for (const match of matches) {
-    const date = new Date(match["Schedule Date"]);
-    const key = `${date.getFullYear()}-${date.getMonth()}`;
-    if (!months[key]) months[key] = [];
-    months[key].push(match);
-  }
-
-  // Render each month
-  for (const key of Object.keys(months)) {
-    const [year, month] = key.split("-").map(Number);
-    const monthMatches = months[key];
-
-    const monthName = new Date(year, month).toLocaleString("default", { month: "long" });
-
-    // Month title
-    const title = document.createElement("div");
-    title.className = "month-title";
-    title.innerText = `${monthName} ${year}`;
-    container.appendChild(title);
-
-    // Day headers
-    const grid = document.createElement("div");
-    grid.className = "calendar-grid";
-
-    const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-    days.forEach(d => {
-      const h = document.createElement("div");
-      h.className = "day-header";
-      h.innerText = d;
-      grid.appendChild(h);
+    auth.onAuthStateChanged(user => {
+      if (!user) { window.location.href = "login.html"; return; }
+      loadMatches();
     });
+    function logout() { auth.signOut().then(() => window.location.href = "login.html"); }
 
-    // First day offset
-    const firstDay = new Date(year, month, 1).getDay();
-    for (let i = 0; i < firstDay; i++) {
-      const empty = document.createElement("div");
-      grid.appendChild(empty);
-    }
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
-    // Days in month
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    for (let day = 1; day <= daysInMonth; day++) {
-      const cell = document.createElement("div");
-      cell.className = "day-cell";
-
-      const num = document.createElement("div");
-      num.className = "day-number";
-      num.innerText = day;
-      cell.appendChild(num);
-
-      // Matches on this day
-      const todaysMatches = monthMatches.filter(m => {
-        const d = new Date(m["Schedule Date"]);
-        return d.getDate() === day;
-      });
-
-      for (const match of todaysMatches) {
-        const entry = document.createElement("div");
-        entry.className = "match-entry";
-
-        const matchId = match["Match ID"];
-        const matchLabel =
-          `${match["League"]} — ${match["Schedule Time"]} — ` +
-          `${match["Home Team"]} vs ${match["Visiting Team"]}`;
-
-        entry.innerHTML = `<strong>${matchLabel}</strong>`;
-
-        // Load personal availability
-        loadMyAvailability(matchId).then(data => {
-          if (!data) {
-            entry.innerHTML += `<div><em>No response yet</em></div>`;
-            return;
-          }
-
-          const status = data.status;
-          const notes = data.notes || "";
-
-          const pillClass =
-            status === "Yes" ? "yes" :
-            status === "No" ? "no" :
-            status === "Maybe" ? "maybe" :
-            "conflict";
-
-          entry.innerHTML += `
-            <div class="status-pill ${pillClass}">${status}</div>
-            ${notes ? `<div class="my-note">${notes}</div>` : ""}
-            <button class="respond-btn" onclick="window.location.href='availability.html'">
-              Update
-            </button>
-          `;
-        });
-
-        cell.appendChild(entry);
+    function parseCSV(text) {
+      const rows = []; let row = []; let cell = ""; let insideQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i]; const next = text[i + 1];
+        if (c === '"' && next === '"') { cell += '"'; i++; }
+        else if (c === '"') { insideQuotes = !insideQuotes; }
+        else if (c === ',' && !insideQuotes) { row.push(cell); cell = ""; }
+        else if (c === '\n' && !insideQuotes) { row.push(cell); rows.push(row); row = []; cell = ""; }
+        else { cell += c; }
       }
-
-      grid.appendChild(cell);
+      row.push(cell); rows.push(row);
+      return rows;
     }
 
-    container.appendChild(grid);
-  }
-}
-</script>
+    let allMatches = [];
+    async function loadMatches() {
+      const res = await fetch(SHEET_URL);
+      const csv = await res.text();
+      const rows = parseCSV(csv);
+      const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
+      const matches = []; const numMatches = rows[0].length - 1;
+      for (let col = 1; col <= numMatches; col++) {
+        const match = {};
+        for (let row = 0; row < fieldNames.length; row++) {
+          const field = fieldNames[row]; const value = rows[row][col]?.trim();
+          if (field && value) match[field] = value;
+        }
+        if (match["Match ID"]) matches.push(match);
+      }
+      matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
+      allMatches = matches;
+      renderFilteredMatches();
+    }
 
+    function renderFilteredMatches() {
+      const league = document.getElementById("leagueSelect").value;
+      const filtered = allMatches.filter(m => {
+        if (league === "all") return true;
+        if (league === "40") return m["League"]?.includes("40+");
+        if (league === "55") return m["League"]?.includes("55+");
+        return true;
+      });
+      renderCalendar(filtered);
+    }
+
+    function loadMyAvailability(matchId) {
+      const user = firebase.auth().currentUser;
+      if (!user) return Promise.resolve(null);
+      return db.collection("availability").doc(matchId).collection("players").doc(user.email)
+        .get().then(doc => doc.exists ? doc.data() : null);
+    }
+
+    async function renderCalendar(matches) {
+      const container = document.getElementById("calendarContainer");
+      container.innerHTML = "";
+      if (matches.length === 0) { container.innerHTML = '<p class="loading-msg">No matches found for this filter.</p>'; return; }
+      const months = {};
+      for (const match of matches) {
+        const date = new Date(match["Schedule Date"]);
+        const key = `${date.getFullYear()}-${date.getMonth()}`;
+        if (!months[key]) months[key] = [];
+        months[key].push(match);
+      }
+      for (const key of Object.keys(months)) {
+        const [year, month] = key.split("-").map(Number);
+        const monthMatches = months[key];
+        const monthName = new Date(year, month).toLocaleString("default", { month: "long" });
+        const title = document.createElement("div");
+        title.className = "month-title";
+        title.innerText = `${monthName} ${year}`;
+        container.appendChild(title);
+        const grid = document.createElement("div");
+        grid.className = "calendar-grid";
+        const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+        days.forEach(d => {
+          const h = document.createElement("div");
+          h.className = "day-header";
+          h.innerText = d;
+          grid.appendChild(h);
+        });
+        const firstDay = new Date(year, month, 1).getDay();
+        for (let i = 0; i < firstDay; i++) {
+          const empty = document.createElement("div");
+          empty.className = "empty-day";
+          grid.appendChild(empty);
+        }
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        for (let day = 1; day <= daysInMonth; day++) {
+          const cell = document.createElement("div");
+          cell.className = "day-cell";
+          const num = document.createElement("div");
+          num.className = "day-number";
+          num.innerText = day;
+          cell.appendChild(num);
+          const todaysMatches = monthMatches.filter(m => {
+            const d = new Date(m["Schedule Date"]);
+            return d.getDate() === day;
+          });
+          for (const match of todaysMatches) {
+            const entry = document.createElement("div");
+            entry.className = "match-entry";
+            const matchId = match["Match ID"];
+            const matchLabel = `${match["League"]} — ${match["Schedule Time"]} — ${match["Home Team"]} vs ${match["Visiting Team"]}`;
+            entry.innerHTML = `<strong>${matchLabel}</strong>`;
+            loadMyAvailability(matchId).then(data => {
+              if (!data) { entry.innerHTML += `<div style="font-size:10px;color:var(--text-muted);margin-top:3px;"><em>No response yet</em></div>`; return; }
+              const status = data.status; const notes = data.notes || "";
+              const pillClass = status === "Yes" ? "yes" : status === "No" ? "no" : status === "Maybe" ? "maybe" : "conflict";
+              entry.innerHTML += `
+                <div class="status-pill ${pillClass}">${status}</div>
+                ${notes ? `<div class="my-note">${notes}</div>` : ""}
+                <button class="respond-btn" onclick="window.location.href='availability.html'">Update</button>
+              `;
+            });
+            cell.appendChild(entry);
+          }
+          grid.appendChild(cell);
+        }
+        container.appendChild(grid);
+      }
+    }
+  </script>
 </body>
 </html>

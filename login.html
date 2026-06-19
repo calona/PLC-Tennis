@@ -1,120 +1,267 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>PLC Tennis Login</title>
-
+  <meta charset="UTF-8" />
+  <title>Sign In — PLC Tennis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: Arial; padding: 40px; background: #f4f4f4; }
-    .box {
-      max-width: 400px;
-      margin: auto;
-      background: white;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    :root {
+      --navy: #1d3563;
+      --navy-soft: #243c6f;
+      --blue: #4a6fa5;
+      --green: #1d6f42;
+      --bg: #f5f7fa;
+      --card-bg: #ffffff;
+      --text-main: #1f2933;
+      --text-muted: #6b7280;
+      --border-subtle: #e5e7eb;
+      --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
+      --radius-lg: 18px;
+      --radius-pill: 999px;
     }
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 6px;
-      border: 1px solid #ccc;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top left, #e0ecff 0, var(--bg) 40%, var(--bg) 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #1d3563;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
+
+    /* NAVBAR — minimal for login */
+    .nav {
+      position: sticky; top: 0; z-index: 20;
+      backdrop-filter: blur(12px);
+      background: linear-gradient(to right, rgba(245,247,250,0.95), rgba(245,247,250,0.9));
+      border-bottom: 1px solid rgba(148,163,184,0.25);
     }
-    button:hover { opacity: 0.9; }
-    .secondary {
-      margin-top: 10px;
-      background: #2a4d8f;
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto; padding: 12px 20px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
     }
-    #msg { margin-top: 10px; color: red; }
+    .nav-logo {
+      width: 34px; height: 34px; border-radius: 12px;
+      background: radial-gradient(circle at 30% 20%, #facc15, #f97316 40%, #b91c1c 100%);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 18px;
+      box-shadow: 0 6px 14px rgba(15,23,42,0.25);
+    }
+    .nav-title { display: flex; flex-direction: column; }
+    .nav-title-main { font-family: "Poppins", sans-serif; font-weight: 700; font-size: 18px; color: var(--navy); }
+    .nav-title-sub { font-size: 12px; color: var(--text-muted); }
+
+    /* PAGE */
+    .page {
+      flex: 1; display: flex; justify-content: center; align-items: center;
+      padding: 32px 16px 48px;
+    }
+    .page-inner { max-width: 420px; width: 100%; }
+
+    /* LOGIN CARD */
+    .login-card {
+      background: var(--card-bg); border-radius: 22px;
+      padding: 36px 30px; box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148,163,184,0.25);
+      text-align: center;
+    }
+    .login-icon {
+      width: 64px; height: 64px; border-radius: 20px; margin: 0 auto 18px;
+      background: radial-gradient(circle at 30% 20%, #facc15, #f97316 40%, #b91c1c 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; color: #fff;
+      box-shadow: 0 8px 22px rgba(15,23,42,0.2);
+    }
+    .login-card h2 {
+      font-family: "Poppins", sans-serif; font-weight: 700;
+      font-size: 22px; color: var(--navy); margin-bottom: 4px;
+    }
+    .login-card .subtitle {
+      font-size: 13px; color: var(--text-muted); margin-bottom: 24px;
+    }
+
+    /* FORM */
+    .form-group { margin-bottom: 14px; text-align: left; }
+    .form-label {
+      display: block; font-size: 12px; font-weight: 500;
+      color: var(--text-muted); margin-bottom: 5px;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .form-input {
+      width: 100%; padding: 12px 14px; font-size: 14px;
+      border-radius: 12px; border: 1px solid var(--border-subtle);
+      background: var(--card-bg); color: var(--text-main);
+      font-family: "Inter", sans-serif;
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(74,111,165,0.1);
+    }
+
+    /* BUTTONS */
+    .btn-primary {
+      width: 100%; padding: 13px; border: none; border-radius: 14px;
+      background: linear-gradient(135deg, var(--navy), var(--blue));
+      color: #fff; font-size: 15px; font-weight: 600;
+      font-family: "Inter", sans-serif; cursor: pointer;
+      transition: all 0.25s ease; margin-top: 8px;
+      box-shadow: 0 8px 20px rgba(29,53,99,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(29,53,99,0.4);
+    }
+    .btn-secondary {
+      width: 100%; padding: 12px; border: 1px solid var(--border-subtle);
+      border-radius: 14px; background: var(--card-bg);
+      color: var(--navy-soft); font-size: 14px; font-weight: 500;
+      font-family: "Inter", sans-serif; cursor: pointer;
+      transition: all 0.2s ease; margin-top: 10px;
+    }
+    .btn-secondary:hover {
+      background: rgba(74,111,165,0.04);
+      border-color: var(--blue);
+    }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 18px 0; color: var(--text-muted); font-size: 12px;
+    }
+    .divider::before, .divider::after {
+      content: ""; flex: 1; height: 1px;
+      background: var(--border-subtle);
+    }
+
+    /* MESSAGE */
+    #msg {
+      margin-top: 14px; font-size: 13px; font-weight: 500;
+      padding: 10px 14px; border-radius: 10px; display: none;
+      text-align: left;
+    }
+    #msg.error { display: block; background: rgba(239,68,68,0.08); color: #dc2626; }
+    #msg.success { display: block; background: rgba(34,197,94,0.08); color: #15803d; }
+
+    /* FOOTER */
+    .footer {
+      border-top: 1px solid rgba(148,163,184,0.3);
+      padding: 10px 16px 14px; font-size: 11px; color: var(--text-muted);
+      display: flex; justify-content: center;
+    }
+    .footer-inner {
+      max-width: 1100px; width: 100%;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+    }
+    .footer-links { display: flex; gap: 10px; flex-wrap: wrap; }
+    .footer-link { color: var(--text-muted); text-decoration: none; }
+    .footer-link:hover { text-decoration: underline; }
+
+    @media (max-width: 600px) {
+      .login-card { padding: 28px 18px; }
+    }
   </style>
 </head>
-
 <body>
 
-<div class="box">
-  <h2>PLC Tennis Login</h2>
+  <!-- NAVBAR -->
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">PLC</div>
+      <div class="nav-title">
+        <div class="nav-title-main">PLC Tennis</div>
+        <div class="nav-title-sub">USTA Team Hub · 2026 Season</div>
+      </div>
+    </div>
+  </header>
 
-  <input id="email" type="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password (6+ characters)">
+  <!-- MAIN -->
+  <main class="page">
+    <div class="page-inner">
+      <div class="login-card">
+        <div class="login-icon">🎾</div>
+        <h2>Welcome Back</h2>
+        <p class="subtitle">Sign in to manage your match availability</p>
 
-  <button onclick="login()">Login</button>
-  <button class="secondary" onclick="signup()">Create Account</button>
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input type="email" id="email" class="form-input" placeholder="you@example.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input type="password" id="password" class="form-input" placeholder="Enter your password" />
+        </div>
 
-  <div id="msg"></div>
-</div>
+        <button class="btn-primary" onclick="login()">Sign In</button>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+        <div class="divider">or</div>
 
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
-  authDomain: "plc-tennis.firebaseapp.com",
-  projectId: "plc-tennis",
-  storageBucket: "plc-tennis.appspot.com",   // FIXED
-  messagingSenderId: "472563332469",
-  appId: "1:472563332469:web:b781075e99cd0f5a3c4f3c"
-};
+        <button class="btn-secondary" onclick="signup()">Create New Account</button>
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
+        <div id="msg"></div>
+      </div>
+    </div>
+  </main>
 
-function showError(msg) {
-  document.getElementById("msg").style.color = "red";
-  document.getElementById("msg").innerText = msg;
-}
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>&copy; 2026 PLC Tennis Team · Sammamish, WA</span>
+      <div class="footer-links">
+        <a href="index.html" class="footer-link">Home</a>
+      </div>
+    </div>
+  </footer>
 
-function showSuccess(msg) {
-  document.getElementById("msg").style.color = "green";
-  document.getElementById("msg").innerText = msg;
-}
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
+      authDomain: "plc-tennis.firebaseapp.com",
+      projectId: "plc-tennis",
+      storageBucket: "plc-tennis.appspot.com",
+      messagingSenderId: "472563332469",
+      appId: "1:472563332469:web:b781075e99cd0f5a3c4f3c"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-function login() {
-  const email = document.getElementById("email").value.trim();
-  const pass = document.getElementById("password").value;
+    function showError(text) {
+      const el = document.getElementById("msg");
+      el.textContent = text;
+      el.className = "error";
+    }
+    function showSuccess(text) {
+      const el = document.getElementById("msg");
+      el.textContent = text;
+      el.className = "success";
+    }
 
-  if (!email || !pass) {
-    showError("Please enter email and password.");
-    return;
-  }
+    function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => { window.location.href = "calendar.html"; })
+        .catch(err => showError(err.message));
+    }
 
-  auth.signInWithEmailAndPassword(email, pass)
-    .then(() => {
-      showSuccess("Logged in. Redirecting...");
-      window.location.href = "calendar.html";
-    })
-    .catch(err => showError(err.message));
-}
+    function signup() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(() => {
+          showSuccess("Account created! Redirecting…");
+          setTimeout(() => { window.location.href = "calendar.html"; }, 1000);
+        })
+        .catch(err => showError(err.message));
+    }
 
-function signup() {
-  const email = document.getElementById("email").value.trim();
-  const pass = document.getElementById("password").value;
-
-  if (!email || !pass) {
-    showError("Please enter email and password.");
-    return;
-  }
-
-  auth.createUserWithEmailAndPassword(email, pass)
-    .then(() => {
-      showSuccess("Account created. Redirecting...");
-      window.location.href = "calendar.html";
-    })
-    .catch(err => showError(err.message));
-}
-</script>
-
+    /* Allow Enter key to submit */
+    document.getElementById("password").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") login();
+    });
+  </script>
 </body>
 </html>

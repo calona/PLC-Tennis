@@ -4,10 +4,7 @@
   <meta charset="UTF-8" />
   <title>PLC Tennis Team</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
-
   <style>
     :root {
       --navy: #1d3563;
@@ -23,554 +20,310 @@
       --radius-lg: 18px;
       --radius-pill: 999px;
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       background: radial-gradient(circle at top left, #e0ecff 0, #f5f7fa 40%, #f5f7fa 100%);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column;
     }
 
     /* NAVBAR */
-    .nav {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      backdrop-filter: blur(12px);
+    .nav { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(12px);
       background: linear-gradient(to right, rgba(245,247,250,0.95), rgba(245,247,250,0.9));
-      border-bottom: 1px solid rgba(148,163,184,0.25);
-    }
-
-    .nav-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 12px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-
-    .nav-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .nav-logo {
-      width: 34px;
-      height: 34px;
-      border-radius: 12px;
+      border-bottom: 1px solid rgba(148,163,184,0.25); }
+    .nav-inner { max-width: 1100px; margin: 0 auto; padding: 12px 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .nav-left { display: flex; align-items: center; gap: 10px; }
+    .nav-logo { width: 34px; height: 34px; border-radius: 12px;
       background: radial-gradient(circle at 30% 20%, #facc15, #f97316 40%, #b91c1c 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: 700;
-      font-size: 18px;
-      box-shadow: 0 6px 14px rgba(15,23,42,0.25);
-    }
-
-    .nav-title {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .nav-title-main {
-      font-family: "Poppins", system-ui, sans-serif;
-      font-weight: 700;
-      font-size: 18px;
-      color: var(--navy);
-    }
-
-    .nav-title-sub {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-    }
-
-    .nav-link {
-      padding: 6px 12px;
-      border-radius: 999px;
-      color: var(--text-muted);
-      text-decoration: none;
-      transition: all 0.2s ease;
-    }
-
-    .nav-link:hover {
-      background: rgba(148,163,184,0.12);
-      color: var(--navy);
-    }
-
-    .nav-link.active {
-      background: var(--navy);
-      color: #fff;
-      box-shadow: 0 6px 14px rgba(15,23,42,0.25);
-    }
-
-    .nav-cta {
-      padding: 7px 14px;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.5);
-      font-size: 12px;
-      color: var(--text-muted);
-      background: rgba(255,255,255,0.8);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .nav-cta span {
-      font-size: 16px;
-    }
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 18px; box-shadow: 0 6px 14px rgba(15,23,42,0.25); }
+    .nav-title { display: flex; flex-direction: column; }
+    .nav-title-main { font-family: "Poppins", system-ui, sans-serif; font-weight: 700; font-size: 18px; color: var(--navy); }
+    .nav-title-sub { font-size: 12px; color: var(--text-muted); }
+    .nav-links { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+    .nav-link { padding: 6px 12px; border-radius: 999px; color: var(--text-muted); text-decoration: none; transition: all 0.2s ease; }
+    .nav-link:hover { background: rgba(148,163,184,0.12); color: var(--navy); }
+    .nav-link.active { background: var(--navy); color: #fff; box-shadow: 0 6px 14px rgba(15,23,42,0.25); }
+    .nav-cta { padding: 7px 14px; border-radius: 999px; border: 1px solid rgba(148,163,184,0.5);
+      font-size: 12px; color: var(--text-muted); background: rgba(255,255,255,0.8);
+      display: flex; align-items: center; gap: 6px; }
+    .nav-cta span { font-size: 16px; }
 
     /* MAIN LAYOUT */
-    .page {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      padding: 24px 16px 32px;
-    }
-
-    .page-inner {
-      max-width: 1100px;
-      width: 100%;
-      display: grid;
-      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.4fr);
-      gap: 22px;
-      align-items: flex-start;
-    }
-
+    .page { flex: 1; display: flex; justify-content: center; padding: 24px 16px 32px; }
+    .page-inner { max-width: 1100px; width: 100%;
+      display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.4fr);
+      gap: 22px; align-items: flex-start; }
     @media (max-width: 900px) {
-      .page-inner {
-        grid-template-columns: minmax(0, 1fr);
-      }
-      .nav-inner {
-        flex-wrap: wrap;
-      }
-      .nav-links {
-        width: 100%;
-        justify-content: flex-start;
-        flex-wrap: wrap;
-      }
+      .page-inner { grid-template-columns: minmax(0, 1fr); }
+      .nav-inner { flex-wrap: wrap; }
+      .nav-links { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
     }
 
     /* HERO CARD */
-    .hero-card {
-      background: linear-gradient(135deg, #3b5998, #6b8cce);
-      border-radius: 26px;
-      padding: 22px 22px 20px;
-      color: #e5ecff;
-      box-shadow: var(--shadow-soft);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: flex-start;
-    }
-
-    .hero-main {
-      max-width: 70%;
-    }
-
-    .hero-kicker {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: #bfdbfe;
-      margin-bottom: 6px;
-    }
-
-    .hero-title {
-      font-family: "Poppins", system-ui, sans-serif;
-      font-weight: 700;
-      font-size: 26px;
-      line-height: 1.2;
-      margin-bottom: 6px;
-    }
-
-    .hero-subtitle {
-      font-size: 14px;
-      color: #dbeafe;
-      margin-bottom: 14px;
-    }
-
-    .hero-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-
-    .hero-tag {
-      font-size: 11px;
-      padding: 4px 9px;
-      border-radius: 999px;
-      background: rgba(15,23,42,0.35);
-      border: 1px solid rgba(191,219,254,0.4);
-      color: #e5ecff;
-    }
-
-    .hero-cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 4px;
-    }
-
-    .hero-cta-primary {
-      background: #facc15;
-      color: #1f2933;
-      border-radius: var(--radius-pill);
-      padding: 8px 16px;
-      font-size: 13px;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 8px 18px rgba(15,23,42,0.35);
-      transition: all 0.2s ease;
-      text-decoration: none;
-    }
-
-    .hero-cta-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 22px rgba(15,23,42,0.45);
-      background: #fde047;
-    }
-
-    .hero-cta-secondary {
-      background: rgba(15,23,42,0.35);
-      color: #e5ecff;
-      border-radius: var(--radius-pill);
-      padding: 7px 14px;
-      font-size: 12px;
-      border: 1px solid rgba(191,219,254,0.5);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      text-decoration: none;
-    }
-
-    .hero-cta-secondary:hover {
-      background: rgba(15,23,42,0.55);
-    }
-
-    .hero-pill {
-      position: absolute;
-      right: -40px;
-      top: -40px;
-      width: 160px;
-      height: 160px;
+    .hero-card { background: linear-gradient(135deg, #3b5998, #6b8cce);
+      border-radius: 26px; padding: 22px 22px 20px; color: #e5ecff;
+      box-shadow: var(--shadow-soft); position: relative; overflow: hidden; }
+    .hero-top { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+    .hero-main { max-width: 70%; }
+    .hero-kicker { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em;
+      color: #bfdbfe; margin-bottom: 6px; }
+    .hero-title { font-family: "Poppins", system-ui, sans-serif; font-weight: 700;
+      font-size: 22px; line-height: 1.2; margin-bottom: 6px; }
+    .hero-subtitle { font-size: 14px; color: #dbeafe; margin-bottom: 14px; }
+    .hero-cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+    .hero-cta-primary { background: #facc15; color: #1f2933; border-radius: var(--radius-pill);
+      padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+      box-shadow: 0 8px 18px rgba(15,23,42,0.35); transition: all 0.2s ease; text-decoration: none; }
+    .hero-cta-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(15,23,42,0.45); background: #fde047; }
+    .hero-cta-secondary { background: rgba(15,23,42,0.35); color: #e5ecff;
+      border-radius: var(--radius-pill); padding: 7px 14px; font-size: 12px;
+      border: 1px solid rgba(191,219,254,0.5); cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+    .hero-cta-secondary:hover { background: rgba(15,23,42,0.55); }
+    .hero-pill { position: absolute; right: -40px; top: -40px; width: 160px; height: 160px;
       border-radius: 999px;
       background: radial-gradient(circle at 30% 30%, #facc15, #f97316 40%, #b91c1c 100%);
-      opacity: 0.18;
-    }
+      opacity: 0.18; }
 
-    .hero-badge {
-      position: absolute;
-      right: 18px;
-      bottom: 18px;
-      background: rgba(15,23,42,0.65);
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 11px;
-      color: #e5ecff;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border: 1px solid rgba(191,219,254,0.4);
+    /* ===== ANIME MASCOT ===== */
+    .anime-mascot {
+      position: relative; z-index: 2;
+      width: 90px; flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: center;
+      animation: mascot-float 3s ease-in-out infinite;
+      cursor: pointer;
+      user-select: none;
     }
-
-    .hero-badge-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: #22c55e;
-      box-shadow: 0 0 0 4px rgba(34,197,94,0.35);
+    @keyframes mascot-float {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-8px); }
+    }
+    /* Body */
+    .m-body {
+      width: 48px; height: 52px;
+      background: linear-gradient(160deg, #ff6b9d, #ff4081);
+      border-radius: 14px 14px 18px 18px;
+      position: relative; margin-top: 2px;
+      box-shadow: 0 4px 12px rgba(255,64,129,0.45);
+    }
+    /* Jersey number */
+    .m-body::after {
+      content: "🎾";
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+    }
+    /* Head */
+    .m-head {
+      width: 44px; height: 40px;
+      background: linear-gradient(160deg, #ffe0b2, #ffcc80);
+      border-radius: 50% 50% 45% 45%;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      z-index: 3;
+    }
+    /* Eyes */
+    .m-eye-l, .m-eye-r {
+      position: absolute; bottom: 13px;
+      width: 8px; height: 10px;
+      background: #1a1a2e;
+      border-radius: 50%;
+    }
+    .m-eye-l { left: 9px; }
+    .m-eye-r { right: 9px; }
+    /* Eye shine */
+    .m-eye-l::after, .m-eye-r::after {
+      content: "";
+      position: absolute; top: 1px; right: 1px;
+      width: 3px; height: 3px;
+      background: #fff; border-radius: 50%;
+    }
+    /* Blush */
+    .m-blush-l, .m-blush-r {
+      position: absolute; bottom: 9px;
+      width: 10px; height: 6px;
+      background: rgba(255,100,130,0.45);
+      border-radius: 50%;
+    }
+    .m-blush-l { left: 4px; }
+    .m-blush-r { right: 4px; }
+    /* Mouth */
+    .m-mouth {
+      position: absolute; bottom: 6px; left: 50%;
+      transform: translateX(-50%);
+      width: 14px; height: 7px;
+      border-bottom: 2.5px solid #c0392b;
+      border-radius: 0 0 50% 50%;
+    }
+    /* Hair */
+    .m-hair {
+      position: absolute; top: -4px; left: -2px; right: -2px;
+      height: 20px;
+      background: linear-gradient(180deg, #1a1a2e, #2d2d5e);
+      border-radius: 50% 50% 0 0;
+      z-index: 4;
+    }
+    /* Hair spike */
+    .m-spike {
+      position: absolute; top: -14px; left: 50%;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-bottom: 18px solid #1a1a2e;
+      z-index: 5;
+    }
+    /* Headband */
+    .m-headband {
+      position: absolute; top: 14px; left: -3px; right: -3px;
+      height: 7px;
+      background: #facc15;
+      border-radius: 4px;
+      z-index: 6;
+    }
+    /* Arms */
+    .m-arm-r {
+      position: absolute; right: -14px; top: 6px;
+      width: 14px; height: 28px;
+      background: linear-gradient(160deg, #ff6b9d, #ff4081);
+      border-radius: 6px;
+      transform-origin: top center;
+      animation: arm-swing 0.8s ease-in-out infinite alternate;
+    }
+    .m-arm-l {
+      position: absolute; left: -14px; top: 6px;
+      width: 14px; height: 28px;
+      background: linear-gradient(160deg, #ff6b9d, #ff4081);
+      border-radius: 6px;
+    }
+    @keyframes arm-swing {
+      0%   { transform: rotate(-30deg); }
+      100% { transform: rotate(10deg); }
+    }
+    /* Racket */
+    .m-racket {
+      position: absolute; right: -36px; top: -2px;
+      font-size: 22px;
+      animation: racket-swing 0.8s ease-in-out infinite alternate;
+      transform-origin: bottom left;
+    }
+    @keyframes racket-swing {
+      0%   { transform: rotate(-20deg); }
+      100% { transform: rotate(20deg); }
+    }
+    /* Legs */
+    .m-legs { display: flex; gap: 8px; margin-top: 0; }
+    .m-leg {
+      width: 16px; height: 22px;
+      background: #1d3563;
+      border-radius: 4px 4px 6px 6px;
+    }
+    .m-leg:first-child { animation: leg-l 0.8s ease-in-out infinite alternate; }
+    .m-leg:last-child  { animation: leg-r 0.8s ease-in-out infinite alternate; }
+    @keyframes leg-l { 0% { transform: rotate(8deg);  } 100% { transform: rotate(-8deg); } }
+    @keyframes leg-r { 0% { transform: rotate(-8deg); } 100% { transform: rotate(8deg);  } }
+    /* Shoes */
+    .m-shoe-l, .m-shoe-r {
+      width: 20px; height: 8px;
+      background: #facc15;
+      border-radius: 4px;
+      margin-top: -3px;
+    }
+    /* Speech bubble on hover */
+    .anime-mascot .m-bubble {
+      position: absolute; top: -32px; left: 50%;
+      transform: translateX(-50%);
+      background: #fff; color: #1d3563;
+      font-size: 10px; font-weight: 700;
+      padding: 4px 8px; border-radius: 10px;
+      white-space: nowrap; opacity: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .anime-mascot .m-bubble::after {
+      content: "";
+      position: absolute; top: 100%; left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: #fff;
+    }
+    .anime-mascot:hover .m-bubble { opacity: 1; }
+    /* Ball bounce */
+    .m-ball {
+      width: 10px; height: 10px;
+      background: radial-gradient(circle at 30% 30%, #d4f27e, #a3d900);
+      border-radius: 50%;
+      margin-top: 2px;
+      animation: ball-bounce 0.8s ease-in-out infinite alternate;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    @keyframes ball-bounce {
+      0%   { transform: translateY(0); box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+      100% { transform: translateY(-12px); box-shadow: 0 10px 12px rgba(0,0,0,0.08); }
     }
 
     /* QUICK ACTIONS */
-    .section {
-      margin-top: 18px;
-    }
+    .section { margin-top: 18px; }
+    .section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+    .section-title { font-size: 15px; font-weight: 600; color: var(--navy); }
+    .section-subtitle { font-size: 12px; color: var(--text-muted); }
+    .card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    @media (max-width: 800px) { .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 600px) { .card-grid { grid-template-columns: minmax(0, 1fr); } }
+    .action-card { background: var(--card-bg); border-radius: var(--radius-lg);
+      padding: 12px 12px 11px; box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148,163,184,0.25); display: flex; flex-direction: column;
+      gap: 6px; cursor: pointer; text-decoration: none; color: inherit;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
+    .action-card:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(15,23,42,0.12);
+      border-color: rgba(59,130,246,0.55); }
+    .action-icon { width: 26px; height: 26px; border-radius: 999px;
+      display: flex; align-items: center; justify-content: center; font-size: 15px; }
+    .action-icon.calendar { background: rgba(59,130,246,0.12); color: #2563eb; }
+    .action-icon.check    { background: rgba(34,197,94,0.12);  color: #16a34a; }
+    .action-icon.clipboard{ background: rgba(234,179,8,0.12);  color: #ca8a04; }
+    .action-title { font-size: 13px; font-weight: 600; color: var(--navy-soft); }
+    .action-desc  { font-size: 11px; color: var(--text-muted); }
+    .action-meta  { font-size: 11px; color: #6b7280; display: flex;
+      justify-content: space-between; align-items: center; margin-top: 2px; }
+    .action-pill  { padding: 2px 8px; border-radius: 999px; font-size: 10px;
+      background: rgba(15,23,42,0.04); color: var(--text-muted); }
 
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 10px;
-    }
-
-    .section-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--navy);
-    }
-
-    .section-subtitle {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    @media (max-width: 800px) {
-      .card-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 600px) {
-      .card-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-
-    .action-card {
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      padding: 12px 12px 11px;
-      box-shadow: var(--shadow-soft);
-      border: 1px solid rgba(148,163,184,0.25);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      cursor: pointer;
-      text-decoration: none;
-      color: inherit;
-      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-    }
-
-    .action-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 14px 30px rgba(15,23,42,0.12);
-      border-color: rgba(59,130,246,0.55);
-    }
-
-    .action-icon {
-      width: 26px;
-      height: 26px;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 15px;
-    }
-
-    .action-icon.calendar {
-      background: rgba(59,130,246,0.12);
-      color: #2563eb;
-    }
-
-    .action-icon.check {
-      background: rgba(34,197,94,0.12);
-      color: #16a34a;
-    }
-
-    .action-icon.clipboard {
-      background: rgba(234,179,8,0.12);
-      color: #ca8a04;
-    }
-
-    .action-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--navy-soft);
-    }
-
-    .action-desc {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .action-meta {
-      font-size: 11px;
-      color: #6b7280;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 2px;
-    }
-
-    .action-pill {
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 10px;
-      background: rgba(15,23,42,0.04);
-      color: var(--text-muted);
-    }
-
-    /* RIGHT COLUMN: NEXT MATCH + INFO */
-    .side-column {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: 22px;
-      padding: 14px 14px 12px;
-      box-shadow: var(--shadow-soft);
-      border: 1px solid rgba(148,163,184,0.25);
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 8px;
-    }
-
-    .card-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--navy-soft);
-    }
-
-    .card-subtitle {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .next-match-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 6px;
-      align-items: center;
-    }
-
-    .next-match-main {
-      font-size: 12px;
-      color: var(--text-main);
-    }
-
-    .next-match-main strong {
-      color: var(--navy-soft);
-    }
-
-    .next-match-meta {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 3px;
-    }
-
-    .next-match-cta {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 6px;
-    }
-
-    .pill-status {
-      font-size: 11px;
-      padding: 3px 9px;
-      border-radius: 999px;
-      background: rgba(34,197,94,0.08);
-      color: #15803d;
-      border: 1px solid rgba(34,197,94,0.35);
-    }
-
-    .btn-small {
-      border-radius: 999px;
-      padding: 6px 11px;
-      font-size: 11px;
-      border: none;
-      cursor: pointer;
-      background: var(--green);
-      color: #fff;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      box-shadow: 0 8px 18px rgba(22,163,74,0.35);
-      text-decoration: none;
-    }
-
-    .btn-small:hover {
-      background: #166534;
-    }
-
-    .list {
-      margin-top: 6px;
-      font-size: 11px;
-      color: var(--text-muted);
-      list-style: none;
-    }
-
-    .list li {
-      margin-bottom: 3px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: #9ca3af;
-    }
+    /* SIDE COLUMN */
+    .side-column { display: flex; flex-direction: column; gap: 14px; }
+    .card { background: var(--card-bg); border-radius: 22px; padding: 14px 14px 12px;
+      box-shadow: var(--shadow-soft); border: 1px solid rgba(148,163,184,0.25); }
+    .card-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    .card-title { font-size: 14px; font-weight: 600; color: var(--navy-soft); }
+    .card-subtitle { font-size: 11px; color: var(--text-muted); }
+    .next-match-row { display: flex; justify-content: space-between; gap: 10px; margin-top: 6px; align-items: center; }
+    .next-match-main { font-size: 12px; color: var(--text-main); }
+    .next-match-main strong { color: var(--navy-soft); }
+    .next-match-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+    .next-match-cta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .pill-status { font-size: 11px; padding: 3px 9px; border-radius: 999px;
+      background: rgba(34,197,94,0.08); color: #15803d; border: 1px solid rgba(34,197,94,0.35); }
+    .btn-small { border-radius: 999px; padding: 6px 11px; font-size: 11px; border: none;
+      cursor: pointer; background: var(--green); color: #fff;
+      display: inline-flex; align-items: center; gap: 6px;
+      box-shadow: 0 8px 18px rgba(22,163,74,0.35); text-decoration: none; }
+    .btn-small:hover { background: #166534; }
+    .list { margin-top: 6px; font-size: 11px; color: var(--text-muted); list-style: none; }
+    .list li { margin-bottom: 3px; display: flex; align-items: center; gap: 6px; }
+    .dot { width: 6px; height: 6px; border-radius: 999px; background: #9ca3af; }
 
     /* FOOTER */
-    .footer {
-      border-top: 1px solid rgba(148,163,184,0.3);
-      padding: 10px 16px 14px;
-      font-size: 11px;
-      color: var(--text-muted);
-      display: flex;
-      justify-content: center;
-    }
-
-    .footer-inner {
-      max-width: 1100px;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .footer-links {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .footer-link {
-      color: var(--text-muted);
-      text-decoration: none;
-    }
-
-    .footer-link:hover {
-      text-decoration: underline;
-    }
+    .footer { border-top: 1px solid rgba(148,163,184,0.3); padding: 10px 16px 14px;
+      font-size: 11px; color: var(--text-muted); display: flex; justify-content: center; }
+    .footer-inner { max-width: 1100px; width: 100%;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+    .footer-links { display: flex; gap: 10px; flex-wrap: wrap; }
+    .footer-link { color: var(--text-muted); text-decoration: none; }
+    .footer-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -608,23 +361,47 @@
           <div class="hero-top">
             <div class="hero-main">
               <div class="hero-kicker">Let's F'in Go, Team!</div>
-              <h1 class="hero-title">Your PLC Tennis control center.</h1>
+              <h1 class="hero-title">Your PLC Midcourt Crisis Control Center.</h1>
               <p class="hero-subtitle">
                 Check the schedule, submit availability, and keep the team aligned for every USTA match this season.
               </p>
-
               <div class="hero-cta-row">
-                <a href="availability.html" class="hero-cta-primary">
-                  Submit Availability
-                  <span>→</span>
-                </a>
-                <a href="calendar.html" class="hero-cta-secondary">
-                  View Match Calendar
-                </a>
+                <a href="availability.html" class="hero-cta-primary">Submit Availability <span>→</span></a>
+                <a href="calendar.html" class="hero-cta-secondary">View Match Calendar</a>
               </div>
             </div>
-          </div>
 
+            <!-- ANIME MASCOT -->
+            <div class="anime-mascot" title="Let's go!">
+              <div class="m-bubble">Let's rally! 🔥</div>
+              <!-- Head -->
+              <div class="m-head">
+                <div class="m-hair"></div>
+                <div class="m-spike"></div>
+                <div class="m-headband"></div>
+                <div class="m-eye-l"></div>
+                <div class="m-eye-r"></div>
+                <div class="m-blush-l"></div>
+                <div class="m-blush-r"></div>
+                <div class="m-mouth"></div>
+              </div>
+              <!-- Body -->
+              <div class="m-body">
+                <div class="m-arm-l"></div>
+                <div class="m-arm-r">
+                  <span class="m-racket">🏸</span>
+                </div>
+              </div>
+              <!-- Legs -->
+              <div class="m-legs">
+                <div class="m-leg"></div>
+                <div class="m-leg"></div>
+              </div>
+              <!-- Bouncing ball -->
+              <div class="m-ball"></div>
+            </div>
+
+          </div>
         </div>
 
         <section class="section">
@@ -634,36 +411,24 @@
               <div class="section-subtitle">Jump straight into what you do most.</div>
             </div>
           </div>
-
           <div class="card-grid">
             <a href="calendar.html" class="action-card">
               <div class="action-icon calendar">📅</div>
               <div class="action-title">Match Calendar</div>
               <div class="action-desc">See all upcoming matches, locations, and start times.</div>
-              <div class="action-meta">
-                <span>Next 4 weeks at a glance</span>
-                <span class="action-pill">Schedule</span>
-              </div>
+              <div class="action-meta"><span>Next 4 weeks at a glance</span><span class="action-pill">Schedule</span></div>
             </a>
-
             <a href="availability.html" class="action-card">
               <div class="action-icon check">✅</div>
               <div class="action-title">Submit Availability</div>
               <div class="action-desc">Tell the captain which matches you can play.</div>
-              <div class="action-meta">
-                <span>Keep your status up to date</span>
-                <span class="action-pill">Players</span>
-              </div>
+              <div class="action-meta"><span>Keep your status up to date</span><span class="action-pill">Players</span></div>
             </a>
-
             <a href="captain.html" class="action-card">
               <div class="action-icon clipboard">📊</div>
               <div class="action-title">Captain Dashboard</div>
               <div class="action-desc">View responses, export lineups, and plan rosters.</div>
-              <div class="action-meta">
-                <span>Matrix & Excel export</span>
-                <span class="action-pill">Captains</span>
-              </div>
+              <div class="action-meta"><span>Matrix &amp; Excel export</span><span class="action-pill">Captains</span></div>
             </a>
           </div>
         </section>
@@ -671,7 +436,6 @@
 
       <!-- RIGHT: NEXT MATCH + INFO -->
       <aside class="side-column">
-
         <section class="card">
           <div class="card-header">
             <div>
@@ -681,9 +445,7 @@
           </div>
           <div id="nextMatchContent">
             <div class="next-match-row">
-              <div class="next-match-main">
-                <span style="color:var(--text-muted);font-size:12px;">Loading next match…</span>
-              </div>
+              <div class="next-match-main"><span style="color:var(--text-muted);font-size:12px;">Loading next match…</span></div>
             </div>
           </div>
         </section>
@@ -710,23 +472,18 @@
           <ul class="list">
             <li>
               <span class="dot"></span>
-              <a class="footer-link" href="https://tennislink.usta.com/Leagues/Main/StatsAndStandings.aspx?t=3&par1=DB00E4A935D0D4C69584FB7A09C81F5E1D&par2=2026&par3=11" target="_blank" rel="noopener">
-                USTA TennisLink
-              </a>
+              <a class="footer-link" href="https://tennislink.usta.com/Leagues/Main/StatsAndStandings.aspx?t=3&par1=DB00E4A935D0D4C69584FB7A09C81F5E1D&par2=2026&par3=11" target="_blank" rel="noopener">USTA TennisLink</a>
             </li>
             <li>
               <span class="dot"></span>
-              <a class="footer-link" href="https://pinelake.cactennis.com/users/login" target="_blank" rel="noopener">
-                Columbia Pine Lake Club
-              </a>
+              <a class="footer-link" href="https://pinelake.cactennis.com/users/login" target="_blank" rel="noopener">Columbia Pine Lake Club</a>
             </li>
             <li>
               <span class="dot"></span>
-              <span>Captain contact: <strong>gaylorde@outlook.com · 425-444-1670</strong></span>
+              <span>Captain: <strong>gaylorde@outlook.com · 425-444-1670</strong></span>
             </li>
           </ul>
         </section>
-
       </aside>
     </div>
   </main>
@@ -748,7 +505,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script>
-    // Firebase init
     firebase.initializeApp({
       apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
       authDomain: "plc-tennis.firebaseapp.com",
@@ -788,13 +544,10 @@
     }
 
     function getOpponent(m) {
-      const home = m["Home Team"] || "";
-      const visit = m["Visiting Team"] || "";
-      const homeOurs = isOurTeam(home);
-      const visitOurs = isOurTeam(visit);
+      const home = m["Home Team"] || "", visit = m["Visiting Team"] || "";
+      const homeOurs = isOurTeam(home), visitOurs = isOurTeam(visit);
       if (homeOurs && !visitOurs) return { opponent: visit || "TBD", homeAway: "Home" };
       if (visitOurs && !homeOurs) return { opponent: home || "TBD", homeAway: "Away" };
-      // fallback: show whichever isn't ours, or both
       return { opponent: home + " vs " + visit, homeAway: "" };
     }
 
@@ -815,21 +568,17 @@
           if (match["Match ID"]) matches.push(match);
         }
         matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const today = new Date(); today.setHours(0,0,0,0);
         const upcoming = matches.filter(m => new Date(m["Schedule Date"]) >= today).slice(0, 4);
         const container = document.getElementById("nextMatchContent");
-
         if (upcoming.length === 0) {
           container.innerHTML = '<div class="next-match-row"><div class="next-match-main"><span style="color:var(--text-muted);font-size:12px;">No upcoming matches on the schedule.</span></div></div>';
           return;
         }
-
         container.innerHTML = '';
         upcoming.forEach((m, i) => {
           const dateObj = new Date(m["Schedule Date"]);
-          const dateStr = dateObj.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+          const dateStr = dateObj.toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric" });
           const { opponent, homeAway } = getOpponent(m);
           const location = m["Facility/Match Site"] || "TBA";
           const time = m["Schedule Time"] || "TBA";
@@ -838,7 +587,6 @@
           const leagueBg = league.includes("55") ? "rgba(234,179,8,0.12)" : "rgba(59,130,246,0.12)";
           const leagueColor = league.includes("55") ? "#a16207" : "#2563eb";
           const border = i > 0 ? 'border-top:1px solid var(--border-subtle);margin-top:8px;padding-top:8px;' : '';
-
           container.innerHTML += `
             <div style="${border}">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
@@ -849,37 +597,23 @@
                 </div>
                 <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:999px;background:${leagueBg};color:${leagueColor};white-space:nowrap;flex-shrink:0;">${leagueShort}</span>
               </div>
-            </div>
-          `;
+            </div>`;
         });
-
         container.innerHTML += `
           <div style="border-top:1px solid var(--border-subtle);margin-top:10px;padding-top:8px;text-align:center;">
             <a href="availability.html" class="btn-small">Update availability</a>
-          </div>
-        `;
+          </div>`;
       } catch (e) {
         document.getElementById("nextMatchContent").innerHTML = '<div class="next-match-row"><div class="next-match-main"><span style="color:var(--text-muted);font-size:12px;">Could not load match data.</span></div></div>';
       }
     }
-
     loadNextMatches();
 
-    /* ===== UPCOMING PRACTICES ===== */
     function getNextThursdays(count) {
-      const dates = [];
-      const d = new Date();
-      d.setHours(0, 0, 0, 0);
+      const dates = []; const d = new Date(); d.setHours(0,0,0,0);
       const day = d.getDay();
-      // Find this Thursday (or today if Thursday)
-      if (day !== 4) {
-        const diff = (4 - day + 7) % 7;
-        d.setDate(d.getDate() + diff);
-      }
-      for (let i = 0; i < count; i++) {
-        dates.push(new Date(d));
-        d.setDate(d.getDate() + 7);
-      }
+      if (day !== 4) { const diff = (4 - day + 7) % 7; d.setDate(d.getDate() + diff); }
+      for (let i = 0; i < count; i++) { dates.push(new Date(d)); d.setDate(d.getDate() + 7); }
       return dates;
     }
 
@@ -888,65 +622,40 @@
       try {
         const thursdays = getNextThursdays(3);
         let html = "";
-
         for (let i = 0; i < thursdays.length; i++) {
           const dt = thursdays[i];
           const key = dt.toISOString().split("T")[0];
-          const dateStr = dt.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+          const dateStr = dt.toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric" });
           const border = i > 0 ? "border-top:1px solid var(--border-subtle);margin-top:8px;padding-top:8px;" : "";
-
-          // Fetch practice meta + RSVPs from Firestore
           let yesCount = 0, maybeCount = 0, cancelled = false, cancelReason = "";
           try {
             const metaDoc = await db.collection("practice").doc(key).get();
-            if (metaDoc.exists) {
-              const md = metaDoc.data();
-              cancelled = !!md.cancelled;
-              cancelReason = md.cancelReason || "";
-            }
+            if (metaDoc.exists) { const md = metaDoc.data(); cancelled = !!md.cancelled; cancelReason = md.cancelReason || ""; }
             const rsvpSnap = await db.collection("practice").doc(key).collection("rsvps").get();
-            rsvpSnap.forEach(doc => {
-              const s = doc.data().status;
-              if (s === "yes") yesCount++;
-              else if (s === "maybe") maybeCount++;
-            });
-          } catch (e) { /* Firestore read may fail without auth */ }
-
+            rsvpSnap.forEach(doc => { const s = doc.data().status; if (s==="yes") yesCount++; else if (s==="maybe") maybeCount++; });
+          } catch (e) {}
           if (cancelled) {
-            html += `<div style="${border}">
-              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-                <div class="next-match-main">
-                  <strong style="text-decoration:line-through;color:var(--text-muted);">${dateStr}</strong><br/>
-                  <span class="next-match-meta" style="color:#dc2626;">🚫 Cancelled${cancelReason ? " — " + cancelReason : ""}</span>
-                </div>
-              </div>
-            </div>`;
+            html += `<div style="${border}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+              <div class="next-match-main"><strong style="text-decoration:line-through;color:var(--text-muted);">${dateStr}</strong><br/>
+              <span class="next-match-meta" style="color:#dc2626;">🚫 Cancelled${cancelReason ? " — "+cancelReason : ""}</span></div></div></div>`;
           } else {
             const spots = Math.max(0, 12 - yesCount);
-            const spotColor = spots === 0 ? "#dc2626" : spots <= 4 ? "#a16207" : "#15803d";
-            const spotBg = spots === 0 ? "rgba(239,68,68,.1)" : spots <= 4 ? "rgba(234,179,8,.1)" : "rgba(34,197,94,.1)";
-            html += `<div style="${border}">
-              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-                <div class="next-match-main">
-                  <strong>${dateStr}</strong><br/>
-                  <span class="next-match-meta">✔ ${yesCount} confirmed${maybeCount > 0 ? " · ? " + maybeCount + " maybe" : ""}</span>
-                </div>
-                <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:999px;background:${spotBg};color:${spotColor};white-space:nowrap;flex-shrink:0;">${spots === 0 ? "Full" : spots + " spots"}</span>
-              </div>
-            </div>`;
+            const spotColor = spots===0?"#dc2626":spots<=4?"#a16207":"#15803d";
+            const spotBg   = spots===0?"rgba(239,68,68,.1)":spots<=4?"rgba(234,179,8,.1)":"rgba(34,197,94,.1)";
+            html += `<div style="${border}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+              <div class="next-match-main"><strong>${dateStr}</strong><br/>
+              <span class="next-match-meta">✔ ${yesCount} confirmed${maybeCount>0?" · ? "+maybeCount+" maybe":""}</span></div>
+              <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:999px;background:${spotBg};color:${spotColor};white-space:nowrap;flex-shrink:0;">${spots===0?"Full":spots+" spots"}</span>
+              </div></div>`;
           }
         }
-
         html += `<div style="border-top:1px solid var(--border-subtle);margin-top:10px;padding-top:8px;text-align:center;">
-          <a href="practice.html" class="btn-small">RSVP for practice</a>
-        </div>`;
-
+          <a href="practice.html" class="btn-small">RSVP for practice</a></div>`;
         container.innerHTML = html;
       } catch (e) {
         container.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Could not load practice data.</div>';
       }
     }
-
     loadUpcomingPractices();
   </script>
 </body>

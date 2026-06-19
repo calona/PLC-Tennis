@@ -171,7 +171,7 @@
 
     /* HERO CARD */
     .hero-card {
-      background: linear-gradient(135deg, #3b5998, #6b8cce);
+      background: linear-gradient(135deg, #1d3563, #4a6fa5);
       border-radius: 26px;
       padding: 22px 22px 20px;
       color: #e5ecff;
@@ -589,10 +589,9 @@
         <a href="index.html" class="nav-link active">Home</a>
         <a href="calendar.html" class="nav-link">Calendar</a>
         <a href="availability.html" class="nav-link">Availability</a>
-        <a href="practice.html" class="nav-link">Practice</a>
+        <a href="captain.html" class="nav-link">Captain</a>
         <a href="roster.html" class="nav-link">Roster</a>
-        <a href="captain.html" class="nav-link" id="captainNav" style="display:none;">Captain</a>
-        <a href="#" class="nav-cta" onclick="logout()"><span>🔒</span> Logout</a>
+        <a href="practice.html" class="nav-link">Practice</a>
       </div>
     </div>
   </header>
@@ -691,8 +690,8 @@
         <section class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">🏋️ Practice schedule</div>
-              <div class="card-subtitle">Thursdays · 6:45 PM · PLC Indoor · 3 courts</div>
+              <div class="card-title">🏋️ Upcoming practices</div>
+              <div class="card-subtitle">Thursdays · 6:45 PM · PLC Indoor</div>
             </div>
           </div>
           <div id="practiceContent">
@@ -738,9 +737,8 @@
       <div class="footer-links">
         <a href="calendar.html" class="footer-link">Calendar</a>
         <a href="availability.html" class="footer-link">Availability</a>
-        <a href="captain.html" class="footer-link">Captain</a>
-        <a href="roster.html" class="footer-link">Roster</a>
         <a href="practice.html" class="footer-link">Practice</a>
+        <a href="roster.html" class="footer-link">Roster</a>
       </div>
     </div>
   </footer>
@@ -765,7 +763,7 @@
         var cn = document.getElementById("captainNav"); if(cn) cn.style.display="";
       }
     });
-    function logout() { auth.signOut().then(() => window.location.href = "login.html"); }
+    function logout() { firebase.auth().signOut().then(() => window.location.href = "login.html"); }
 
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
@@ -865,48 +863,90 @@
     }
 
     loadNextMatches();
-  </script>
 
-    /* ===== PRACTICE SCHEDULE ===== */
+    /* ===== UPCOMING PRACTICES ===== */
     function getNextThursdays(count) {
-      var dates = [];
-      var d = new Date(); d.setHours(0,0,0,0);
-      var day = d.getDay();
-      if (day !== 4) { var diff = (4 - day + 7) % 7; d.setDate(d.getDate() + diff); }
-      for (var i = 0; i < count; i++) { dates.push(new Date(d)); d.setDate(d.getDate() + 7); }
+      const dates = [];
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      const day = d.getDay();
+      // Find this Thursday (or today if Thursday)
+      if (day !== 4) {
+        const diff = (4 - day + 7) % 7;
+        d.setDate(d.getDate() + diff);
+      }
+      for (let i = 0; i < count; i++) {
+        dates.push(new Date(d));
+        d.setDate(d.getDate() + 7);
+      }
       return dates;
     }
-    async function loadPracticeSchedule() {
-      var container = document.getElementById("practiceContent");
-      if (!container) return;
+
+    async function loadUpcomingPractices() {
+      const container = document.getElementById("practiceContent");
       try {
-        var thursdays = getNextThursdays(4);
-        var html = "";
-        for (var i = 0; i < thursdays.length; i++) {
-          var dt = thursdays[i];
-          var key = dt.toISOString().split("T")[0];
-          var dateStr = dt.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
-          var border = i > 0 ? "border-top:1px solid #e5e7eb;margin-top:8px;padding-top:8px;" : "";
-          var yesCount=0, maybeCount=0, cancelled=false, cancelReason="";
+        const thursdays = getNextThursdays(3);
+        let html = "";
+
+        for (let i = 0; i < thursdays.length; i++) {
+          const dt = thursdays[i];
+          const key = dt.toISOString().split("T")[0];
+          const dateStr = dt.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+          const border = i > 0 ? "border-top:1px solid var(--border-subtle);margin-top:8px;padding-top:8px;" : "";
+
+          // Fetch practice meta + RSVPs from Firestore
+          let yesCount = 0, maybeCount = 0, cancelled = false, cancelReason = "";
           try {
-            var metaDoc = await db.collection("practice").doc(key).get();
-            if(metaDoc.exists){var md=metaDoc.data();cancelled=!!md.cancelled;cancelReason=md.cancelReason||"";}
-            var rsvpSnap = await db.collection("practice").doc(key).collection("rsvps").get();
-            rsvpSnap.forEach(function(doc){var s=doc.data().status;if(s==="yes")yesCount++;else if(s==="maybe")maybeCount++;});
-          } catch(e){}
-          if(cancelled){
-            html+='<div style="'+border+'"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div class="next-match-main"><strong style="text-decoration:line-through;color:#6b7280;">'+dateStr+' · 6:45 PM</strong><br/><span class="next-match-meta" style="color:#dc2626;">🚫 Cancelled'+(cancelReason?" — "+cancelReason:"")+'</span></div></div></div>';
+            const metaDoc = await db.collection("practice").doc(key).get();
+            if (metaDoc.exists) {
+              const md = metaDoc.data();
+              cancelled = !!md.cancelled;
+              cancelReason = md.cancelReason || "";
+            }
+            const rsvpSnap = await db.collection("practice").doc(key).collection("rsvps").get();
+            rsvpSnap.forEach(doc => {
+              const s = doc.data().status;
+              if (s === "yes") yesCount++;
+              else if (s === "maybe") maybeCount++;
+            });
+          } catch (e) { /* Firestore read may fail without auth */ }
+
+          if (cancelled) {
+            html += `<div style="${border}">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                <div class="next-match-main">
+                  <strong style="text-decoration:line-through;color:var(--text-muted);">${dateStr}</strong><br/>
+                  <span class="next-match-meta" style="color:#dc2626;">🚫 Cancelled${cancelReason ? " — " + cancelReason : ""}</span>
+                </div>
+              </div>
+            </div>`;
           } else {
-            var spots=Math.max(0,12-yesCount);
-            var sc=spots===0?"#dc2626":spots<=4?"#a16207":"#15803d";
-            var sb=spots===0?"rgba(239,68,68,.1)":spots<=4?"rgba(234,179,8,.1)":"rgba(34,197,94,.1)";
-            html+='<div style="'+border+'"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div class="next-match-main"><strong>'+dateStr+' · 6:45 PM</strong><br/><span class="next-match-meta">✔ '+yesCount+'/12 playing'+(maybeCount>0?" · ? "+maybeCount+" maybe":"")+'</span></div><span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:999px;background:'+sb+';color:'+sc+';white-space:nowrap;flex-shrink:0;">'+(spots===0?"Full":spots+" open")+'</span></div></div>';
+            const spots = Math.max(0, 12 - yesCount);
+            const spotColor = spots === 0 ? "#dc2626" : spots <= 4 ? "#a16207" : "#15803d";
+            const spotBg = spots === 0 ? "rgba(239,68,68,.1)" : spots <= 4 ? "rgba(234,179,8,.1)" : "rgba(34,197,94,.1)";
+            html += `<div style="${border}">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                <div class="next-match-main">
+                  <strong>${dateStr}</strong><br/>
+                  <span class="next-match-meta">✔ ${yesCount} confirmed${maybeCount > 0 ? " · ? " + maybeCount + " maybe" : ""}</span>
+                </div>
+                <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:999px;background:${spotBg};color:${spotColor};white-space:nowrap;flex-shrink:0;">${spots === 0 ? "Full" : spots + " spots"}</span>
+              </div>
+            </div>`;
           }
         }
-        html+='<div style="border-top:1px solid #e5e7eb;margin-top:10px;padding-top:8px;text-align:center;"><a href="practice.html" class="btn-small">RSVP for practice</a></div>';
-        container.innerHTML=html;
-      } catch(e){ container.innerHTML='<div style="color:#6b7280;font-size:12px;">Could not load practice data.</div>'; }
+
+        html += `<div style="border-top:1px solid var(--border-subtle);margin-top:10px;padding-top:8px;text-align:center;">
+          <a href="practice.html" class="btn-small">RSVP for practice</a>
+        </div>`;
+
+        container.innerHTML = html;
+      } catch (e) {
+        container.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Could not load practice data.</div>';
+      }
     }
-    loadPracticeSchedule();
+
+    loadUpcomingPractices();
+  </script>
 </body>
 </html>

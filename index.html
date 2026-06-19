@@ -673,21 +673,15 @@
         <section class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">Next match</div>
-              <div class="card-subtitle">Pulled from your 2026 schedule.</div>
+              <div class="card-title">Upcoming matches</div>
+              <div class="card-subtitle">Next 4 from your 2026 schedule.</div>
             </div>
           </div>
-          <!-- Placeholder content; you can wire this to live data later -->
-          <div class="next-match-row">
-            <div class="next-match-main">
-              <strong>PLC vs TBD Opponent</strong><br />
-              <span class="next-match-meta">Date: TBA · Time: TBA · Location: Home</span>
-            </div>
-            <div class="next-match-cta">
-              <span class="pill-status">Responses: TBA</span>
-              <a href="availability.html" class="btn-small">
-                Update availability
-              </a>
+          <div id="nextMatchContent">
+            <div class="next-match-row">
+              <div class="next-match-main">
+                <span style="color:var(--text-muted);font-size:12px;">Loading next match…</span>
+              </div>
             </div>
           </div>
         </section>
@@ -735,5 +729,91 @@
     </div>
   </footer>
 
+  <script>
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
+
+    function parseCSV(text) {
+      const rows = []; let row = []; let cell = ""; let inQ = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i], n = text[i + 1];
+        if (c === '"' && n === '"') { cell += '"'; i++; }
+        else if (c === '"') { inQ = !inQ; }
+        else if (c === ',' && !inQ) { row.push(cell); cell = ""; }
+        else if (c === '\n' && !inQ) { row.push(cell); rows.push(row); row = []; cell = ""; }
+        else { cell += c; }
+      }
+      row.push(cell); rows.push(row);
+      return rows;
+    }
+
+    async function loadNextMatches() {
+      try {
+        const res = await fetch(SHEET_URL);
+        const csv = await res.text();
+        const rows = parseCSV(csv);
+        const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
+        const numMatches = rows[0].length - 1;
+        const matches = [];
+        for (let col = 1; col <= numMatches; col++) {
+          const match = {};
+          for (let r = 0; r < fieldNames.length; r++) {
+            const field = fieldNames[r], value = rows[r][col]?.trim();
+            if (field && value) match[field] = value;
+          }
+          if (match["Match ID"]) matches.push(match);
+        }
+        matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const upcoming = matches.filter(m => new Date(m["Schedule Date"]) >= today).slice(0, 4);
+        const container = document.getElementById("nextMatchContent");
+
+        if (upcoming.length === 0) {
+          container.innerHTML = '<div class="next-match-row"><div class="next-match-main"><span style="color:var(--text-muted);font-size:12px;">No upcoming matches on the schedule.</span></div></div>';
+          return;
+        }
+
+        container.innerHTML = '';
+        upcoming.forEach((m, i) => {
+          const dateObj = new Date(m["Schedule Date"]);
+          const dateStr = dateObj.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+          const isHome = (m["Home Team"] || "").toLowerCase().includes("pine lake") || (m["Home Team"] || "").toLowerCase().includes("plc");
+          const opponent = isHome ? (m["Visiting Team"] || "TBD") : (m["Home Team"] || "TBD");
+          const homeAway = isHome ? "Home" : "Away";
+          const location = m["Facility/Match Site"] || "TBA";
+          const time = m["Schedule Time"] || "TBA";
+          const league = m["League"] || "";
+          const leagueShort = league.includes("55") ? "55+" : league.includes("40") ? "40+" : league;
+          const leagueBg = league.includes("55") ? "rgba(234,179,8,0.12)" : "rgba(59,130,246,0.12)";
+          const leagueColor = league.includes("55") ? "#a16207" : "#2563eb";
+          const border = i > 0 ? 'border-top:1px solid var(--border-subtle);margin-top:8px;padding-top:8px;' : '';
+
+          container.innerHTML += `
+            <div style="${border}">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+                <div class="next-match-main">
+                  <strong>PLC vs ${opponent}</strong><br />
+                  <span class="next-match-meta">${dateStr} · ${time} · ${homeAway}</span><br />
+                  <span class="next-match-meta">${location}</span>
+                </div>
+                <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:999px;background:${leagueBg};color:${leagueColor};white-space:nowrap;flex-shrink:0;">${leagueShort}</span>
+              </div>
+            </div>
+          `;
+        });
+
+        container.innerHTML += `
+          <div style="border-top:1px solid var(--border-subtle);margin-top:10px;padding-top:8px;text-align:center;">
+            <a href="availability.html" class="btn-small">Update availability</a>
+          </div>
+        `;
+      } catch (e) {
+        document.getElementById("nextMatchContent").innerHTML = '<div class="next-match-row"><div class="next-match-main"><span style="color:var(--text-muted);font-size:12px;">Could not load match data.</span></div></div>';
+      }
+    }
+
+    loadNextMatches();
+  </script>
 </body>
 </html>

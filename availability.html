@@ -277,8 +277,9 @@
       <div class="footer-links">
         <a href="calendar.html" class="footer-link">Calendar</a>
         <a href="availability.html" class="footer-link">Availability</a>
-        <a href="practice.html" class="footer-link">Practice</a>
+        <a href="captain.html" class="footer-link">Captain</a>
         <a href="roster.html" class="footer-link">Roster</a>
+        <a href="practice.html" class="footer-link">Practice</a>
       </div>
     </div>
   </footer>
@@ -301,7 +302,6 @@
     const db = firebase.firestore();
 
     auth.onAuthStateChanged(user => {
-      if (user && user.email.toLowerCase() === "gaylorde@outlook.com") { var cn = document.getElementById("captainNav"); if(cn) cn.style.display=""; }
       if (!user) { window.location.href = "login.html"; } else { loadAllMatches(); }
     });
     function logout() { auth.signOut().then(() => window.location.href = "login.html"); }

@@ -131,16 +131,6 @@
       font-weight: 600; font-size: 14px; color: var(--navy-soft);
       margin-bottom: 6px;
     }
-    .practice-entry {
-      margin-top: 4px; padding: 5px 7px; border-radius: 8px;
-      background: rgba(34,197,94,0.08); border-left: 3px solid #22c55e;
-      font-size: 11px; cursor: pointer; transition: all 0.2s;
-    }
-    .practice-entry:hover { background: rgba(34,197,94,0.15); }
-    .practice-entry strong { color: #15803d; font-weight: 600; }
-    .practice-entry .practice-meta { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
-    .practice-entry.cancelled { background: rgba(239,68,68,0.06); border-left-color: #ef4444; }
-    .practice-entry.cancelled strong { color: #dc2626; text-decoration: line-through; }
     .match-entry {
       margin-top: 6px; padding: 6px 8px; background: rgba(74,111,165,0.06);
       border-radius: 8px; font-size: 12px; border-left: 3px solid var(--blue);
@@ -188,16 +178,6 @@
       .nav-links { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
       .calendar-grid { grid-template-columns: repeat(7, 1fr); gap: 4px; }
       .day-cell { min-height: 80px; padding: 5px; font-size: 11px; }
-    .practice-entry {
-      margin-top: 4px; padding: 5px 7px; border-radius: 8px;
-      background: rgba(34,197,94,0.08); border-left: 3px solid #22c55e;
-      font-size: 11px; cursor: pointer; transition: all 0.2s;
-    }
-    .practice-entry:hover { background: rgba(34,197,94,0.15); }
-    .practice-entry strong { color: #15803d; font-weight: 600; }
-    .practice-entry .practice-meta { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
-    .practice-entry.cancelled { background: rgba(239,68,68,0.06); border-left-color: #ef4444; }
-    .practice-entry.cancelled strong { color: #dc2626; text-decoration: line-through; }
       .match-entry { font-size: 10px; padding: 4px 5px; }
     }
     @media (max-width: 600px) {
@@ -227,10 +207,10 @@
         <a href="index.html" class="nav-link">Home</a>
         <a href="calendar.html" class="nav-link active">Calendar</a>
         <a href="availability.html" class="nav-link">Availability</a>
-        <a href="captain.html" class="nav-link">Captain</a>
-        <a href="roster.html" class="nav-link">Roster</a>
         <a href="practice.html" class="nav-link">Practice</a>
-        <a href="#" id="loginBtn" class="nav-cta" onclick="logout()"><span>🔒</span> Logout</a>
+        <a href="roster.html" class="nav-link">Roster</a>
+        <a href="captain.html" class="nav-link" id="captainNav" style="display:none;">Captain</a>
+        <a href="#" class="nav-cta" onclick="logout()"><span>🔒</span> Logout</a>
       </div>
     </div>
   </header>
@@ -413,54 +393,9 @@
             });
             cell.appendChild(entry);
           }
-          // Add practice entry on Thursdays
-          const cellDate = new Date(year, month, day);
-          if (cellDate.getDay() === 4) {
-            const practiceEntry = document.createElement("div");
-            practiceEntry.className = "practice-entry";
-            practiceEntry.onclick = () => window.location.href = 'practice.html';
-            const pKey = cellDate.toISOString().split('T')[0];
-            practiceEntry.innerHTML = '<strong>🏋️ Practice · 6:45 PM</strong><div class="practice-meta">Loading…</div>';
-            cell.appendChild(practiceEntry);
-            loadPracticeData(pKey, practiceEntry);
-          }
           grid.appendChild(cell);
         }
         container.appendChild(grid);
-      }
-    }
-
-    /* ===== PRACTICE DATA FOR CALENDAR ===== */
-    async function loadPracticeData(dateKey, element) {
-      try {
-        let yesCount = 0, maybeCount = 0, cancelled = false, cancelReason = "";
-        const metaDoc = await db.collection("practice").doc(dateKey).get();
-        if (metaDoc.exists) {
-          const md = metaDoc.data();
-          cancelled = !!md.cancelled;
-          cancelReason = md.cancelReason || "";
-        }
-        if (cancelled) {
-          element.className = "practice-entry cancelled";
-          element.innerHTML = "<strong>\ud83d\udeab Practice Cancelled</strong><div class=\"practice-meta\">" + (cancelReason || "No practice this week") + "</div>";
-          return;
-        }
-        const rsvpSnap = await db.collection("practice").doc(dateKey).collection("rsvps").get();
-        rsvpSnap.forEach(function(doc) {
-          var s = doc.data().status;
-          if (s === "yes") yesCount++;
-          else if (s === "maybe") maybeCount++;
-        });
-        var spots = Math.max(0, 12 - yesCount);
-        var spotColor = spots === 0 ? "#dc2626" : spots <= 4 ? "#a16207" : "#15803d";
-        var spotBg = spots === 0 ? "rgba(239,68,68,.1)" : spots <= 4 ? "rgba(234,179,8,.1)" : "rgba(34,197,94,.1)";
-        element.innerHTML = "<strong>\ud83c\udfcb\ufe0f Practice \u00b7 6:45 PM</strong>" +
-          "<div class=\"practice-meta\">\u2714 " + yesCount + "/12 playing" +
-          (maybeCount > 0 ? " \u00b7 ? " + maybeCount + " maybe" : "") +
-          " <span style=\"font-size:9px;font-weight:600;padding:1px 6px;border-radius:999px;background:" + spotBg + ";color:" + spotColor + ";margin-left:4px;\">" +
-          (spots === 0 ? "Full" : spots + " open") + "</span></div>";
-      } catch (e) {
-        element.querySelector(".practice-meta").textContent = "3 courts \u00b7 PLC Indoor";
       }
     }
   </script>

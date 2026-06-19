@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Thursday Practice — PLC Tennis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{--navy:#1d3563;--navy-soft:#243c6f;--blue:#4a6fa5;--green:#1d6f42;--bg:#f5f7fa;--card-bg:#fff;--text-main:#1f2933;--text-muted:#6b7280;--border-subtle:#e5e7eb;--shadow-soft:0 10px 25px rgba(15,23,42,.08);--radius-lg:18px;--radius-pill:999px}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,sans-serif;background:radial-gradient(circle at top left,#e0ecff 0,var(--bg) 40%,var(--bg) 100%);color:var(--text-main);min-height:100vh;display:flex;flex-direction:column}
+    .nav{position:sticky;top:0;z-index:20;backdrop-filter:blur(12px);background:linear-gradient(to right,rgba(245,247,250,.95),rgba(245,247,250,.9));border-bottom:1px solid rgba(148,163,184,.25)}
+    .nav-inner{max-width:1100px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .nav-left{display:flex;align-items:center;gap:10px}
+    .nav-logo{width:34px;height:34px;border-radius:12px;background:radial-gradient(circle at 30% 20%,#facc15,#f97316 40%,#b91c1c 100%);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;box-shadow:0 6px 14px rgba(15,23,42,.25)}
+    .nav-title{display:flex;flex-direction:column}
+    .nav-title-main{font-family:"Poppins",sans-serif;font-weight:700;font-size:18px;color:var(--navy)}
+    .nav-title-sub{font-size:12px;color:var(--text-muted)}
+    .nav-links{display:flex;align-items:center;gap:10px;font-size:14px;flex-wrap:wrap}
+    .nav-link{padding:6px 12px;border-radius:var(--radius-pill);color:var(--text-muted);text-decoration:none;transition:all .2s ease}
+    .nav-link:hover{background:rgba(148,163,184,.12);color:var(--navy)}
+    .nav-link.active{background:var(--navy);color:#fff;box-shadow:0 6px 14px rgba(15,23,42,.25)}
+    .nav-cta{padding:7px 14px;border-radius:var(--radius-pill);border:1px solid rgba(148,163,184,.5);font-size:12px;color:var(--text-muted);background:rgba(255,255,255,.8);display:flex;align-items:center;gap:6px;cursor:pointer;text-decoration:none}
+    .nav-cta span{font-size:16px}
+    .page{flex:1;display:flex;justify-content:center;padding:24px 16px 32px}
+    .page-inner{max-width:900px;width:100%}
+    .page-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;margin-bottom:20px}
+    .page-header-text h1{font-family:"Poppins",sans-serif;font-weight:700;font-size:24px;color:var(--navy);margin-bottom:4px}
+    .page-header-text p{font-size:13px;color:var(--text-muted)}
+    .info-card{background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:22px;padding:22px 24px;color:#e5ecff;box-shadow:var(--shadow-soft);position:relative;overflow:hidden;margin-bottom:20px}
+    .info-card-pill{position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:999px;background:radial-gradient(circle at 30% 30%,#facc15,#f97316 40%,#b91c1c 100%);opacity:.15}
+    .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;position:relative;z-index:1}
+    .info-item-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#bfdbfe;margin-bottom:3px}
+    .info-item-value{font-family:"Poppins",sans-serif;font-weight:600;font-size:15px}
+    .date-nav{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+    .date-btn{padding:8px 16px;border-radius:12px;border:1px solid var(--border-subtle);background:var(--card-bg);font-family:"Inter",sans-serif;font-size:13px;font-weight:500;color:var(--navy-soft);cursor:pointer;transition:all .2s}
+    .date-btn:hover{border-color:var(--blue);background:rgba(74,111,165,.04)}
+    .date-btn:disabled{opacity:.4;cursor:not-allowed}
+    .date-current{font-family:"Poppins",sans-serif;font-weight:600;font-size:16px;color:var(--navy)}
+
+    /* CANCELLED BANNER */
+    .cancelled-banner{background:linear-gradient(135deg,#dc2626,#ef4444);border-radius:16px;padding:18px 22px;color:#fff;margin-bottom:20px;display:none;align-items:center;gap:12px;box-shadow:0 8px 20px rgba(239,68,68,.25)}
+    .cancelled-banner.show{display:flex}
+    .cancelled-banner .cb-icon{font-size:28px;flex-shrink:0}
+    .cancelled-banner .cb-text h3{font-family:"Poppins",sans-serif;font-weight:700;font-size:16px;margin-bottom:2px}
+    .cancelled-banner .cb-text p{font-size:13px;opacity:.9}
+
+    /* CAPTAIN CONTROLS */
+    .captain-bar{background:var(--card-bg);border-radius:16px;padding:14px 18px;box-shadow:var(--shadow-soft);border:1px solid rgba(148,163,184,.25);margin-bottom:20px;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .captain-bar.show{display:flex}
+    .captain-bar-label{font-size:13px;font-weight:500;color:var(--navy-soft);display:flex;align-items:center;gap:6px}
+    .captain-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .cancel-btn{padding:8px 16px;border-radius:var(--radius-pill);border:2px solid #ef4444;background:rgba(239,68,68,.06);font-family:"Inter",sans-serif;font-size:12px;font-weight:600;color:#dc2626;cursor:pointer;transition:all .2s}
+    .cancel-btn:hover{background:rgba(239,68,68,.12)}
+    .cancel-btn.active{background:#dc2626;color:#fff}
+    .reason-input{padding:7px 12px;border-radius:10px;border:1px solid var(--border-subtle);font-family:"Inter",sans-serif;font-size:12px;color:var(--text-main);width:220px;outline:none}
+    .reason-input:focus{border-color:var(--blue)}
+
+    .rsvp-card{background:var(--card-bg);border-radius:22px;padding:22px 24px;box-shadow:var(--shadow-soft);border:1px solid rgba(148,163,184,.25);margin-bottom:20px}
+    .rsvp-card.disabled{opacity:.5;pointer-events:none}
+    .rsvp-title{font-family:"Poppins",sans-serif;font-weight:600;font-size:16px;color:var(--navy);margin-bottom:4px}
+    .rsvp-sub{font-size:13px;color:var(--text-muted);margin-bottom:16px}
+    .rsvp-buttons{display:flex;gap:10px;flex-wrap:wrap}
+    .rsvp-btn{flex:1;min-width:100px;padding:12px;border:2px solid var(--border-subtle);border-radius:14px;background:var(--card-bg);font-family:"Inter",sans-serif;font-size:14px;font-weight:500;color:var(--text-main);cursor:pointer;transition:all .2s;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px}
+    .rsvp-btn:hover{border-color:var(--blue);background:rgba(74,111,165,.04)}
+    .rsvp-btn.selected{box-shadow:0 0 0 3px rgba(29,53,99,.12)}
+    .rsvp-btn.yes.selected{border-color:#22c55e;background:rgba(34,197,94,.06)}
+    .rsvp-btn.maybe.selected{border-color:#eab308;background:rgba(234,179,8,.06)}
+    .rsvp-btn.no.selected{border-color:#ef4444;background:rgba(239,68,68,.06)}
+    #rsvpMsg{margin-top:12px;font-size:13px;font-weight:500;padding:8px 14px;border-radius:10px;display:none}
+    #rsvpMsg.success{display:block;background:rgba(34,197,94,.08);color:#15803d}
+    #rsvpMsg.info{display:block;background:rgba(59,130,246,.08);color:#2563eb}
+
+    .summary-strip{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+    .summary-item{background:var(--card-bg);border-radius:14px;padding:14px 18px;box-shadow:var(--shadow-soft);border:1px solid rgba(148,163,184,.25);display:flex;align-items:center;gap:10px;flex:1;min-width:90px}
+    .summary-number{font-family:"Poppins",sans-serif;font-weight:700;font-size:22px;color:var(--navy)}
+    .summary-label{font-size:12px;color:var(--text-muted);line-height:1.3}
+
+    .courts-header{font-family:"Poppins",sans-serif;font-weight:600;font-size:16px;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .courts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+    .court-card{background:var(--card-bg);border-radius:18px;padding:16px;box-shadow:var(--shadow-soft);border:1px solid rgba(148,163,184,.25)}
+    .court-label{font-family:"Poppins",sans-serif;font-weight:700;font-size:14px;color:var(--navy);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+    .court-type{font-size:11px;font-weight:600;padding:2px 8px;border-radius:var(--radius-pill);background:rgba(34,197,94,.1);color:#15803d}
+    .court-type.not-mixed{background:rgba(234,179,8,.1);color:#a16207}
+    .court-players{margin-top:10px}
+    .court-player{padding:6px 0;border-bottom:1px solid rgba(148,163,184,.08);font-size:13px;display:flex;align-items:center;gap:8px}
+    .court-player:last-child{border-bottom:none}
+    .gender-icon{font-size:14px}
+    .court-empty{font-size:12px;color:var(--text-muted);font-style:italic;padding:6px 0}
+
+    /* WAITLIST */
+    .waitlist-card{background:var(--card-bg);border-radius:22px;padding:22px 24px;box-shadow:var(--shadow-soft);border:2px solid rgba(234,179,8,.35);margin-bottom:20px;display:none}
+    .waitlist-card.show{display:block}
+    .waitlist-title{font-family:"Poppins",sans-serif;font-weight:600;font-size:16px;color:#a16207;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+    .waitlist-sub{font-size:12px;color:var(--text-muted);margin-bottom:12px}
+    .waitlist-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(148,163,184,.08);font-size:13px}
+    .waitlist-row:last-child{border-bottom:none}
+    .waitlist-pos{font-weight:700;color:#a16207;font-size:14px;width:24px}
+
+    .signups-card{background:var(--card-bg);border-radius:22px;padding:22px 24px;box-shadow:var(--shadow-soft);border:1px solid rgba(148,163,184,.25);margin-bottom:20px}
+    .signups-title{font-family:"Poppins",sans-serif;font-weight:600;font-size:16px;color:var(--navy);margin-bottom:12px}
+    .signup-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(148,163,184,.08);font-size:13px}
+    .signup-row:last-child{border-bottom:none}
+    .signup-name{font-weight:500;display:flex;align-items:center;gap:6px}
+    .signup-status{font-size:11px;font-weight:600;padding:3px 10px;border-radius:var(--radius-pill)}
+    .status-yes{background:rgba(34,197,94,.12);color:#15803d}
+    .status-maybe{background:rgba(234,179,8,.12);color:#a16207}
+    .status-waitlist{background:rgba(249,115,22,.12);color:#c2410c}
+
+    /* HISTORY */
+    .history-card{background:var(--card-bg);border-radius:22px;padding:22px 24px;box-shadow:var(--shadow-soft);border:1px solid rgba(148,163,184,.25);margin-bottom:20px}
+    .history-title{font-family:"Poppins",sans-serif;font-weight:600;font-size:16px;color:var(--navy);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+    .history-sub{font-size:12px;color:var(--text-muted);margin-bottom:14px}
+    .history-table{width:100%;border-collapse:collapse;font-size:13px}
+    .history-table th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);padding:8px 10px;border-bottom:2px solid var(--border-subtle)}
+    .history-table td{padding:8px 10px;border-bottom:1px solid rgba(148,163,184,.08)}
+    .history-table tr:last-child td{border-bottom:none}
+    .att-bar{height:8px;border-radius:4px;background:var(--border-subtle);overflow:hidden;min-width:60px}
+    .att-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green),#22c55e)}
+    .att-pct{font-weight:600;font-size:12px;color:var(--navy);min-width:36px;text-align:right}
+    .streak-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:var(--radius-pill);background:rgba(249,115,22,.1);color:#ea580c}
+
+    .footer{border-top:1px solid rgba(148,163,184,.3);padding:10px 16px 14px;font-size:11px;color:var(--text-muted);display:flex;justify-content:center}
+    .footer-inner{max-width:1100px;width:100%;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+    .footer-links{display:flex;gap:10px;flex-wrap:wrap}
+    .footer-link{color:var(--text-muted);text-decoration:none}
+    .footer-link:hover{text-decoration:underline}
+
+    @media(max-width:900px){.nav-inner{flex-wrap:wrap}.nav-links{width:100%;justify-content:flex-start}}
+    @media(max-width:700px){.courts-grid{grid-template-columns:1fr}}
+    @media(max-width:600px){.page-header{flex-direction:column;align-items:flex-start}.info-grid{grid-template-columns:1fr 1fr}.reason-input{width:100%}}
+  </style>
+</head>
+<body>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="nav-left">
+        <div class="nav-logo">PLC</div>
+        <div class="nav-title">
+          <div class="nav-title-main">PLC Tennis</div>
+          <div class="nav-title-sub">USTA Team Hub · 2026 Season</div>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="calendar.html" class="nav-link">Calendar</a>
+        <a href="availability.html" class="nav-link">Availability</a>
+        <a href="captain.html" class="nav-link">Captain</a>
+        <a href="roster.html" class="nav-link">Roster</a>
+        <a href="practice.html" class="nav-link active">Practice</a>
+        <a href="#" class="nav-cta" onclick="logout()"><span>🔒</span> Logout</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="page-inner">
+      <div class="page-header">
+        <div class="page-header-text">
+          <h1>🏋️ Thursday Practice</h1>
+          <p>Weekly practice — 3 indoor doubles courts at Pine Lake Club. Mixed doubles preferred.</p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-pill"></div>
+        <div class="info-grid">
+          <div><div class="info-item-label">Day</div><div class="info-item-value">Every Thursday</div></div>
+          <div><div class="info-item-label">Time</div><div class="info-item-value">6:45 PM</div></div>
+          <div><div class="info-item-label">Location</div><div class="info-item-value">PLC Indoor Courts</div></div>
+          <div><div class="info-item-label">Format</div><div class="info-item-value">3 Courts · Doubles</div></div>
+          <div><div class="info-item-label">Capacity</div><div class="info-item-value">12 Players (4/court)</div></div>
+          <div><div class="info-item-label">Focus</div><div class="info-item-value">Mixed Doubles</div></div>
+        </div>
+      </div>
+
+      <div class="date-nav">
+        <button class="date-btn" id="prevBtn" onclick="changeWeek(-1)">← Prev</button>
+        <span class="date-current" id="dateLabel">Loading…</span>
+        <button class="date-btn" id="nextBtn" onclick="changeWeek(1)">Next →</button>
+      </div>
+
+      <!-- CANCELLED BANNER -->
+      <div class="cancelled-banner" id="cancelledBanner">
+        <div class="cb-icon">🚫</div>
+        <div class="cb-text">
+          <h3>Practice Cancelled</h3>
+          <p id="cancelReason">No practice this week.</p>
+        </div>
+      </div>
+
+      <!-- CAPTAIN CONTROLS -->
+      <div class="captain-bar" id="captainBar">
+        <div class="captain-bar-label">👑 Captain Controls</div>
+        <div class="captain-actions">
+          <input type="text" class="reason-input" id="cancelReasonInput" placeholder="Reason (e.g. Holiday, Weather)" />
+          <button class="cancel-btn" id="cancelToggle" onclick="toggleCancel()">Cancel Practice</button>
+        </div>
+      </div>
+
+      <!-- RSVP -->
+      <div class="rsvp-card" id="rsvpCard">
+        <div class="rsvp-title" id="rsvpTitle">Your RSVP</div>
+        <div class="rsvp-sub" id="rsvpSub">Are you playing this Thursday?</div>
+        <div class="rsvp-buttons">
+          <button class="rsvp-btn yes" onclick="setRSVP('yes')"><span>✔</span> <span id="yesLabel">I'm In</span></button>
+          <button class="rsvp-btn maybe" onclick="setRSVP('maybe')"><span>❓</span> Maybe</button>
+          <button class="rsvp-btn no" onclick="setRSVP('no')"><span>✖</span> Can't Make It</button>
+        </div>
+        <div id="rsvpMsg"></div>
+      </div>
+
+      <!-- SUMMARY -->
+      <div class="summary-strip">
+        <div class="summary-item"><div class="summary-number" id="yesCount">0</div><div class="summary-label">Confirmed</div></div>
+        <div class="summary-item"><div class="summary-number" id="waitlistCount">0</div><div class="summary-label">Waitlist</div></div>
+        <div class="summary-item"><div class="summary-number" id="maybeCount">0</div><div class="summary-label">Maybe</div></div>
+        <div class="summary-item"><div class="summary-number" id="spotsLeft">12</div><div class="summary-label">Spots Left</div></div>
+        <div class="summary-item"><div class="summary-number" id="mCount">0</div><div class="summary-label">♂ Men</div></div>
+        <div class="summary-item"><div class="summary-number" id="fCount">0</div><div class="summary-label">♀ Women</div></div>
+      </div>
+
+      <!-- COURT ASSIGNMENTS -->
+      <div class="courts-header">🎾 Court Assignments <span style="font-size:12px;color:var(--text-muted);font-weight:400;">(auto-assigned for mixed doubles)</span></div>
+      <div class="courts-grid" id="courtsGrid"></div>
+
+      <!-- WAITLIST -->
+      <div class="waitlist-card" id="waitlistCard">
+        <div class="waitlist-title">⏳ Waitlist</div>
+        <div class="waitlist-sub">Courts are full. These players will be moved in if a spot opens.</div>
+        <div id="waitlistBody"></div>
+      </div>
+
+      <!-- ALL RESPONSES -->
+      <div class="signups-card">
+        <div class="signups-title">All Responses</div>
+        <div id="signupsList"><div style="color:var(--text-muted);font-size:13px;padding:8px 0;">Loading…</div></div>
+      </div>
+
+      <!-- ATTENDANCE HISTORY -->
+      <div class="history-card">
+        <div class="history-title">📊 Attendance History</div>
+        <div class="history-sub">Last 8 weeks · sorted by attendance rate</div>
+        <div id="historyContent"><div style="color:var(--text-muted);font-size:13px;padding:8px 0;">Loading history…</div></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>&copy; 2026 Calona Consulting · Sammamish, WA</span>
+      <div class="footer-links">
+        <a href="calendar.html" class="footer-link">Calendar</a>
+        <a href="roster.html" class="footer-link">Roster</a>
+        <a href="practice.html" class="footer-link">Practice</a>
+        <a href="captain.html" class="footer-link">Captain</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
+      authDomain: "plc-tennis.firebaseapp.com",
+      projectId: "plc-tennis",
+      storageBucket: "plc-tennis.appspot.com",
+      messagingSenderId: "472563332469",
+      appId: "1:472563332469:web:b781075e99cd0f5a3c4f3c"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const CAPTAIN_EMAIL = "gaylorde@outlook.com";
+    const MAX_COURTS = 12;
+
+    let currentUser = null;
+    let isCaptain = false;
+    let rosterMap = {};
+    let practiceDate = getNextThursday(new Date());
+    let rsvps = [];
+    let practiceCancelled = false;
+    let cancelReason = "";
+
+    auth.onAuthStateChanged(user => {
+      if (!user) { window.location.href = "login.html"; return; }
+      currentUser = user;
+      isCaptain = user.email.toLowerCase() === CAPTAIN_EMAIL.toLowerCase();
+      if (isCaptain) document.getElementById("captainBar").classList.add("show");
+      loadRosterThenPractice();
+    });
+    function logout() { auth.signOut().then(() => window.location.href = "login.html"); }
+
+    function getNextThursday(from) {
+      const d = new Date(from); d.setHours(0,0,0,0);
+      const day = d.getDay();
+      if (day === 4 && from.getHours() < 23) return d;
+      const diff = (4 - day + 7) % 7 || 7;
+      d.setDate(d.getDate() + diff);
+      return d;
+    }
+
+    function practiceKey(date) { return date.toISOString().split("T")[0]; }
+
+    function changeWeek(delta) {
+      const d = new Date(practiceDate);
+      d.setDate(d.getDate() + delta * 7);
+      practiceDate = d;
+      updateDateLabel();
+      loadPractice();
+    }
+
+    function updateDateLabel() {
+      document.getElementById("dateLabel").textContent = practiceDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+      const today = new Date(); today.setHours(0,0,0,0);
+      document.getElementById("prevBtn").disabled = practiceDate <= today;
+    }
+
+    async function loadRosterThenPractice() {
+      const snap = await db.collection("roster").get();
+      rosterMap = {};
+      snap.forEach(doc => {
+        const d = doc.data();
+        if (d.email) rosterMap[d.email.toLowerCase()] = { name: d.name, gender: d.gender || "" };
+      });
+      updateDateLabel();
+      loadPractice();
+      loadHistory();
+    }
+
+    async function loadPractice() {
+      const key = practiceKey(practiceDate);
+
+      // Check cancel status
+      const metaDoc = await db.collection("practice").doc(key).get();
+      if (metaDoc.exists && metaDoc.data().cancelled) {
+        practiceCancelled = true;
+        cancelReason = metaDoc.data().cancelReason || "No practice this week.";
+      } else {
+        practiceCancelled = false;
+        cancelReason = "";
+      }
+
+      // Load RSVPs
+      const snap = await db.collection("practice").doc(key).collection("rsvps").get();
+      rsvps = [];
+      snap.forEach(doc => {
+        const d = doc.data();
+        const email = doc.id;
+        const roster = rosterMap[email.toLowerCase()] || {};
+        rsvps.push({
+          email: email,
+          status: d.status || "yes",
+          timestamp: d.timestamp ? d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp) : new Date(),
+          name: roster.name || email.split("@")[0],
+          gender: roster.gender || ""
+        });
+      });
+      // Sort "yes" by timestamp (first come first served for court spots)
+      rsvps.sort((a, b) => a.timestamp - b.timestamp);
+
+      renderAll();
+    }
+
+    function renderAll() {
+      renderCancelState();
+      renderMyRSVP();
+      renderSummary();
+      renderCourts();
+      renderWaitlist();
+      renderSignups();
+    }
+
+    /* ===== CANCEL STATE ===== */
+    function renderCancelState() {
+      const banner = document.getElementById("cancelledBanner");
+      const rsvpCard = document.getElementById("rsvpCard");
+      const toggle = document.getElementById("cancelToggle");
+      const reasonInput = document.getElementById("cancelReasonInput");
+
+      if (practiceCancelled) {
+        banner.classList.add("show");
+        document.getElementById("cancelReason").textContent = cancelReason;
+        rsvpCard.classList.add("disabled");
+        if (isCaptain) {
+          toggle.textContent = "Restore Practice";
+          toggle.classList.add("active");
+          reasonInput.value = cancelReason;
+        }
+      } else {
+        banner.classList.remove("show");
+        rsvpCard.classList.remove("disabled");
+        if (isCaptain) {
+          toggle.textContent = "Cancel Practice";
+          toggle.classList.remove("active");
+        }
+      }
+    }
+
+    async function toggleCancel() {
+      const key = practiceKey(practiceDate);
+      if (practiceCancelled) {
+        await db.collection("practice").doc(key).set({ cancelled: false, cancelReason: "" }, { merge: true });
+        practiceCancelled = false;
+        cancelReason = "";
+      } else {
+        const reason = document.getElementById("cancelReasonInput").value.trim() || "No practice this week.";
+        await db.collection("practice").doc(key).set({ cancelled: true, cancelReason: reason }, { merge: true });
+        practiceCancelled = true;
+        cancelReason = reason;
+      }
+      renderAll();
+    }
+
+    /* ===== RSVP ===== */
+    function renderMyRSVP() {
+      const myEmail = currentUser.email.toLowerCase();
+      const mine = rsvps.find(r => r.email.toLowerCase() === myEmail);
+      document.querySelectorAll(".rsvp-btn").forEach(b => b.classList.remove("selected"));
+
+      const yesPlayers = rsvps.filter(r => r.status === "yes");
+      const courtsFull = yesPlayers.length >= MAX_COURTS;
+      const amOnCourt = mine && mine.status === "yes" && yesPlayers.indexOf(mine) < MAX_COURTS;
+
+      // Update button label
+      const yesLabel = document.getElementById("yesLabel");
+      if (courtsFull && !amOnCourt) {
+        yesLabel.textContent = "Join Waitlist";
+        document.getElementById("rsvpSub").textContent = "Courts are full — join the waitlist or mark as maybe.";
+      } else {
+        yesLabel.textContent = "I'm In";
+        document.getElementById("rsvpSub").textContent = "Are you playing this Thursday?";
+      }
+
+      if (mine) {
+        document.querySelectorAll(".rsvp-btn").forEach(b => {
+          if (b.classList.contains(mine.status)) b.classList.add("selected");
+        });
+      }
+    }
+
+    function renderSummary() {
+      const yesAll = rsvps.filter(r => r.status === "yes");
+      const onCourt = yesAll.slice(0, MAX_COURTS);
+      const waitlisted = yesAll.slice(MAX_COURTS);
+      const maybe = rsvps.filter(r => r.status === "maybe");
+      const men = onCourt.filter(r => r.gender === "M").length;
+      const women = onCourt.filter(r => r.gender === "F").length;
+
+      document.getElementById("yesCount").textContent = onCourt.length;
+      document.getElementById("waitlistCount").textContent = waitlisted.length;
+      document.getElementById("maybeCount").textContent = maybe.length;
+      document.getElementById("spotsLeft").textContent = Math.max(0, MAX_COURTS - onCourt.length);
+      document.getElementById("mCount").textContent = men;
+      document.getElementById("fCount").textContent = women;
+    }
+
+    function renderCourts() {
+      const confirmed = rsvps.filter(r => r.status === "yes").slice(0, MAX_COURTS);
+      const men = confirmed.filter(r => r.gender === "M");
+      const women = confirmed.filter(r => r.gender === "F");
+      const courts = [[], [], []];
+      let mi = 0, fi = 0, ci = 0;
+      while (mi < men.length || fi < women.length) {
+        if (courts[ci].length >= 4) { ci = (ci + 1) % 3; if (courts[ci].length >= 4) break; continue; }
+        if (fi < women.length && courts[ci].filter(p => p.gender === "F").length < 2) courts[ci].push(women[fi++]);
+        else if (mi < men.length && courts[ci].filter(p => p.gender === "M").length < 2) courts[ci].push(men[mi++]);
+        else if (fi < women.length) courts[ci].push(women[fi++]);
+        else if (mi < men.length) courts[ci].push(men[mi++]);
+        if (courts[ci].length >= 4) ci = (ci + 1) % 3;
+      }
+      const placed = new Set(courts.flat().map(p => p.email));
+      confirmed.filter(p => !placed.has(p.email)).forEach(p => {
+        const s = courts.reduce((a, b, i) => courts[a].length <= b.length ? a : i, 0);
+        if (courts[s].length < 4) courts[s].push(p);
+      });
+
+      document.getElementById("courtsGrid").innerHTML = courts.map((court, i) => {
+        const mc = court.filter(p => p.gender === "M").length;
+        const fc = court.filter(p => p.gender === "F").length;
+        const isMixed = mc > 0 && fc > 0;
+        const typeLabel = court.length === 0 ? "" : isMixed ? "Mixed" : "Same Gender";
+        const typeClass = isMixed ? "" : "not-mixed";
+        const players = court.length > 0
+          ? court.map(p => `<div class="court-player"><span class="gender-icon">${p.gender === "M" ? "♂" : p.gender === "F" ? "♀" : "•"}</span><span>${escHtml(p.name)}</span></div>`).join("")
+          : '<div class="court-empty">Needs players</div>';
+        return `<div class="court-card"><div class="court-label">Court ${i+1} ${typeLabel ? `<span class="court-type ${typeClass}">${typeLabel}</span>` : ""}</div><div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">${court.length}/4 players</div><div class="court-players">${players}</div></div>`;
+      }).join("");
+    }
+
+    /* ===== WAITLIST ===== */
+    function renderWaitlist() {
+      const yesAll = rsvps.filter(r => r.status === "yes");
+      const waitlisted = yesAll.slice(MAX_COURTS);
+      const card = document.getElementById("waitlistCard");
+      const body = document.getElementById("waitlistBody");
+
+      if (waitlisted.length === 0) { card.classList.remove("show"); return; }
+      card.classList.add("show");
+      const myEmail = currentUser.email.toLowerCase();
+      body.innerHTML = waitlisted.map((r, i) => {
+        const isMe = r.email.toLowerCase() === myEmail;
+        return `<div class="waitlist-row">
+          <span class="signup-name"><span class="waitlist-pos">#${i+1}</span> ${r.gender === "M" ? "♂" : r.gender === "F" ? "♀" : ""} ${escHtml(r.name)}
+          ${isMe ? '<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:999px;background:rgba(34,197,94,.12);color:#15803d;text-transform:uppercase;margin-left:4px;">You</span>' : ""}</span>
+        </div>`;
+      }).join("");
+    }
+
+    function renderSignups() {
+      const list = document.getElementById("signupsList");
+      const yesAll = rsvps.filter(r => r.status === "yes");
+      const onCourt = yesAll.slice(0, MAX_COURTS);
+      const waitlisted = yesAll.slice(MAX_COURTS);
+      const maybe = rsvps.filter(r => r.status === "maybe");
+      const no = rsvps.filter(r => r.status === "no");
+
+      if (rsvps.length === 0) {
+        list.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:8px 0;text-align:center;">No RSVPs yet. Be the first!</div>';
+        return;
+      }
+      const myEmail = currentUser.email.toLowerCase();
+      const render = (arr, label, cls) => arr.map(r => {
+        const isMe = r.email.toLowerCase() === myEmail;
+        return `<div class="signup-row"><span class="signup-name">${r.gender === "M" ? "♂" : r.gender === "F" ? "♀" : ""} ${escHtml(r.name)}${isMe ? '<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:999px;background:rgba(34,197,94,.12);color:#15803d;text-transform:uppercase;margin-left:4px;">You</span>' : ""}</span><span class="signup-status ${cls}">${label}</span></div>`;
+      }).join("");
+
+      list.innerHTML = render(onCourt, "Confirmed", "status-yes")
+        + render(waitlisted, "Waitlisted", "status-waitlist")
+        + render(maybe, "Maybe", "status-maybe")
+        + render(no, "Can't make it", "");
+    }
+
+    async function setRSVP(status) {
+      if (practiceCancelled) return;
+      const key = practiceKey(practiceDate);
+      const email = currentUser.email.toLowerCase();
+      const now = new Date();
+
+      // Keep original timestamp if already exists (preserves waitlist order)
+      const existing = rsvps.find(r => r.email.toLowerCase() === email);
+      const ts = (existing && existing.status === "yes" && status === "yes") ? existing.timestamp : now;
+
+      await db.collection("practice").doc(key).collection("rsvps").doc(email).set({
+        status: status,
+        timestamp: ts
+      });
+
+      const roster = rosterMap[email] || {};
+      if (existing) {
+        existing.status = status;
+        existing.timestamp = ts;
+      } else {
+        rsvps.push({ email, status, timestamp: ts, name: roster.name || email.split("@")[0], gender: roster.gender || "" });
+      }
+      rsvps.sort((a, b) => a.timestamp - b.timestamp);
+
+      const msg = document.getElementById("rsvpMsg");
+      const yesAll = rsvps.filter(r => r.status === "yes");
+      const myIdx = yesAll.findIndex(r => r.email.toLowerCase() === email);
+
+      if (status === "yes" && myIdx >= MAX_COURTS) {
+        msg.textContent = `You're #${myIdx - MAX_COURTS + 1} on the waitlist. We'll bump you in if a spot opens!`;
+        msg.className = "info";
+      } else {
+        const labels = { yes: "You're in! 🎾", maybe: "Marked as maybe.", no: "Got it — maybe next week!" };
+        msg.textContent = labels[status];
+        msg.className = "success";
+      }
+      setTimeout(() => { msg.style.display = "none"; msg.className = ""; }, 3000);
+      renderAll();
+    }
+
+    /* ===== ATTENDANCE HISTORY ===== */
+    async function loadHistory() {
+      const histEl = document.getElementById("historyContent");
+      try {
+        // Get past 8 Thursdays
+        const weeks = [];
+        const today = new Date(); today.setHours(0,0,0,0);
+        let d = new Date(today);
+        // Go back to most recent past Thursday
+        while (d.getDay() !== 4) d.setDate(d.getDate() - 1);
+        if (d >= today) d.setDate(d.getDate() - 7); // skip today if it's Thursday
+        for (let i = 0; i < 8; i++) {
+          weeks.push(new Date(d));
+          d.setDate(d.getDate() - 7);
+        }
+
+        // Load attendance for each week
+        const attendance = {}; // email -> {attended, total, streak}
+        let totalWeeks = 0;
+        for (const w of weeks) {
+          const key = practiceKey(w);
+          const metaDoc = await db.collection("practice").doc(key).get();
+          if (metaDoc.exists && metaDoc.data().cancelled) continue; // skip cancelled weeks
+          const snap = await db.collection("practice").doc(key).collection("rsvps").get();
+          let hasAny = false;
+          snap.forEach(doc => {
+            const data = doc.data();
+            if (data.status === "yes") {
+              hasAny = true;
+              const email = doc.id.toLowerCase();
+              if (!attendance[email]) attendance[email] = { attended: 0, total: 0, name: "", gender: "" };
+              attendance[email].attended++;
+            }
+          });
+          if (hasAny) totalWeeks++;
+        }
+
+        if (totalWeeks === 0) {
+          histEl.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:8px 0;text-align:center;">No practice attendance data yet.</div>';
+          return;
+        }
+
+        // Enrich with roster names and calculate rates
+        const rows = Object.entries(attendance).map(([email, data]) => {
+          const roster = rosterMap[email] || {};
+          data.name = roster.name || email.split("@")[0];
+          data.gender = roster.gender || "";
+          data.total = totalWeeks;
+          data.rate = Math.round((data.attended / totalWeeks) * 100);
+          data.email = email;
+          return data;
+        });
+        rows.sort((a, b) => b.rate - a.rate || b.attended - a.attended);
+
+        const myEmail = currentUser.email.toLowerCase();
+        histEl.innerHTML = `<table class="history-table">
+          <thead><tr><th>Player</th><th>Attended</th><th style="min-width:80px;">Rate</th><th></th></tr></thead>
+          <tbody>${rows.map(r => {
+            const isMe = r.email === myEmail;
+            const barColor = r.rate >= 75 ? "#22c55e" : r.rate >= 50 ? "#eab308" : "#ef4444";
+            return `<tr${isMe ? ' style="background:rgba(34,197,94,.04);"' : ""}>
+              <td><span style="font-weight:500;">${r.gender === "M" ? "♂" : r.gender === "F" ? "♀" : ""} ${escHtml(r.name)}${isMe ? ' <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:999px;background:rgba(34,197,94,.12);color:#15803d;text-transform:uppercase;">You</span>' : ""}</span></td>
+              <td>${r.attended}/${r.total}</td>
+              <td><div style="display:flex;align-items:center;gap:8px;"><div class="att-bar"><div class="att-fill" style="width:${r.rate}%;background:${barColor};"></div></div><span class="att-pct">${r.rate}%</span></div></td>
+              <td>${r.rate === 100 ? '<span class="streak-badge">🔥 Perfect</span>' : r.rate >= 75 ? '<span class="streak-badge">⭐ Regular</span>' : ""}</td>
+            </tr>`;
+          }).join("")}</tbody></table>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:10px;text-align:right;">Based on ${totalWeeks} practice${totalWeeks > 1 ? "s" : ""} over the last 8 weeks</div>`;
+      } catch (e) {
+        histEl.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:8px 0;">Could not load history.</div>';
+        console.error(e);
+      }
+    }
+
+    function escHtml(s) { return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  </script>
+</body>
+</html>

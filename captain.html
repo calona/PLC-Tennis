@@ -247,7 +247,9 @@
         <a href="index.html" class="nav-link">Home</a>
         <a href="calendar.html" class="nav-link">Calendar</a>
         <a href="availability.html" class="nav-link">Availability</a>
-        <a href="captain.html" class="nav-link active">Captain Dashboard</a>
+        <a href="captain.html" class="nav-link active">Captain</a>
+        <a href="roster.html" class="nav-link">Roster</a>
+        <a href="practice.html" class="nav-link">Practice</a>
       </div>
     </div>
   </header>
@@ -263,10 +265,10 @@
       </div>
 
       <div class="controls">
-        <button class="filter-btn active" onclick="setFilter('upcoming')">Upcoming</button>
-        <button class="filter-btn" onclick="setFilter('all')">All Matches</button>
-        <button class="filter-btn" onclick="setFilter('40')">40+ Only</button>
-        <button class="filter-btn" onclick="setFilter('55')">55+ Only</button>
+        <button class="filter-btn active" onclick="setFilter('upcoming', this)">Upcoming</button>
+        <button class="filter-btn" onclick="setFilter('all', this)">All Matches</button>
+        <button class="filter-btn" onclick="setFilter('40', this)">40+ Only</button>
+        <button class="filter-btn" onclick="setFilter('55', this)">55+ Only</button>
         <div class="controls-spacer"></div>
         <button class="excel-btn" id="exportBtn" onclick="exportToExcel()">
           📥 Export to Excel
@@ -286,7 +288,9 @@
       <div class="footer-links">
         <a href="calendar.html" class="footer-link">Calendar</a>
         <a href="availability.html" class="footer-link">Availability</a>
-        <a href="captain.html" class="footer-link">Captain Dashboard</a>
+        <a href="captain.html" class="footer-link">Captain</a>
+        <a href="roster.html" class="footer-link">Roster</a>
+        <a href="practice.html" class="footer-link">Practice</a>
       </div>
     </div>
   </footer>
@@ -370,10 +374,10 @@
       }
     }
 
-    function setFilter(f) {
+    function setFilter(f, el) {
       currentFilter = f;
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
+      el.classList.add('active');
       renderMatches();
     }
 
@@ -412,10 +416,10 @@
         const visitTeam = match["Visiting Team"] || "";
         const homeOurs = isOurTeam(homeTeam);
         const visitOurs = isOurTeam(visitTeam);
-        let opponent, homeAway;
-        if (homeOurs && !visitOurs) { opponent = visitTeam || "TBD"; homeAway = "Home"; }
-        else if (visitOurs && !homeOurs) { opponent = homeTeam || "TBD"; homeAway = "Away"; }
-        else { opponent = homeTeam + " vs " + visitTeam; homeAway = ""; }
+        let opponent, homeAway, isHome;
+        if (homeOurs && !visitOurs) { opponent = visitTeam || "TBD"; homeAway = "Home"; isHome = true; }
+        else if (visitOurs && !homeOurs) { opponent = homeTeam || "TBD"; homeAway = "Away"; isHome = false; }
+        else { opponent = homeTeam + " vs " + visitTeam; homeAway = ""; isHome = true; }
 
         // Count statuses
         const yes = players.filter(p => p.status === "Yes");

@@ -138,6 +138,66 @@
     .list li { margin-bottom: 3px; display: flex; align-items: center; gap: 6px; }
     .dot { width: 6px; height: 6px; border-radius: 999px; background: #9ca3af; }
 
+
+    /* ASK THE CAPTAIN Q&A */
+    .qa-card { max-height: 500px; display: flex; flex-direction: column; }
+    .qa-scroll { flex: 1; overflow-y: auto; max-height: 320px; margin-bottom: 10px; }
+    .qa-thread { border-bottom: 1px solid var(--border-subtle); padding: 10px 0; }
+    .qa-thread:last-child { border-bottom: none; }
+    .qa-question { display: flex; gap: 8px; align-items: flex-start; }
+    .qa-avatar {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: #fff;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+    .qa-avatar.captain {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+    .qa-content { flex: 1; min-width: 0; }
+    .qa-name { font-size: 11px; font-weight: 600; color: var(--navy-soft); }
+    .qa-name .qa-badge {
+      font-size: 9px; font-weight: 700; color: #d97706;
+      background: rgba(234,179,8,0.12); padding: 1px 6px; border-radius: 999px;
+      margin-left: 4px; vertical-align: middle;
+    }
+    .qa-time { font-size: 10px; color: var(--text-muted); margin-left: 6px; }
+    .qa-text { font-size: 12px; color: var(--text-main); margin-top: 2px; line-height: 1.45; word-break: break-word; }
+    .qa-reply { margin-left: 34px; margin-top: 8px; }
+    .qa-reply-btn {
+      font-size: 10px; color: var(--blue); background: none; border: none;
+      cursor: pointer; padding: 0; margin-top: 4px; font-family: "Inter", sans-serif;
+    }
+    .qa-reply-btn:hover { text-decoration: underline; }
+    .qa-input-row { display: flex; gap: 8px; align-items: flex-end; }
+    .qa-input {
+      flex: 1; padding: 8px 12px; border: 1px solid var(--border-subtle);
+      border-radius: 12px; font-size: 12px; font-family: "Inter", sans-serif;
+      resize: none; min-height: 38px; max-height: 80px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .qa-input:focus { border-color: var(--blue); }
+    .qa-input::placeholder { color: #9ca3af; }
+    .qa-send {
+      padding: 8px 14px; border-radius: 12px; border: none;
+      background: var(--navy); color: #fff; font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: "Inter", sans-serif; white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .qa-send:hover { background: var(--navy-soft); }
+    .qa-send:disabled { opacity: 0.5; cursor: not-allowed; }
+    .qa-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px 0; }
+    .qa-reply-form { display: flex; gap: 6px; margin-top: 6px; margin-left: 34px; }
+    .qa-reply-form input {
+      flex: 1; padding: 5px 10px; border: 1px solid var(--border-subtle);
+      border-radius: 8px; font-size: 11px; font-family: "Inter", sans-serif; outline: none;
+    }
+    .qa-reply-form button {
+      padding: 5px 10px; border-radius: 8px; border: none;
+      background: #f59e0b; color: #fff; font-size: 11px; font-weight: 600;
+      cursor: pointer; font-family: "Inter", sans-serif;
+    }
+
     /* FOOTER */
     .footer { border-top: 1px solid rgba(148,163,184,0.3); padding: 10px 16px 14px;
       font-size: 11px; color: var(--text-muted); display: flex; justify-content: center; }
@@ -273,6 +333,23 @@
               <span>Captain: <strong>gaylorde@outlook.com · 425-444-1670</strong></span>
             </li>
           </ul>
+        </section>
+
+        <section class="card qa-card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">💬 Ask the Captain</div>
+              <div class="card-subtitle">Questions, comments, or match-day logistics.</div>
+            </div>
+          </div>
+          <div class="qa-scroll" id="qaScroll">
+            <div class="qa-empty" id="qaEmpty">Loading…</div>
+          </div>
+          <div class="qa-input-row" id="qaInputRow" style="display:none;">
+            <textarea class="qa-input" id="qaInput" placeholder="Type a question or comment…" rows="1"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();postQuestion();}"></textarea>
+            <button class="qa-send" onclick="postQuestion()">Post</button>
+          </div>
         </section>
       </aside>
     </div>
@@ -447,6 +524,176 @@
       }
     }
     loadUpcomingPractices();
+
+    // ===== ASK THE CAPTAIN Q&A =====
+    const CAPTAIN_EMAIL = "gaylorde@outlook.com";
+
+    function timeAgo(ts) {
+      if (!ts) return "";
+      const now = Date.now();
+      const diff = now - ts;
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return "just now";
+      if (mins < 60) return mins + "m ago";
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + "h ago";
+      const days = Math.floor(hrs / 24);
+      if (days < 7) return days + "d ago";
+      return new Date(ts).toLocaleDateString("en-US", { month:"short", day:"numeric" });
+    }
+
+    function getInitials(email) {
+      const name = (email || "").split("@")[0].replace(/[._]/g, " ").trim();
+      const parts = name.split(/\s+/);
+      if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+      return name.substring(0, 2).toUpperCase();
+    }
+
+    function renderQA(questions) {
+      const scroll = document.getElementById("qaScroll");
+      const empty = document.getElementById("qaEmpty");
+      if (questions.length === 0) {
+        empty.textContent = "No questions yet — be the first to ask!";
+        empty.style.display = "block";
+        return;
+      }
+      empty.style.display = "none";
+      scroll.innerHTML = "";
+      questions.forEach(q => {
+        const thread = document.createElement("div");
+        thread.className = "qa-thread";
+
+        const isCaptain = q.email === CAPTAIN_EMAIL;
+        const avatarClass = isCaptain ? "qa-avatar captain" : "qa-avatar";
+        const badge = isCaptain ? '<span class="qa-badge">CAPTAIN</span>' : "";
+        const displayName = q.displayName || q.email.split("@")[0];
+
+        let html = `
+          <div class="qa-question">
+            <div class="${avatarClass}">${getInitials(q.email)}</div>
+            <div class="qa-content">
+              <span class="qa-name">${displayName}${badge}<span class="qa-time">${timeAgo(q.timestamp)}</span></span>
+              <div class="qa-text">${escapeHtml(q.text)}</div>
+            </div>
+          </div>`;
+
+        // Replies
+        if (q.replies && q.replies.length > 0) {
+          q.replies.forEach(r => {
+            const rIsCaptain = r.email === CAPTAIN_EMAIL;
+            const rAvClass = rIsCaptain ? "qa-avatar captain" : "qa-avatar";
+            const rBadge = rIsCaptain ? '<span class="qa-badge">CAPTAIN</span>' : "";
+            const rName = r.displayName || r.email.split("@")[0];
+            html += `
+              <div class="qa-reply">
+                <div class="qa-question">
+                  <div class="${rAvClass}" style="width:22px;height:22px;font-size:10px;">${getInitials(r.email)}</div>
+                  <div class="qa-content">
+                    <span class="qa-name">${rName}${rBadge}<span class="qa-time">${timeAgo(r.timestamp)}</span></span>
+                    <div class="qa-text">${escapeHtml(r.text)}</div>
+                  </div>
+                </div>
+              </div>`;
+          });
+        }
+
+        // Reply button (captain can reply to any, players can reply to their own threads)
+        const user = auth.currentUser;
+        if (user) {
+          const canReply = user.email.toLowerCase() === CAPTAIN_EMAIL || user.email.toLowerCase() === q.email;
+          if (canReply) {
+            html += `<button class="qa-reply-btn" onclick="showReplyForm('${q.id}', this)">↩ Reply</button>`;
+          }
+        }
+
+        thread.innerHTML = html;
+        scroll.appendChild(thread);
+      });
+      scroll.scrollTop = scroll.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showReplyForm(questionId, btn) {
+      // Remove any existing reply forms
+      document.querySelectorAll(".qa-reply-form").forEach(f => f.remove());
+      const form = document.createElement("div");
+      form.className = "qa-reply-form";
+      form.innerHTML = `<input type="text" placeholder="Write a reply…" onkeydown="if(event.key==='Enter')this.nextElementSibling.click();" />
+        <button onclick="postReply('${questionId}', this.previousElementSibling.value, this.parentElement)">Reply</button>`;
+      btn.parentElement.appendChild(form);
+      form.querySelector("input").focus();
+    }
+
+    async function postReply(questionId, text, formEl) {
+      if (!text.trim()) return;
+      const user = auth.currentUser;
+      if (!user) return;
+      try {
+        const docRef = db.collection("qa").doc(questionId);
+        const doc = await docRef.get();
+        const data = doc.data();
+        const replies = data.replies || [];
+        replies.push({
+          email: user.email.toLowerCase(),
+          displayName: user.displayName || user.email.split("@")[0],
+          text: text.trim(),
+          timestamp: Date.now()
+        });
+        await docRef.update({ replies });
+        formEl.remove();
+      } catch (e) {
+        alert("Error posting reply: " + e.message);
+      }
+    }
+
+    async function postQuestion() {
+      const input = document.getElementById("qaInput");
+      const text = input.value.trim();
+      if (!text) return;
+      const user = auth.currentUser;
+      if (!user) return;
+      input.disabled = true;
+      try {
+        await db.collection("qa").add({
+          email: user.email.toLowerCase(),
+          displayName: user.displayName || user.email.split("@")[0],
+          text: text,
+          timestamp: Date.now(),
+          replies: []
+        });
+        input.value = "";
+      } catch (e) {
+        alert("Error posting: " + e.message);
+      }
+      input.disabled = false;
+      input.focus();
+    }
+
+    // Real-time listener
+    function loadQA() {
+      const user = auth.currentUser;
+      if (!user) return;
+      document.getElementById("qaInputRow").style.display = "flex";
+      db.collection("qa").orderBy("timestamp", "asc").onSnapshot(snapshot => {
+        const questions = [];
+        snapshot.forEach(doc => {
+          questions.push({ id: doc.id, ...doc.data() });
+        });
+        renderQA(questions);
+      }, err => {
+        document.getElementById("qaEmpty").textContent = "Could not load Q&A.";
+      });
+    }
+
+    // Hook into auth state
+    auth.onAuthStateChanged(user => {
+      if (user) loadQA();
+    });
   </script>
 </body>
 </html>

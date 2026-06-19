@@ -29,8 +29,6 @@
       display: flex;
       flex-direction: column;
     }
-
-    /* NAVBAR */
     .nav {
       position: sticky; top: 0; z-index: 20;
       backdrop-filter: blur(12px);
@@ -67,19 +65,13 @@
     }
     .nav-cta span { font-size: 16px; }
     #loginBtn { text-decoration: none; }
-
-    /* PAGE */
     .page { flex: 1; display: flex; justify-content: center; padding: 24px 16px 32px; }
     .page-inner { max-width: 1100px; width: 100%; }
-
-    /* CARD */
     .card {
       background: var(--card-bg); border-radius: 22px;
       padding: 20px 22px; box-shadow: var(--shadow-soft);
       border: 1px solid rgba(148,163,184,0.25);
     }
-
-    /* PAGE HEADER */
     .page-header {
       display: flex; justify-content: space-between; align-items: center;
       flex-wrap: wrap; gap: 16px; margin-bottom: 20px;
@@ -89,8 +81,6 @@
       font-size: 24px; color: var(--navy); margin-bottom: 4px;
     }
     .page-header-text p { font-size: 13px; color: var(--text-muted); }
-
-    /* FILTER */
     .filter-group { display: flex; align-items: center; gap: 8px; }
     .filter-label { font-size: 13px; font-weight: 500; color: var(--navy-soft); }
     .filter-select {
@@ -100,8 +90,6 @@
       cursor: pointer; outline: none; transition: border-color 0.2s;
     }
     .filter-select:focus { border-color: var(--blue); }
-
-    /* CALENDAR */
     .month-title {
       font-family: "Poppins", sans-serif; font-weight: 700;
       font-size: 20px; color: var(--navy); margin: 28px 0 12px;
@@ -157,8 +145,6 @@
     }
     .respond-btn:hover { background: var(--navy-soft); }
     .empty-day { opacity: 0; pointer-events: none; }
-
-    /* FOOTER */
     .footer {
       border-top: 1px solid rgba(148,163,184,0.3);
       padding: 10px 16px 14px; font-size: 11px; color: var(--text-muted);
@@ -171,8 +157,6 @@
     .footer-links { display: flex; gap: 10px; flex-wrap: wrap; }
     .footer-link { color: var(--text-muted); text-decoration: none; }
     .footer-link:hover { text-decoration: underline; }
-
-    /* RESPONSIVE */
     @media (max-width: 900px) {
       .nav-inner { flex-wrap: wrap; }
       .nav-links { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
@@ -328,6 +312,25 @@
         .get().then(doc => doc.exists ? doc.data() : null);
     }
 
+    // Parse time string to minutes for sorting (handles "4:15 PM", "16:15", etc.)
+    function parseTimeToMinutes(timeStr) {
+      if (!timeStr) return 9999;
+      // Already has AM/PM
+      const ampm = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (ampm) {
+        let h = parseInt(ampm[1]);
+        const m = parseInt(ampm[2]);
+        const period = ampm[3].toUpperCase();
+        if (period === "PM" && h !== 12) h += 12;
+        if (period === "AM" && h === 12) h = 0;
+        return h * 60 + m;
+      }
+      // 24-hour format
+      const mil = timeStr.match(/(\d{1,2}):(\d{2})/);
+      if (mil) return parseInt(mil[1]) * 60 + parseInt(mil[2]);
+      return 9999;
+    }
+
     async function renderCalendar(matches) {
       const container = document.getElementById("calendarContainer");
       container.innerHTML = "";
@@ -375,9 +378,12 @@
             return d.getDate() === day;
           });
 
+          // Sort today's matches by time — earliest first
+          todaysMatches.sort((a, b) => parseTimeToMinutes(a["Schedule Time"]) - parseTimeToMinutes(b["Schedule Time"]));
+
           // Add practice entry for every Thursday
           const cellDate = new Date(year, month, day);
-          if (cellDate.getDay() === 4) { // 4 = Thursday
+          if (cellDate.getDay() === 4) {
             const practiceEl = document.createElement("div");
             practiceEl.className = "practice-entry";
             practiceEl.innerHTML = `<strong>🎾 Practice</strong><span>6:45 PM · PLC Indoor</span>`;

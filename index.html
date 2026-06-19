@@ -591,8 +591,8 @@
         <a href="availability.html" class="nav-link">Availability</a>
         <a href="practice.html" class="nav-link">Practice</a>
         <a href="roster.html" class="nav-link">Roster</a>
-        <a href="captain.html" class="nav-link" id="captainNav" style="display:none;">Captain</a>
-        <button class="nav-cta" onclick="logout()"><span>🔒</span> Logout</button>
+        <a href="captain.html" class="nav-link">Captain</a>
+        <a href="#" class="nav-cta" onclick="logout()"><span>🔒</span> Logout</a>
       </div>
     </div>
   </header>
@@ -761,7 +761,6 @@
     const auth = firebase.auth();
     auth.onAuthStateChanged(user => {
       if (user && user.email.toLowerCase() === "gaylorde@outlook.com") {
-        var cn = document.getElementById("captainNav"); if(cn) cn.style.display="";
       }
     });
     function logout() { firebase.auth().signOut().then(() => window.location.href = "login.html"); }

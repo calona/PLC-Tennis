@@ -194,8 +194,6 @@
 
         <button class="btn-primary" onclick="login()">Sign In</button>
 
-        <div style="text-align:right;margin-top:8px;"><a href="#" onclick="resetPassword(); return false;" style="font-size:12px;color:var(--blue);text-decoration:none;">Forgot password?</a></div>
-
         <div class="divider">or</div>
 
         <button class="btn-secondary" onclick="signup()">Create New Account</button>
@@ -216,21 +214,7 @@
   </footer>
 
   <!-- Firebase -->
-    function resetPassword() {
-      const email = document.getElementById("email").value;
-      if (!email) { showError("Enter your email address first, then click Forgot password."); return; }
-      auth.sendPasswordResetEmail(email)
-        .then(() => { showSuccess("Password reset email sent! Check your inbox."); })
-        .catch(err => showError(err.message));
-    }
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    function resetPassword() {
-      const email = document.getElementById("email").value;
-      if (!email) { showError("Enter your email address first, then click Forgot password."); return; }
-      auth.sendPasswordResetEmail(email)
-        .then(() => { showSuccess("Password reset email sent! Check your inbox."); })
-        .catch(err => showError(err.message));
-    }
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script>
     const firebaseConfig = {
@@ -278,13 +262,6 @@
     document.getElementById("password").addEventListener("keydown", function(e) {
       if (e.key === "Enter") login();
     });
-    function resetPassword() {
-      const email = document.getElementById("email").value;
-      if (!email) { showError("Enter your email address first, then click Forgot password."); return; }
-      auth.sendPasswordResetEmail(email)
-        .then(() => { showSuccess("Password reset email sent! Check your inbox."); })
-        .catch(err => showError(err.message));
-    }
   </script>
 </body>
 </html>

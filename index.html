@@ -53,13 +53,10 @@
     /* MAIN LAYOUT */
     .page { flex: 1; display: flex; justify-content: center; padding: 24px 16px 32px; }
     .page-inner { max-width: 1100px; width: 100%;
-      display: flex; flex-direction: column; gap: 22px; }
-    .top-grid {
-      display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-      gap: 22px; align-items: start;
-    }
+      display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.4fr);
+      gap: 22px; align-items: flex-start; }
     @media (max-width: 900px) {
-      .top-grid { grid-template-columns: minmax(0, 1fr); }
+      .page-inner { grid-template-columns: minmax(0, 1fr); }
       .nav-inner { flex-wrap: wrap; }
       .nav-links { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
     }
@@ -90,8 +87,6 @@
       border-radius: 999px;
       background: radial-gradient(circle at 30% 30%, #facc15, #f97316 40%, #b91c1c 100%);
       opacity: 0.18; }
-      100% { transform: translateY(-12px); box-shadow: 0 10px 12px rgba(0,0,0,0.08); }
-    }
 
     /* QUICK ACTIONS */
     .section { margin-top: 18px; }
@@ -144,28 +139,21 @@
     .dot { width: 6px; height: 6px; border-radius: 999px; background: #9ca3af; }
 
 
-    /* ASK THE CAPTAIN Q&A — full width */
-    .qa-section {
-      background: var(--card-bg); border-radius: 22px;
-      padding: 18px 22px; box-shadow: var(--shadow-soft);
-      border: 1px solid rgba(148,163,184,0.25);
-    }
-    .qa-layout {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
-      margin-top: 10px;
-    }
-    @media (max-width: 700px) { .qa-layout { grid-template-columns: 1fr; } }
-    .qa-scroll { max-height: 260px; overflow-y: auto; }
+    /* ASK THE CAPTAIN Q&A */
+    .qa-card { max-height: 500px; display: flex; flex-direction: column; }
+    .qa-scroll { flex: 1; overflow-y: auto; max-height: 320px; margin-bottom: 10px; }
     .qa-thread { border-bottom: 1px solid var(--border-subtle); padding: 10px 0; }
     .qa-thread:last-child { border-bottom: none; }
     .qa-question { display: flex; gap: 8px; align-items: flex-start; }
     .qa-avatar {
-      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
       font-size: 12px; font-weight: 700; color: #fff;
       background: linear-gradient(135deg, #3b82f6, #1d4ed8);
     }
-    .qa-avatar.captain { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .qa-avatar.captain {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
     .qa-content { flex: 1; min-width: 0; }
     .qa-name { font-size: 11px; font-weight: 600; color: var(--navy-soft); }
     .qa-name .qa-badge {
@@ -175,40 +163,37 @@
     }
     .qa-time { font-size: 10px; color: var(--text-muted); margin-left: 6px; }
     .qa-text { font-size: 12px; color: var(--text-main); margin-top: 2px; line-height: 1.45; word-break: break-word; }
-    .qa-reply { margin-left: 36px; margin-top: 8px; }
+    .qa-reply { margin-left: 34px; margin-top: 8px; }
     .qa-reply-btn {
       font-size: 10px; color: var(--blue); background: none; border: none;
       cursor: pointer; padding: 0; margin-top: 4px; font-family: "Inter", sans-serif;
     }
     .qa-reply-btn:hover { text-decoration: underline; }
-    .qa-input-area { display: flex; flex-direction: column; justify-content: center; }
-    .qa-input-area .qa-hint {
-      font-size: 12px; color: var(--text-muted); margin-bottom: 10px; line-height: 1.5;
-    }
     .qa-input-row { display: flex; gap: 8px; align-items: flex-end; }
     .qa-input {
-      flex: 1; padding: 10px 14px; border: 1px solid var(--border-subtle);
-      border-radius: 14px; font-size: 13px; font-family: "Inter", sans-serif;
-      resize: none; min-height: 44px; max-height: 100px; outline: none;
+      flex: 1; padding: 8px 12px; border: 1px solid var(--border-subtle);
+      border-radius: 12px; font-size: 12px; font-family: "Inter", sans-serif;
+      resize: none; min-height: 38px; max-height: 80px; outline: none;
       transition: border-color 0.2s;
     }
     .qa-input:focus { border-color: var(--blue); }
     .qa-input::placeholder { color: #9ca3af; }
     .qa-send {
-      padding: 10px 18px; border-radius: 14px; border: none;
-      background: var(--navy); color: #fff; font-size: 13px; font-weight: 600;
+      padding: 8px 14px; border-radius: 12px; border: none;
+      background: var(--navy); color: #fff; font-size: 12px; font-weight: 600;
       cursor: pointer; font-family: "Inter", sans-serif; white-space: nowrap;
+      transition: background 0.2s;
     }
     .qa-send:hover { background: var(--navy-soft); }
     .qa-send:disabled { opacity: 0.5; cursor: not-allowed; }
-    .qa-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 30px 0; }
-    .qa-reply-form { display: flex; gap: 6px; margin-top: 6px; margin-left: 36px; }
+    .qa-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px 0; }
+    .qa-reply-form { display: flex; gap: 6px; margin-top: 6px; margin-left: 34px; }
     .qa-reply-form input {
-      flex: 1; padding: 6px 10px; border: 1px solid var(--border-subtle);
+      flex: 1; padding: 5px 10px; border: 1px solid var(--border-subtle);
       border-radius: 8px; font-size: 11px; font-family: "Inter", sans-serif; outline: none;
     }
     .qa-reply-form button {
-      padding: 6px 12px; border-radius: 8px; border: none;
+      padding: 5px 10px; border-radius: 8px; border: none;
       background: #f59e0b; color: #fff; font-size: 11px; font-weight: 600;
       cursor: pointer; font-family: "Inter", sans-serif;
     }
@@ -232,7 +217,7 @@
         <div class="nav-logo">PLC</div>
         <div class="nav-title">
           <div class="nav-title-main">PLC Tennis</div>
-          <div class="nav-title-sub">USTA Team Hub · 2026 Season</div>
+          <div class="nav-title-sub">USTA Team Hub \u00b7 2026 Season</div>
         </div>
       </div>
       <div class="nav-links">
@@ -242,7 +227,7 @@
         <a href="practice.html" class="nav-link">Practice</a>
         <a href="roster.html" class="nav-link">Roster</a>
         <a href="captain.html" class="nav-link">Captain</a>
-        <a href="#" class="nav-cta" onclick="logout()"><span>🔒</span> Logout</a>
+        <a href="#" class="nav-cta" onclick="logout()"><span>\U0001f512</span> Logout</a>
       </div>
     </div>
   </header>
@@ -257,18 +242,16 @@
           <div class="hero-pill"></div>
           <div class="hero-top">
             <div class="hero-main">
-              <div class="hero-kicker">Let's F'in Go, Team!</div>
+              <div class="hero-kicker">Let\u2019s F\u2019in Go, Team!</div>
               <h1 class="hero-title">Your PLC Midcourt Crisis Control Center.</h1>
               <p class="hero-subtitle">
                 Check the schedule, submit availability, and keep the team aligned for every USTA match this season.
               </p>
               <div class="hero-cta-row">
-                <a href="availability.html" class="hero-cta-primary">Submit Availability <span>→</span></a>
+                <a href="availability.html" class="hero-cta-primary">Submit Availability <span>\u2192</span></a>
                 <a href="calendar.html" class="hero-cta-secondary">View Match Calendar</a>
               </div>
-            </div>
-          </div>
-        </div>
+            </div></div>
         </div>
 
         <section class="section">
@@ -280,19 +263,19 @@
           </div>
           <div class="card-grid">
             <a href="calendar.html" class="action-card">
-              <div class="action-icon calendar">📅</div>
+              <div class="action-icon calendar">\U0001f4c5</div>
               <div class="action-title">Match Calendar</div>
               <div class="action-desc">See all upcoming matches, locations, and start times.</div>
               <div class="action-meta"><span>Next 4 weeks at a glance</span><span class="action-pill">Schedule</span></div>
             </a>
             <a href="availability.html" class="action-card">
-              <div class="action-icon check">✅</div>
+              <div class="action-icon check">\u2705</div>
               <div class="action-title">Submit Availability</div>
               <div class="action-desc">Tell the captain which matches you can play.</div>
               <div class="action-meta"><span>Keep your status up to date</span><span class="action-pill">Players</span></div>
             </a>
             <a href="captain.html" class="action-card">
-              <div class="action-icon clipboard">📊</div>
+              <div class="action-icon clipboard">\U0001f4ca</div>
               <div class="action-title">Captain Dashboard</div>
               <div class="action-desc">View responses, export lineups, and plan rosters.</div>
               <div class="action-meta"><span>Matrix &amp; Excel export</span><span class="action-pill">Captains</span></div>
@@ -312,7 +295,7 @@
           </div>
           <div id="nextMatchContent">
             <div class="next-match-row">
-              <div class="next-match-main"><span style="color:var(--text-muted);font-size:12px;">Loading next match…</span></div>
+              <div class="next-match-main"><span style="color:var(--text-muted);font-size:12px;">Loading next match\u2026</span></div>
             </div>
           </div>
         </section>
@@ -320,12 +303,12 @@
         <section class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">🏋️ Upcoming practices</div>
-              <div class="card-subtitle">Thursdays · 6:45 PM · PLC Indoor</div>
+              <div class="card-title">\U0001f3cb\ufe0f Upcoming practices</div>
+              <div class="card-subtitle">Thursdays \u00b7 6:45 PM \u00b7 PLC Indoor</div>
             </div>
           </div>
           <div id="practiceContent">
-            <div style="color:var(--text-muted);font-size:12px;">Loading practices…</div>
+            <div style="color:var(--text-muted);font-size:12px;">Loading practices\u2026</div>
           </div>
         </section>
 
@@ -333,7 +316,7 @@
           <div class="card-header">
             <div>
               <div class="card-title">Team links</div>
-              <div class="card-subtitle">Useful places you'll visit often.</div>
+              <div class="card-subtitle">Useful places you\u2019ll visit often.</div>
             </div>
           </div>
           <ul class="list">
@@ -347,73 +330,35 @@
             </li>
             <li>
               <span class="dot"></span>
-              <span>Captain: <strong>gaylorde@outlook.com · 425-444-1670</strong></span>
+              <span>Captain: <strong>gaylorde@outlook.com \u00b7 425-444-1670</strong></span>
             </li>
           </ul>
         </section>
-      </aside>
-      </div><!-- /top-grid -->
 
-      <!-- ROW 2: QUICK ACTIONS — full width -->
-      <section>
-        <div class="section-header" style="margin-bottom:10px;">
-          <div>
-            <div class="section-title">Quick actions</div>
-            <div class="section-subtitle">Jump straight into what you do most.</div>
-          </div>
-        </div>
-        <div class="card-grid">
-          <a href="calendar.html" class="action-card">
-            <div class="action-icon calendar">📅</div>
-            <div class="action-title">Match Calendar</div>
-            <div class="action-desc">See all upcoming matches, locations, and start times.</div>
-            <div class="action-meta"><span>Next 4 weeks at a glance</span><span class="action-pill">Schedule</span></div>
-          </a>
-          <a href="availability.html" class="action-card">
-            <div class="action-icon check">✅</div>
-            <div class="action-title">Submit Availability</div>
-            <div class="action-desc">Tell the captain which matches you can play.</div>
-            <div class="action-meta"><span>Keep your status up to date</span><span class="action-pill">Players</span></div>
-          </a>
-          <a href="captain.html" class="action-card">
-            <div class="action-icon clipboard">📊</div>
-            <div class="action-title">Captain Dashboard</div>
-            <div class="action-desc">View responses, export lineups, and plan rosters.</div>
-            <div class="action-meta"><span>Matrix &amp; Excel export</span><span class="action-pill">Captains</span></div>
-          </a>
-        </div>
-      </section>
-
-      <!-- ROW 3: ASK THE CAPTAIN — full width -->
-      <section class="qa-section" id="qaSection" style="display:none;">
-        <div class="card-header">
-          <div>
-            <div class="card-title">💬 Ask the Captain</div>
-            <div class="card-subtitle">Questions, comments, or match-day logistics — the whole team can see.</div>
-          </div>
-        </div>
-        <div class="qa-layout">
-          <div class="qa-scroll" id="qaScroll">
-            <div class="qa-empty" id="qaEmpty">Loading…</div>
-          </div>
-          <div class="qa-input-area" id="qaInputArea">
-            <div class="qa-hint">💡 Ask about match logistics, carpools, court assignments, or anything team-related. The captain will reply here.</div>
-            <div class="qa-input-row">
-              <textarea class="qa-input" id="qaInput" placeholder="Type a question or comment…" rows="1"
-                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();postQuestion();}"></textarea>
-              <button class="qa-send" onclick="postQuestion()">Post</button>
+        <section class="card qa-card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">\U0001f4ac Ask the Captain</div>
+              <div class="card-subtitle">Questions, comments, or match-day logistics.</div>
             </div>
           </div>
-        </div>
-      </section>
-
+          <div class="qa-scroll" id="qaScroll">
+            <div class="qa-empty" id="qaEmpty">Loading\u2026</div>
+          </div>
+          <div class="qa-input-row" id="qaInputRow" style="display:none;">
+            <textarea class="qa-input" id="qaInput" placeholder="Type a question or comment\u2026" rows="1"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();postQuestion();}"></textarea>
+            <button class="qa-send" onclick="postQuestion()">Post</button>
+          </div>
+        </section>
+      </aside>
     </div>
   </main>
 
   <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-inner">
-      <span>&copy; 2026 Calona Consulting · Sammamish, WA</span>
+      <span>&copy; 2026 Calona Consulting \u00b7 Sammamish, WA</span>
       <div class="footer-links">
         <a href="calendar.html" class="footer-link">Calendar</a>
         <a href="availability.html" class="footer-link">Availability</a>
@@ -514,7 +459,7 @@
               <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
                 <div class="next-match-main">
                   <strong>PLC vs ${opponent}</strong><br />
-                  <span class="next-match-meta">${dateStr} · ${time} · ${homeAway}</span><br />
+                  <span class="next-match-meta">${dateStr} \u00b7 ${time} \u00b7 ${homeAway}</span><br />
                   <span class="next-match-meta">${location}</span>
                 </div>
                 <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:999px;background:${leagueBg};color:${leagueColor};white-space:nowrap;flex-shrink:0;">${leagueShort}</span>
@@ -559,14 +504,14 @@
           if (cancelled) {
             html += `<div style="${border}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
               <div class="next-match-main"><strong style="text-decoration:line-through;color:var(--text-muted);">${dateStr}</strong><br/>
-              <span class="next-match-meta" style="color:#dc2626;">🚫 Cancelled${cancelReason ? " — "+cancelReason : ""}</span></div></div></div>`;
+              <span class="next-match-meta" style="color:#dc2626;">\U0001f6ab Cancelled${cancelReason ? " \u2014 "+cancelReason : ""}</span></div></div></div>`;
           } else {
             const spots = Math.max(0, 12 - yesCount);
             const spotColor = spots===0?"#dc2626":spots<=4?"#a16207":"#15803d";
             const spotBg   = spots===0?"rgba(239,68,68,.1)":spots<=4?"rgba(234,179,8,.1)":"rgba(34,197,94,.1)";
             html += `<div style="${border}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
               <div class="next-match-main"><strong>${dateStr}</strong><br/>
-              <span class="next-match-meta">✔ ${yesCount} confirmed${maybeCount>0?" · ? "+maybeCount+" maybe":""}</span></div>
+              <span class="next-match-meta">\u2714 ${yesCount} confirmed${maybeCount>0?" \u00b7 ? "+maybeCount+" maybe":""}</span></div>
               <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:999px;background:${spotBg};color:${spotColor};white-space:nowrap;flex-shrink:0;">${spots===0?"Full":spots+" spots"}</span>
               </div></div>`;
           }
@@ -585,7 +530,8 @@
 
     function timeAgo(ts) {
       if (!ts) return "";
-      const diff = Date.now() - ts;
+      const now = Date.now();
+      const diff = now - ts;
       const mins = Math.floor(diff / 60000);
       if (mins < 1) return "just now";
       if (mins < 60) return mins + "m ago";
@@ -603,17 +549,11 @@
       return name.substring(0, 2).toUpperCase();
     }
 
-    function escapeHtml(text) {
-      const div = document.createElement("div");
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
     function renderQA(questions) {
       const scroll = document.getElementById("qaScroll");
       const empty = document.getElementById("qaEmpty");
       if (questions.length === 0) {
-        empty.textContent = "No questions yet — be the first to ask!";
+        empty.textContent = "No questions yet \u2014 be the first to ask!";
         empty.style.display = "block";
         return;
       }
@@ -622,85 +562,133 @@
       questions.forEach(q => {
         const thread = document.createElement("div");
         thread.className = "qa-thread";
+
         const isCaptain = q.email === CAPTAIN_EMAIL;
         const avatarClass = isCaptain ? "qa-avatar captain" : "qa-avatar";
         const badge = isCaptain ? '<span class="qa-badge">CAPTAIN</span>' : "";
         const displayName = q.displayName || q.email.split("@")[0];
-        let html = '<div class="qa-question"><div class="' + avatarClass + '">' + getInitials(q.email) + '</div><div class="qa-content"><span class="qa-name">' + escapeHtml(displayName) + badge + '<span class="qa-time">' + timeAgo(q.timestamp) + '</span></span><div class="qa-text">' + escapeHtml(q.text) + '</div></div></div>';
+
+        let html = `
+          <div class="qa-question">
+            <div class="${avatarClass}">${getInitials(q.email)}</div>
+            <div class="qa-content">
+              <span class="qa-name">${displayName}${badge}<span class="qa-time">${timeAgo(q.timestamp)}</span></span>
+              <div class="qa-text">${escapeHtml(q.text)}</div>
+            </div>
+          </div>`;
+
         if (q.replies && q.replies.length > 0) {
-          q.replies.forEach(function(r) {
-            var rIsCaptain = r.email === CAPTAIN_EMAIL;
-            var rAvClass = rIsCaptain ? "qa-avatar captain" : "qa-avatar";
-            var rBadge = rIsCaptain ? '<span class="qa-badge">CAPTAIN</span>' : "";
-            var rName = r.displayName || r.email.split("@")[0];
-            html += '<div class="qa-reply"><div class="qa-question"><div class="' + rAvClass + '" style="width:22px;height:22px;font-size:10px;">' + getInitials(r.email) + '</div><div class="qa-content"><span class="qa-name">' + escapeHtml(rName) + rBadge + '<span class="qa-time">' + timeAgo(r.timestamp) + '</span></span><div class="qa-text">' + escapeHtml(r.text) + '</div></div></div></div>';
+          q.replies.forEach(r => {
+            const rIsCaptain = r.email === CAPTAIN_EMAIL;
+            const rAvClass = rIsCaptain ? "qa-avatar captain" : "qa-avatar";
+            const rBadge = rIsCaptain ? '<span class="qa-badge">CAPTAIN</span>' : "";
+            const rName = r.displayName || r.email.split("@")[0];
+            html += `
+              <div class="qa-reply">
+                <div class="qa-question">
+                  <div class="${rAvClass}" style="width:22px;height:22px;font-size:10px;">${getInitials(r.email)}</div>
+                  <div class="qa-content">
+                    <span class="qa-name">${rName}${rBadge}<span class="qa-time">${timeAgo(r.timestamp)}</span></span>
+                    <div class="qa-text">${escapeHtml(r.text)}</div>
+                  </div>
+                </div>
+              </div>`;
           });
         }
-        var user = auth.currentUser;
+
+        const user = auth.currentUser;
         if (user) {
-          var canReply = user.email.toLowerCase() === CAPTAIN_EMAIL || user.email.toLowerCase() === q.email;
+          const canReply = user.email.toLowerCase() === CAPTAIN_EMAIL || user.email.toLowerCase() === q.email;
           if (canReply) {
-            html += '<button class="qa-reply-btn" onclick="showReplyForm(\'' + q.id + '\', this)">↩ Reply</button>';
+            html += `<button class="qa-reply-btn" onclick="showReplyForm('${q.id}', this)">\u21a9 Reply</button>`;
           }
         }
+
         thread.innerHTML = html;
         scroll.appendChild(thread);
       });
       scroll.scrollTop = scroll.scrollHeight;
     }
 
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
     function showReplyForm(questionId, btn) {
-      document.querySelectorAll(".qa-reply-form").forEach(function(f) { f.remove(); });
-      var form = document.createElement("div");
+      document.querySelectorAll(".qa-reply-form").forEach(f => f.remove());
+      const form = document.createElement("div");
       form.className = "qa-reply-form";
-      form.innerHTML = '<input type="text" placeholder="Write a reply…" onkeydown="if(event.key===\'Enter\')this.nextElementSibling.click();" /><button onclick="postReply(\'' + questionId + '\', this.previousElementSibling.value, this.parentElement)">Reply</button>';
+      form.innerHTML = `<input type="text" placeholder="Write a reply\u2026" onkeydown="if(event.key==='Enter')this.nextElementSibling.click();" />
+        <button onclick="postReply('${questionId}', this.previousElementSibling.value, this.parentElement)">Reply</button>`;
       btn.parentElement.appendChild(form);
       form.querySelector("input").focus();
     }
 
     async function postReply(questionId, text, formEl) {
       if (!text.trim()) return;
-      var user = auth.currentUser;
+      const user = auth.currentUser;
       if (!user) return;
       try {
-        var docRef = db.collection("qa").doc(questionId);
-        var doc = await docRef.get();
-        var data = doc.data();
-        var replies = data.replies || [];
-        replies.push({ email: user.email.toLowerCase(), displayName: user.displayName || user.email.split("@")[0], text: text.trim(), timestamp: Date.now() });
-        await docRef.update({ replies: replies });
+        const docRef = db.collection("qa").doc(questionId);
+        const doc = await docRef.get();
+        const data = doc.data();
+        const replies = data.replies || [];
+        replies.push({
+          email: user.email.toLowerCase(),
+          displayName: user.displayName || user.email.split("@")[0],
+          text: text.trim(),
+          timestamp: Date.now()
+        });
+        await docRef.update({ replies });
         formEl.remove();
-      } catch (e) { alert("Error posting reply: " + e.message); }
+      } catch (e) {
+        alert("Error posting reply: " + e.message);
+      }
     }
 
     async function postQuestion() {
-      var input = document.getElementById("qaInput");
-      var text = input.value.trim();
+      const input = document.getElementById("qaInput");
+      const text = input.value.trim();
       if (!text) return;
-      var user = auth.currentUser;
+      const user = auth.currentUser;
       if (!user) return;
       input.disabled = true;
       try {
-        await db.collection("qa").add({ email: user.email.toLowerCase(), displayName: user.displayName || user.email.split("@")[0], text: text, timestamp: Date.now(), replies: [] });
+        await db.collection("qa").add({
+          email: user.email.toLowerCase(),
+          displayName: user.displayName || user.email.split("@")[0],
+          text: text,
+          timestamp: Date.now(),
+          replies: []
+        });
         input.value = "";
-      } catch (e) { alert("Error posting: " + e.message); }
+      } catch (e) {
+        alert("Error posting: " + e.message);
+      }
       input.disabled = false;
       input.focus();
     }
 
     function loadQA() {
-      var user = auth.currentUser;
+      const user = auth.currentUser;
       if (!user) return;
-      document.getElementById("qaSection").style.display = "block";
-      db.collection("qa").orderBy("timestamp", "asc").onSnapshot(function(snapshot) {
-        var questions = [];
-        snapshot.forEach(function(doc) { questions.push({ id: doc.id, ...doc.data() }); });
+      document.getElementById("qaInputRow").style.display = "flex";
+      db.collection("qa").orderBy("timestamp", "asc").onSnapshot(snapshot => {
+        const questions = [];
+        snapshot.forEach(doc => {
+          questions.push({ id: doc.id, ...doc.data() });
+        });
         renderQA(questions);
-      }, function(err) {
+      }, err => {
         document.getElementById("qaEmpty").textContent = "Could not load Q&A.";
       });
     }
-    auth.onAuthStateChanged(function(user) { if (user) loadQA(); });
+
+    auth.onAuthStateChanged(user => {
+      if (user) loadQA();
+    });
   </script>
 </body>
 </html>

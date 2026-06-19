@@ -320,6 +320,11 @@
       return rows;
     }
 
+    function isOurTeam(name) {
+      const n = (name || "").toLowerCase();
+      return n.includes("escalona") || n.includes("pine lake");
+    }
+
     let allMatches = [];
     let allAvailability = {}; // { matchId: [ {player, status, notes} ] }
     let currentFilter = "upcoming";
@@ -405,9 +410,12 @@
         const location = match["Facility/Match Site"] || "TBA";
         const homeTeam = match["Home Team"] || "";
         const visitTeam = match["Visiting Team"] || "";
-        const isHome = homeTeam.toLowerCase().includes("pine lake") || homeTeam.toLowerCase().includes("plc");
-        const opponent = isHome ? visitTeam : homeTeam;
-        const homeAway = isHome ? "Home" : "Away";
+        const homeOurs = isOurTeam(homeTeam);
+        const visitOurs = isOurTeam(visitTeam);
+        let opponent, homeAway;
+        if (homeOurs && !visitOurs) { opponent = visitTeam || "TBD"; homeAway = "Home"; }
+        else if (visitOurs && !homeOurs) { opponent = homeTeam || "TBD"; homeAway = "Away"; }
+        else { opponent = homeTeam + " vs " + visitTeam; homeAway = ""; }
 
         // Count statuses
         const yes = players.filter(p => p.status === "Yes");

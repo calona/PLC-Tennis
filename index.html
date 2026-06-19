@@ -746,6 +746,22 @@
       return rows;
     }
 
+    function isOurTeam(name) {
+      const n = (name || "").toLowerCase();
+      return n.includes("escalona") || n.includes("pine lake");
+    }
+
+    function getOpponent(m) {
+      const home = m["Home Team"] || "";
+      const visit = m["Visiting Team"] || "";
+      const homeOurs = isOurTeam(home);
+      const visitOurs = isOurTeam(visit);
+      if (homeOurs && !visitOurs) return { opponent: visit || "TBD", homeAway: "Home" };
+      if (visitOurs && !homeOurs) return { opponent: home || "TBD", homeAway: "Away" };
+      // fallback: show whichever isn't ours, or both
+      return { opponent: home + " vs " + visit, homeAway: "" };
+    }
+
     async function loadNextMatches() {
       try {
         const res = await fetch(SHEET_URL);
@@ -778,9 +794,7 @@
         upcoming.forEach((m, i) => {
           const dateObj = new Date(m["Schedule Date"]);
           const dateStr = dateObj.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-          const isHome = (m["Home Team"] || "").toLowerCase().includes("pine lake") || (m["Home Team"] || "").toLowerCase().includes("plc");
-          const opponent = isHome ? (m["Visiting Team"] || "TBD") : (m["Home Team"] || "TBD");
-          const homeAway = isHome ? "Home" : "Away";
+          const { opponent, homeAway } = getOpponent(m);
           const location = m["Facility/Match Site"] || "TBA";
           const time = m["Schedule Time"] || "TBA";
           const league = m["League"] || "";

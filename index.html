@@ -1,694 +1,1301 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>PLC Tennis Team</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --navy: #1d3563;
-      --navy-soft: #243c6f;
-      --blue: #4a6fa5;
-      --green: #1d6f42;
-      --bg: #f5f7fa;
-      --card-bg: #ffffff;
-      --text-main: #1f2933;
-      --text-muted: #6b7280;
-      --border-subtle: #e5e7eb;
-      --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
-      --radius-lg: 18px;
-      --radius-pill: 999px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: radial-gradient(circle at top left, #e0ecff 0, #f5f7fa 40%, #f5f7fa 100%);
-      color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column;
-    }
+<meta charset="UTF-8" />
+<title>PLC Tennis Team</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 
-    /* NAVBAR */
-    .nav { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(12px);
-      background: linear-gradient(to right, rgba(245,247,250,0.95), rgba(245,247,250,0.9));
-      border-bottom: 1px solid rgba(148,163,184,0.25); }
-    .nav-inner { max-width: 1100px; margin: 0 auto; padding: 12px 20px;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-    .nav-left { display: flex; align-items: center; gap: 10px; }
-    .nav-logo { width: 34px; height: 34px; border-radius: 12px;
-      background: radial-gradient(circle at 30% 20%, #facc15, #f97316 40%, #b91c1c 100%);
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; font-weight: 700; font-size: 18px; box-shadow: 0 6px 14px rgba(15,23,42,0.25); }
-    .nav-title { display: flex; flex-direction: column; }
-    .nav-title-main { font-family: "Poppins", system-ui, sans-serif; font-weight: 700; font-size: 18px; color: var(--navy); }
-    .nav-title-sub { font-size: 12px; color: var(--text-muted); }
-    .nav-links { display: flex; align-items: center; gap: 10px; font-size: 14px; }
-    .nav-link { padding: 6px 12px; border-radius: 999px; color: var(--text-muted); text-decoration: none; transition: all 0.2s ease; }
-    .nav-link:hover { background: rgba(148,163,184,0.12); color: var(--navy); }
-    .nav-link.active { background: var(--navy); color: #fff; box-shadow: 0 6px 14px rgba(15,23,42,0.25); }
-    .nav-cta { padding: 7px 14px; border-radius: 999px; border: 1px solid rgba(148,163,184,0.5);
-      font-size: 12px; color: var(--text-muted); background: rgba(255,255,255,0.8);
-      display: flex; align-items: center; gap: 6px; }
-    .nav-cta span { font-size: 16px; }
+<style>
+:root {
+  --navy: #1d3563;
+  --navy-soft: #243c6f;
+  --blue: #4a6fa5;
+  --green: #1d6f42;
+  --bg: #f5f7fa;
+  --card-bg: #ffffff;
+  --text-main: #1f2933;
+  --text-muted: #6b7280;
+  --border-subtle: #e5e7eb;
+  --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+}
 
-    /* MAIN LAYOUT */
-    .page { flex: 1; display: flex; justify-content: center; padding: 24px 16px 32px; }
-    .page-inner { max-width: 1100px; width: 100%;
-      display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.4fr);
-      gap: 22px; align-items: flex-start; }
-    @media (max-width: 900px) {
-      .page-inner { grid-template-columns: minmax(0, 1fr); }
-      .nav-inner { flex-wrap: wrap; }
-      .nav-links { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
-    }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* HERO CARD */
-    .hero-card { background: linear-gradient(135deg, #3b5998, #6b8cce);
-      border-radius: 26px; padding: 22px 22px 20px; color: #e5ecff;
-      box-shadow: var(--shadow-soft); position: relative; overflow: hidden; }
-    .hero-top { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
-    .hero-main { max-width: 100%; }
-    .hero-kicker { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em;
-      color: #bfdbfe; margin-bottom: 6px; }
-    .hero-title { font-family: "Poppins", system-ui, sans-serif; font-weight: 700;
-      font-size: 22px; line-height: 1.2; margin-bottom: 6px; }
-    .hero-subtitle { font-size: 14px; color: #dbeafe; margin-bottom: 14px; }
-    .hero-cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
-    .hero-cta-primary { background: #facc15; color: #1f2933; border-radius: var(--radius-pill);
-      padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 8px;
-      box-shadow: 0 8px 18px rgba(15,23,42,0.35); transition: all 0.2s ease; text-decoration: none; }
-    .hero-cta-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(15,23,42,0.45); background: #fde047; }
-    .hero-cta-secondary { background: rgba(15,23,42,0.35); color: #e5ecff;
-      border-radius: var(--radius-pill); padding: 7px 14px; font-size: 12px;
-      border: 1px solid rgba(191,219,254,0.5); cursor: pointer;
-      display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
-    .hero-cta-secondary:hover { background: rgba(15,23,42,0.55); }
-    .hero-pill { position: absolute; right: -40px; top: -40px; width: 160px; height: 160px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 30%, #facc15, #f97316 40%, #b91c1c 100%);
-      opacity: 0.18; }
+body {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: radial-gradient(circle at top left, #e0ecff 0, #f5f7fa 40%, #f5f7fa 100%);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 14px; /* mobile breathing room */
+}
 
-    /* QUICK ACTIONS */
-    .section { margin-top: 18px; }
-    .section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
-    .section-title { font-size: 15px; font-weight: 600; color: var(--navy); }
-    .section-subtitle { font-size: 12px; color: var(--text-muted); }
-    .card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-    @media (max-width: 800px) { .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 600px) { .card-grid { grid-template-columns: minmax(0, 1fr); } }
-    .action-card { background: var(--card-bg); border-radius: var(--radius-lg);
-      padding: 12px 12px 11px; box-shadow: var(--shadow-soft);
-      border: 1px solid rgba(148,163,184,0.25); display: flex; flex-direction: column;
-      gap: 6px; cursor: pointer; text-decoration: none; color: inherit;
-      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
-    .action-card:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(15,23,42,0.12);
-      border-color: rgba(59,130,246,0.55); }
-    .action-icon { width: 26px; height: 26px; border-radius: 999px;
-      display: flex; align-items: center; justify-content: center; font-size: 15px; }
-    .action-icon.calendar { background: rgba(59,130,246,0.12); color: #2563eb; }
-    .action-icon.check    { background: rgba(34,197,94,0.12);  color: #16a34a; }
-    .action-icon.clipboard{ background: rgba(234,179,8,0.12);  color: #ca8a04; }
-    .action-title { font-size: 13px; font-weight: 600; color: var(--navy-soft); }
-    .action-desc  { font-size: 11px; color: var(--text-muted); }
-    .action-meta  { font-size: 11px; color: #6b7280; display: flex;
-      justify-content: space-between; align-items: center; margin-top: 2px; }
-    .action-pill  { padding: 2px 8px; border-radius: 999px; font-size: 10px;
-      background: rgba(15,23,42,0.04); color: var(--text-muted); }
+/* NAVBAR */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(12px);
+  background: linear-gradient(to right, rgba(245,247,250,0.95), rgba(245,247,250,0.9));
+  border-bottom: 1px solid rgba(148,163,184,0.25);
+  margin: 0 -14px; /* counter body padding */
+  padding: 0 14px;
+}
 
-    /* SIDE COLUMN */
-    .side-column { display: flex; flex-direction: column; gap: 14px; }
-    .card { background: var(--card-bg); border-radius: 22px; padding: 14px 14px 12px;
-      box-shadow: var(--shadow-soft); border: 1px solid rgba(148,163,184,0.25); }
-    .card-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-    .card-title { font-size: 14px; font-weight: 600; color: var(--navy-soft); }
-    .card-subtitle { font-size: 11px; color: var(--text-muted); }
-    .next-match-row { display: flex; justify-content: space-between; gap: 10px; margin-top: 6px; align-items: center; }
-    .next-match-main { font-size: 12px; color: var(--text-main); }
-    .next-match-main strong { color: var(--navy-soft); }
-    .next-match-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
-    .next-match-cta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-    .pill-status { font-size: 11px; padding: 3px 9px; border-radius: 999px;
-      background: rgba(34,197,94,0.08); color: #15803d; border: 1px solid rgba(34,197,94,0.35); }
-    .btn-small { border-radius: 999px; padding: 6px 11px; font-size: 11px; border: none;
-      cursor: pointer; background: var(--green); color: #fff;
-      display: inline-flex; align-items: center; gap: 6px;
-      box-shadow: 0 8px 18px rgba(22,163,74,0.35); text-decoration: none; }
-    .btn-small:hover { background: #166534; }
-    .list { margin-top: 6px; font-size: 11px; color: var(--text-muted); list-style: none; }
-    .list li { margin-bottom: 3px; display: flex; align-items: center; gap: 6px; }
-    .dot { width: 6px; height: 6px; border-radius: 999px; background: #9ca3af; }
+.nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
 
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-    /* ASK THE CAPTAIN Q&A */
-    .qa-card { max-height: 500px; display: flex; flex-direction: column; }
-    .qa-scroll { flex: 1; overflow-y: auto; max-height: 320px; margin-bottom: 10px; }
-    .qa-thread { border-bottom: 1px solid var(--border-subtle); padding: 10px 0; }
-    .qa-thread:last-child { border-bottom: none; }
-    .qa-question { display: flex; gap: 8px; align-items: flex-start; }
-    .qa-avatar {
-      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700; color: #fff;
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    }
-    .qa-avatar.captain {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-    }
-    .qa-content { flex: 1; min-width: 0; }
-    .qa-name { font-size: 11px; font-weight: 600; color: var(--navy-soft); }
-    .qa-name .qa-badge {
-      font-size: 9px; font-weight: 700; color: #d97706;
-      background: rgba(234,179,8,0.12); padding: 1px 6px; border-radius: 999px;
-      margin-left: 4px; vertical-align: middle;
-    }
-    .qa-time { font-size: 10px; color: var(--text-muted); margin-left: 6px; }
-    .qa-text { font-size: 12px; color: var(--text-main); margin-top: 2px; line-height: 1.45; word-break: break-word; }
-    .qa-reply { margin-left: 34px; margin-top: 8px; }
-    .qa-reply-btn {
-      font-size: 10px; color: var(--blue); background: none; border: none;
-      cursor: pointer; padding: 0; margin-top: 4px; font-family: "Inter", sans-serif;
-    }
-    .qa-reply-btn:hover { text-decoration: underline; }
-    .qa-input-row { display: flex; gap: 8px; align-items: flex-end; }
-    .qa-input {
-      flex: 1; padding: 8px 12px; border: 1px solid var(--border-subtle);
-      border-radius: 12px; font-size: 12px; font-family: "Inter", sans-serif;
-      resize: none; min-height: 38px; max-height: 80px; outline: none;
-      transition: border-color 0.2s;
-    }
-    .qa-input:focus { border-color: var(--blue); }
-    .qa-input::placeholder { color: #9ca3af; }
-    .qa-send {
-      padding: 8px 14px; border-radius: 12px; border: none;
-      background: var(--navy); color: #fff; font-size: 12px; font-weight: 600;
-      cursor: pointer; font-family: "Inter", sans-serif; white-space: nowrap;
-      transition: background 0.2s;
-    }
-    .qa-send:hover { background: var(--navy-soft); }
-    .qa-send:disabled { opacity: 0.5; cursor: not-allowed; }
-    .qa-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px 0; }
-    .qa-reply-form { display: flex; gap: 6px; margin-top: 6px; margin-left: 34px; }
-    .qa-reply-form input {
-      flex: 1; padding: 5px 10px; border: 1px solid var(--border-subtle);
-      border-radius: 8px; font-size: 11px; font-family: "Inter", sans-serif; outline: none;
-    }
-    .qa-reply-form button {
-      padding: 5px 10px; border-radius: 8px; border: none;
-      background: #f59e0b; color: #fff; font-size: 11px; font-weight: 600;
-      cursor: pointer; font-family: "Inter", sans-serif;
-    }
+.nav-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 30% 20%, #facc15, #f97316 40%, #b91c1c 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 18px;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.25);
+}
 
-    /* FOOTER */
-    .footer { border-top: 1px solid rgba(148,163,184,0.3); padding: 10px 16px 14px;
-      font-size: 11px; color: var(--text-muted); display: flex; justify-content: center; }
-    .footer-inner { max-width: 1100px; width: 100%;
-      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
-    .footer-links { display: flex; gap: 10px; flex-wrap: wrap; }
-    .footer-link { color: var(--text-muted); text-decoration: none; }
-    .footer-link:hover { text-decoration: underline; }
-  </style>
+.nav-title-main {
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--navy);
+}
+
+.nav-title-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+
+.nav-link {
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background: rgba(148,163,184,0.12);
+  color: var(--navy);
+}
+
+.nav-link.active {
+  background: var(--navy);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.25);
+}
+
+.nav-cta {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.5);
+  font-size: 12px;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* MAIN LAYOUT */
+.page {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 24px 0 32px;
+}
+
+.page-inner {
+  max-width: 1100px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.4fr);
+  gap: 22px;
+  align-items: flex-start;
+}
+
+@media (max-width: 900px) {
+  .page-inner { grid-template-columns: 1fr; }
+}
+
+/* HERO CARD */
+.hero-card {
+  background: linear-gradient(135deg, #3b5998, #6b8cce);
+  border-radius: 26px;
+  padding: 22px;
+  color: #e5ecff;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-kicker {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #bfdbfe;
+  margin-bottom: 6px;
+}
+
+.hero-title {
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+@media (max-width: 480px) {
+  .hero-title { font-size: 18px; }
+}
+
+.hero-subtitle {
+  font-size: 14px;
+  color: #dbeafe;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 480px) {
+  .hero-subtitle { font-size: 13px; }
+}
+
+.hero-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hero-cta-primary {
+  background: #facc15;
+  color: #1f2933;
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-cta-primary:hover {
+  background: #fde047;
+}
+
+.hero-cta-secondary {
+  background: rgba(15,23,42,0.35);
+  color: #e5ecff;
+  border-radius: var(--radius-pill);
+  padding: 7px 14px;
+  font-size: 12px;
+  border: 1px solid rgba(191,219,254,0.5);
+  text-decoration: none;
+}
+
+.hero-pill {
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 160px;
+  height: 160px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 30%, #facc15, #f97316 40%, #b91c1c 100%);
+  opacity: 0.18;
+}
+/* QUICK ACTIONS */
+.section { margin-top: 18px; }
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.section-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 800px) {
+  .card-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .card-grid { grid-template-columns: 1fr; }
+}
+
+.action-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid rgba(148,163,184,0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+}
+
+.action-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+.action-icon.calendar { background: rgba(59,130,246,0.12); color: #2563eb; }
+.action-icon.check { background: rgba(34,197,94,0.12); color: #16a34a; }
+.action-icon.clipboard { background: rgba(234,179,8,0.12); color: #ca8a04; }
+
+.action-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy-soft);
+}
+
+.action-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.action-meta {
+  font-size: 11px;
+  color: #6b7280;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* SIDE COLUMN */
+.side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 22px;
+  padding: 14px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid rgba(148,163,184,0.25);
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--navy-soft);
+}
+
+.card-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.next-match-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+  align-items: center;
+}
+
+.next-match-main {
+  font-size: 12px;
+  color: var(--text-main);
+}
+
+.next-match-main strong {
+  color: var(--navy-soft);
+}
+
+.next-match-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.btn-small {
+  border-radius: 999px;
+  padding: 6px 11px;
+  font-size: 11px;
+  border: none;
+  cursor: pointer;
+  background: var(--green);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.btn-small:hover {
+  background: #166534;
+}
+
+/* LISTS */
+.list {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  list-style: none;
+}
+
+.list li {
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #9ca3af;
+}
+
+/* Q&A */
+.qa-card { max-height: 500px; display: flex; flex-direction: column; }
+
+.qa-scroll {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 320px;
+  margin-bottom: 10px;
+}
+
+.qa-thread {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 10px 0;
+}
+
+.qa-question {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.qa-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.qa-avatar.captain {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.qa-content { flex: 1; min-width: 0; }
+
+.qa-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--navy-soft);
+}
+
+.qa-badge {
+  font-size: 9px;
+  font-weight: 700;
+  color: #d97706;
+  background: rgba(234,179,8,0.12);
+  padding: 1px 6px;
+  border-radius: 999px;
+  margin-left: 4px;
+}
+
+.qa-time {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-left: 6px;
+}
+
+.qa-text {
+  font-size: 12px;
+  color: var(--text-main);
+  margin-top: 2px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.qa-reply {
+  margin-left: 34px;
+  margin-top: 8px;
+}
+
+.qa-reply-btn {
+  font-size: 10px;
+  color: var(--blue);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 4px;
+}
+
+.qa-reply-btn:hover {
+  text-decoration: underline;
+}
+
+.qa-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.qa-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  font-size: 12px;
+  resize: none;
+  min-height: 38px;
+  max-height: 80px;
+}
+
+.qa-send {
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: none;
+  background: var(--navy);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.qa-send:hover {
+  background: var(--navy-soft);
+}
+
+.qa-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.qa-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 20px 0;
+}
+
+.qa-reply-form {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  margin-left: 34px;
+}
+
+.qa-reply-form input {
+  flex: 1;
+  padding: 5px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  font-size: 11px;
+}
+
+.qa-reply-form button {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: none;
+  background: #f59e0b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* FOOTER */
+.footer {
+  border-top: 1px solid rgba(148,163,184,0.3);
+  padding: 10px 16px 14px;
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: center;
+  margin: 0 -14px; /* counter body padding */
+}
+
+.footer-inner {
+  max-width: 1100px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.footer-link {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+}
+</style>
 </head>
+
 <body>
 
-  <!-- NAVBAR -->
-  <header class="nav">
-    <div class="nav-inner">
-      <div class="nav-left">
-        <div class="nav-logo">PLC</div>
-        <div class="nav-title">
-          <div class="nav-title-main">PLC Tennis</div>
-          <div class="nav-title-sub">USTA Team Hub · 2026 Season</div>
-        </div>
-      </div>
-      <div class="nav-links">
-        <a href="index.html" class="nav-link active">Home</a>
-        <a href="calendar.html" class="nav-link">Calendar</a>
-        <a href="availability.html" class="nav-link">Availability</a>
-        <a href="practice.html" class="nav-link">Practice</a>
-        <a href="roster.html" class="nav-link">Roster</a>
-        <a href="captain.html" class="nav-link">Captain</a>
-        <a href="#" class="nav-cta" onclick="logout()"><span>🔒</span> Logout</a>
+<header class="nav">
+  <div class="nav-inner">
+    <div class="nav-left">
+      <div class="nav-logo">PLC</div>
+      <div class="nav-title">
+        <div class="nav-title-main">PLC Tennis</div>
+        <div class="nav-title-sub">USTA Team Hub · 2026 Season</div>
       </div>
     </div>
-  </header>
 
-  <!-- MAIN CONTENT -->
-  <main class="page">
-    <div class="page-inner">
+    <div class="nav-links">
+      <a href="index.html" class="nav-link active">Home</a>
+      <a href="calendar.html" class="nav-link">Calendar</a>
+      <a href="availability.html" class="nav-link">Availability</a>
+      <a href="practice.html" class="nav-link">Practice</a>
+      <a href="roster.html" class="nav-link">Roster</a>
+      <a href="captain.html" class="nav-link">Captain</a>
+      <a href="#" class="nav-cta" onclick="logout()"><span>@</span> Logout</a>
+    </div>
+  </div>
+</header>
 
-      <!-- LEFT: HERO + QUICK ACTIONS -->
-      <section>
-        <div class="hero-card">
-          <div class="hero-pill"></div>
-          <div class="hero-top">
-            <div class="hero-main">
-              <div class="hero-kicker">Let’s F’in Go, Team!</div>
-              <h1 class="hero-title">Your PLC Midcourt Crisis Control Center.</h1>
-              <p class="hero-subtitle">
-                Check the schedule, submit availability, and keep the team aligned for every USTA match this season.
-              </p>
-              <div class="hero-cta-row">
-                <a href="availability.html" class="hero-cta-primary">Submit Availability <span>→</span></a>
-                <a href="calendar.html" class="hero-cta-secondary">View Match Calendar</a>
-              </div>
-            </div></div>
+<main class="page">
+  <div class="page-inner">
+
+    <!-- LEFT COLUMN -->
+    <section>
+      <div class="hero-card">
+        <div class="hero-pill"></div>
+
+        <div class="hero-kicker">Let's F'in Go, Team!</div>
+        <h1 class="hero-title">Your PLC Midcourt Crisis Control Center.</h1>
+        <p class="hero-subtitle">
+          Check the schedule, submit availability, and keep the team aligned for every USTA match this season.
+        </p>
+
+        <div class="hero-cta-row">
+          <a href="availability.html" class="hero-cta-primary">Submit Availability</a>
+          <a href="calendar.html" class="hero-cta-secondary">View Match Calendar</a>
         </div>
+      </div>
 
-        <section class="section">
-          <div class="section-header">
-            <div>
-              <div class="section-title">Quick actions</div>
-              <div class="section-subtitle">Jump straight into what you do most.</div>
+      <section class="section">
+        <div class="section-title">Quick actions</div>
+        <div class="section-subtitle">Jump straight into what you do most.</div>
+
+        <div class="card-grid">
+          <a href="calendar.html" class="action-card">
+            <div class="action-icon calendar"></div>
+            <div class="action-title">Match Calendar</div>
+            <div class="action-desc">See all upcoming matches, locations, and start times.</div>
+            <div class="action-meta">
+              <span>Next 4 weeks at a glance</span>
+              <span class="action-pill">Schedule</span>
+            </div>
+          </a>
+
+          <a href="availability.html" class="action-card">
+            <div class="action-icon check"></div>
+            <div class="action-title">Submit Availability</div>
+            <div class="action-desc">Tell the captain which matches you can play.</div>
+            <div class="action-meta">
+              <span>Keep your status up to date</span>
+              <span class="action-pill">Players</span>
+            </div>
+          </a>
+
+          <a href="captain.html" class="action-card">
+            <div class="action-icon clipboard"></div>
+            <div class="action-title">Captain Dashboard</div>
+            <div class="action-desc">View responses, export lineups, and plan rosters.</div>
+            <div class="action-meta">
+              <span>Matrix & Excel export</span>
+              <span class="action-pill">Captains</span>
+            </div>
+          </a>
+        </div>
+      </section>
+    </section>
+
+    <!-- RIGHT COLUMN -->
+    <aside class="side-column">
+
+      <section class="card">
+        <div class="card-title">Upcoming matches</div>
+        <div class="card-subtitle">Next 4 from your 2026 schedule.</div>
+
+        <div id="nextMatchContent">
+          <div class="next-match-row">
+            <div class="next-match-main">
+              <span style="color:var(--text-muted); font-size:12px;">Loading next match...</span>
             </div>
           </div>
-          <div class="card-grid">
-            <a href="calendar.html" class="action-card">
-              <div class="action-icon calendar">📅</div>
-              <div class="action-title">Match Calendar</div>
-              <div class="action-desc">See all upcoming matches, locations, and start times.</div>
-              <div class="action-meta"><span>Next 4 weeks at a glance</span><span class="action-pill">Schedule</span></div>
-            </a>
-            <a href="availability.html" class="action-card">
-              <div class="action-icon check">✅</div>
-              <div class="action-title">Submit Availability</div>
-              <div class="action-desc">Tell the captain which matches you can play.</div>
-              <div class="action-meta"><span>Keep your status up to date</span><span class="action-pill">Players</span></div>
-            </a>
-            <a href="captain.html" class="action-card">
-              <div class="action-icon clipboard">📊</div>
-              <div class="action-title">Captain Dashboard</div>
-              <div class="action-desc">View responses, export lineups, and plan rosters.</div>
-              <div class="action-meta"><span>Matrix &amp; Excel export</span><span class="action-pill">Captains</span></div>
-            </a>
-          </div>
-        </section>
+        </div>
       </section>
 
-      <!-- RIGHT: NEXT MATCH + INFO -->
-      <aside class="side-column">
-        <section class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Upcoming matches</div>
-              <div class="card-subtitle">Next 4 from your 2026 schedule.</div>
-            </div>
-          </div>
-          <div id="nextMatchContent">
-            <div class="next-match-row">
-              <div class="next-match-main"><span style="color:var(--text-muted);font-size:12px;">Loading next match…</span></div>
-            </div>
-          </div>
-        </section>
+      <section class="card">
+        <div class="card-title">Upcoming practices</div>
+        <div class="card-subtitle">Thursdays · 6:45 PM · PLC Indoor</div>
 
-        <section class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">🏋️ Upcoming practices</div>
-              <div class="card-subtitle">Thursdays · 6:45 PM · PLC Indoor</div>
-            </div>
-          </div>
-          <div id="practiceContent">
-            <div style="color:var(--text-muted);font-size:12px;">Loading practices…</div>
-          </div>
-        </section>
+        <div id="practiceContent">
+          <div style="color:var(--text-muted); font-size:12px;">Loading practices...</div>
+        </div>
+      </section>
 
-        <section class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Team links</div>
-              <div class="card-subtitle">Useful places you’ll visit often.</div>
-            </div>
-          </div>
-          <ul class="list">
-            <li>
-              <span class="dot"></span>
-              <a class="footer-link" href="https://tennislink.usta.com/Leagues/Main/StatsAndStandings.aspx?t=3&par1=DB00E4A935D0D4C69584FB7A09C81F5E1D&par2=2026&par3=11" target="_blank" rel="noopener">USTA TennisLink</a>
-            </li>
-            <li>
-              <span class="dot"></span>
-              <a class="footer-link" href="https://pinelake.cactennis.com/users/login" target="_blank" rel="noopener">Columbia Pine Lake Club</a>
-            </li>
-            <li>
-              <span class="dot"></span>
-              <span>Captain: <strong>gaylorde@outlook.com · 425-444-1670</strong></span>
-            </li>
-          </ul>
-        </section>
+      <section class="card">
+        <div class="card-title">Team links</div>
+        <div class="card-subtitle">Useful places you'll visit often.</div>
 
-        <section class="card qa-card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">💬 Ask the Captain</div>
-              <div class="card-subtitle">Questions, comments, or match-day logistics.</div>
-            </div>
-          </div>
-          <div class="qa-scroll" id="qaScroll">
-            <div class="qa-empty" id="qaEmpty">Loading…</div>
-          </div>
-          <div class="qa-input-row" id="qaInputRow" style="display:none;">
-            <textarea class="qa-input" id="qaInput" placeholder="Type a question or comment…" rows="1"
-              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();postQuestion();}"></textarea>
-            <button class="qa-send" onclick="postQuestion()">Post</button>
-          </div>
-        </section>
-      </aside>
+        <ul class="list">
+          <li>
+            <span class="dot"></span>
+            <a class="footer-link" href="https://tennislink.usta.com/Leagues/Main/StatsAndStandings.aspx?t=3" target="_blank" rel="noopener">
+              USTA TennisLink
+            </a>
+          </li>
+
+          <li>
+            <span class="dot"></span>
+            <a class="footer-link" href="https://pinelake.cactennis.com/users/login" target="_blank" rel="noopener">
+              Columbia Pine Lake Club
+            </a>
+          </li>
+
+          <li>
+            <span class="dot"></span>
+            <span>Captain: <strong>gaylorde@outlook.com · 425‑444‑1670</strong></span>
+          </li>
+        </ul>
+      </section>
+
+      <section class="card qa-card">
+        <div class="card-title">Ask the Captain</div>
+        <div class="card-subtitle">Questions, comments, or match‑day logistics.</div>
+
+        <div class="qa-scroll" id="qaScroll">
+          <div class="qa-empty" id="qaEmpty">Loading...</div>
+        </div>
+
+        <div class="qa-input-row" id="qaInputRow" style="display:none;">
+          <textarea class="qa-input" id="qaInput" placeholder="Type a question or comment..." rows="1"
+            onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); postQuestion(); }"></textarea>
+          <button class="qa-send" onclick="postQuestion()">Post</button>
+        </div>
+      </section>
+
+    </aside>
+  </div>
+</main>
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <span>&copy; 2026 Calona Consulting · Sammamish, WA</span>
+
+    <div class="footer-links">
+      <a href="calendar.html" class="footer-link">Calendar</a>
+      <a href="availability.html" class="footer-link">Availability</a>
+      <a href="practice.html" class="footer-link">Practice</a>
+      <a href="roster.html" class="footer-link">Roster</a>
     </div>
-  </main>
+  </div>
+</footer>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="footer-inner">
-      <span>&copy; 2026 Calona Consulting · Sammamish, WA</span>
-      <div class="footer-links">
-        <a href="calendar.html" class="footer-link">Calendar</a>
-        <a href="availability.html" class="footer-link">Availability</a>
-        <a href="practice.html" class="footer-link">Practice</a>
-        <a href="roster.html" class="footer-link">Roster</a>
-      </div>
-    </div>
-  </footer>
+<!-- SCRIPTS -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script>
-    firebase.initializeApp({
-      apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
-      authDomain: "plc-tennis.firebaseapp.com",
-      projectId: "plc-tennis",
-      storageBucket: "plc-tennis.appspot.com",
-      messagingSenderId: "472563332469",
-      appId: "1:472563332469:web:b781075e99cd0f5a3c4f3c"
-    });
-    const db = firebase.firestore();
-    const auth = firebase.auth();
-    auth.onAuthStateChanged(user => {
-      if (user && user.email.toLowerCase() === "gaylorde@outlook.com") {
-        var cn = document.getElementById("captainNav"); if(cn) cn.style.display="";
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
+  authDomain: "plc-tennis.firebaseapp.com",
+  projectId: "plc-tennis",
+  storageBucket: "plc-tennis.appspot.com",
+  messagingSenderId: "472563332469",
+  appId: "1:472563332469:web:b781075e99cd0f5a3c4f3c"
+});
+
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+auth.onAuthStateChanged(user => {
+  if (user && user.email.toLowerCase() === "gaylorde@outlook.com") {
+    const cn = document.getElementById("captainNav");
+    if (cn) cn.style.display = "";
+  }
+});
+
+function logout() {
+  firebase.auth().signOut().then(() => {
+    window.location.href = "login.html";
+  });
+}
+
+const SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let inQ = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], n = text[i + 1];
+
+    if (c === '"' && n === '"') { cell += '"'; i++; }
+    else if (c === '"') { inQ = !inQ; }
+    else if (c === ',' && !inQ) { row.push(cell); cell = ""; }
+    else if (c === '\n' && !inQ) { row.push(cell); rows.push(row); row = []; cell = ""; }
+    else { cell += c; }
+  }
+
+  row.push(cell);
+  rows.push(row);
+  return rows;
+}
+
+function isOurTeam(name) {
+  const n = (name || "").toLowerCase();
+  return n.includes("escalona") || n.includes("pine lake");
+}
+
+function getOpponent(m) {
+  const home = m["Home Team"] || "";
+  const visit = m["Visiting Team"] || "";
+  const homeOurs = isOurTeam(home);
+  const visitOurs = isOurTeam(visit);
+
+  if (homeOurs && !visitOurs) return { opponent: visit || "TBD", homeAway: "Home" };
+  if (visitOurs && !homeOurs) return { opponent: home || "TBD", homeAway: "Away" };
+
+  return { opponent: home + " vs " + visit, homeAway: "" };
+}
+
+async function loadNextMatches() {
+  try {
+    const res = await fetch(SHEET_URL);
+    const csv = await res.text();
+    const rows = parseCSV(csv);
+
+    const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
+    const numMatches = rows[0].length - 1;
+
+    const matches = [];
+    for (let col = 1; col <= numMatches; col++) {
+      const match = {};
+      for (let r = 0; r < fieldNames.length; r++) {
+        const field = fieldNames[r];
+        const value = rows[r][col]?.trim();
+        if (field && value) match[field] = value;
       }
-    });
-    function logout() { firebase.auth().signOut().then(() => window.location.href = "login.html"); }
-
-    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
-
-    function parseCSV(text) {
-      const rows = []; let row = []; let cell = ""; let inQ = false;
-      for (let i = 0; i < text.length; i++) {
-        const c = text[i], n = text[i + 1];
-        if (c === '"' && n === '"') { cell += '"'; i++; }
-        else if (c === '"') { inQ = !inQ; }
-        else if (c === ',' && !inQ) { row.push(cell); cell = ""; }
-        else if (c === '\n' && !inQ) { row.push(cell); rows.push(row); row = []; cell = ""; }
-        else { cell += c; }
-      }
-      row.push(cell); rows.push(row);
-      return rows;
+      if (match["Match ID"]) matches.push(match);
     }
 
-    function isOurTeam(name) {
-      const n = (name || "").toLowerCase();
-      return n.includes("escalona") || n.includes("pine lake");
+    matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const upcoming = matches
+      .filter(m => new Date(m["Schedule Date"]) >= today)
+      .slice(0, 4);
+
+    const container = document.getElementById("nextMatchContent");
+
+    if (upcoming.length === 0) {
+      container.innerHTML = `
+        <div class="next-match-row">
+          <div class="next-match-main">
+            <span style="color:var(--text-muted); font-size:12px;">No upcoming matches on the schedule.</span>
+          </div>
+        </div>`;
+      return;
     }
 
-    function getOpponent(m) {
-      const home = m["Home Team"] || "", visit = m["Visiting Team"] || "";
-      const homeOurs = isOurTeam(home), visitOurs = isOurTeam(visit);
-      if (homeOurs && !visitOurs) return { opponent: visit || "TBD", homeAway: "Home" };
-      if (visitOurs && !homeOurs) return { opponent: home || "TBD", homeAway: "Away" };
-      return { opponent: home + " vs " + visit, homeAway: "" };
-    }
+    container.innerHTML = "";
 
-    async function loadNextMatches() {
-      try {
-        const res = await fetch(SHEET_URL);
-        const csv = await res.text();
-        const rows = parseCSV(csv);
-        const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
-        const numMatches = rows[0].length - 1;
-        const matches = [];
-        for (let col = 1; col <= numMatches; col++) {
-          const match = {};
-          for (let r = 0; r < fieldNames.length; r++) {
-            const field = fieldNames[r], value = rows[r][col]?.trim();
-            if (field && value) match[field] = value;
-          }
-          if (match["Match ID"]) matches.push(match);
-        }
-        matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
-        const today = new Date(); today.setHours(0,0,0,0);
-        const upcoming = matches.filter(m => new Date(m["Schedule Date"]) >= today).slice(0, 4);
-        const container = document.getElementById("nextMatchContent");
-        if (upcoming.length === 0) {
-          container.innerHTML = '<div class="next-match-row"><div class="next-match-main"><span style="color:var(--text-muted);font-size:12px;">No upcoming matches on the schedule.</span></div></div>';
-          return;
-        }
-        container.innerHTML = '';
-        upcoming.forEach((m, i) => {
-          const dateObj = new Date(m["Schedule Date"]);
-          const dateStr = dateObj.toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric" });
-          const { opponent, homeAway } = getOpponent(m);
-          const location = m["Facility/Match Site"] || "TBA";
-          const time = m["Schedule Time"] || "TBA";
-          const league = m["League"] || "";
-          const leagueShort = league.includes("55") ? "55+" : league.includes("40") ? "40+" : league;
-          const leagueBg = league.includes("55") ? "rgba(234,179,8,0.12)" : "rgba(59,130,246,0.12)";
-          const leagueColor = league.includes("55") ? "#a16207" : "#2563eb";
-          const border = i > 0 ? 'border-top:1px solid var(--border-subtle);margin-top:8px;padding-top:8px;' : '';
-          container.innerHTML += `
-            <div style="${border}">
-              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
-                <div class="next-match-main">
-                  <strong>PLC vs ${opponent}</strong><br />
-                  <span class="next-match-meta">${dateStr} · ${time} · ${homeAway}</span><br />
-                  <span class="next-match-meta">${location}</span>
-                </div>
-                <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:999px;background:${leagueBg};color:${leagueColor};white-space:nowrap;flex-shrink:0;">${leagueShort}</span>
-              </div>
-            </div>`;
-        });
-        container.innerHTML += `
-          <div style="border-top:1px solid var(--border-subtle);margin-top:10px;padding-top:8px;text-align:center;">
-            <a href="availability.html" class="btn-small">Update availability</a>
-          </div>`;
-      } catch (e) {
-        document.getElementById("nextMatchContent").innerHTML = '<div class="next-match-row"><div class="next-match-main"><span style="color:var(--text-muted);font-size:12px;">Could not load match data.</span></div></div>';
-      }
-    }
-    loadNextMatches();
-
-    function getNextThursdays(count) {
-      const dates = []; const d = new Date(); d.setHours(0,0,0,0);
-      const day = d.getDay();
-      if (day !== 4) { const diff = (4 - day + 7) % 7; d.setDate(d.getDate() + diff); }
-      for (let i = 0; i < count; i++) { dates.push(new Date(d)); d.setDate(d.getDate() + 7); }
-      return dates;
-    }
-
-    async function loadUpcomingPractices() {
-      const container = document.getElementById("practiceContent");
-      try {
-        const thursdays = getNextThursdays(3);
-        let html = "";
-        for (let i = 0; i < thursdays.length; i++) {
-          const dt = thursdays[i];
-          const key = dt.toISOString().split("T")[0];
-          const dateStr = dt.toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric" });
-          const border = i > 0 ? "border-top:1px solid var(--border-subtle);margin-top:8px;padding-top:8px;" : "";
-          let yesCount = 0, maybeCount = 0, cancelled = false, cancelReason = "";
-          try {
-            const metaDoc = await db.collection("practice").doc(key).get();
-            if (metaDoc.exists) { const md = metaDoc.data(); cancelled = !!md.cancelled; cancelReason = md.cancelReason || ""; }
-            const rsvpSnap = await db.collection("practice").doc(key).collection("rsvps").get();
-            rsvpSnap.forEach(doc => { const s = doc.data().status; if (s==="yes") yesCount++; else if (s==="maybe") maybeCount++; });
-          } catch (e) {}
-          if (cancelled) {
-            html += `<div style="${border}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-              <div class="next-match-main"><strong style="text-decoration:line-through;color:var(--text-muted);">${dateStr}</strong><br/>
-              <span class="next-match-meta" style="color:#dc2626;">🚫 Cancelled${cancelReason ? " — "+cancelReason : ""}</span></div></div></div>`;
-          } else {
-            const spots = Math.max(0, 12 - yesCount);
-            const spotColor = spots===0?"#dc2626":spots<=4?"#a16207":"#15803d";
-            const spotBg   = spots===0?"rgba(239,68,68,.1)":spots<=4?"rgba(234,179,8,.1)":"rgba(34,197,94,.1)";
-            html += `<div style="${border}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-              <div class="next-match-main"><strong>${dateStr}</strong><br/>
-              <span class="next-match-meta">✔ ${yesCount} confirmed${maybeCount>0?" · ? "+maybeCount+" maybe":""}</span></div>
-              <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:999px;background:${spotBg};color:${spotColor};white-space:nowrap;flex-shrink:0;">${spots===0?"Full":spots+" spots"}</span>
-              </div></div>`;
-          }
-        }
-        html += `<div style="border-top:1px solid var(--border-subtle);margin-top:10px;padding-top:8px;text-align:center;">
-          <a href="practice.html" class="btn-small">RSVP for practice</a></div>`;
-        container.innerHTML = html;
-      } catch (e) {
-        container.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Could not load practice data.</div>';
-      }
-    }
-    loadUpcomingPractices();
-
-    // ===== ASK THE CAPTAIN Q&A =====
-    const CAPTAIN_EMAIL = "gaylorde@outlook.com";
-
-    function timeAgo(ts) {
-      if (!ts) return "";
-      const now = Date.now();
-      const diff = now - ts;
-      const mins = Math.floor(diff / 60000);
-      if (mins < 1) return "just now";
-      if (mins < 60) return mins + "m ago";
-      const hrs = Math.floor(mins / 60);
-      if (hrs < 24) return hrs + "h ago";
-      const days = Math.floor(hrs / 24);
-      if (days < 7) return days + "d ago";
-      return new Date(ts).toLocaleDateString("en-US", { month:"short", day:"numeric" });
-    }
-
-    function getInitials(email) {
-      const name = (email || "").split("@")[0].replace(/[._]/g, " ").trim();
-      const parts = name.split(/\s+/);
-      if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-      return name.substring(0, 2).toUpperCase();
-    }
-
-    function renderQA(questions) {
-      const scroll = document.getElementById("qaScroll");
-      const empty = document.getElementById("qaEmpty");
-      if (questions.length === 0) {
-        empty.textContent = "No questions yet — be the first to ask!";
-        empty.style.display = "block";
-        return;
-      }
-      empty.style.display = "none";
-      scroll.innerHTML = "";
-      questions.forEach(q => {
-        const thread = document.createElement("div");
-        thread.className = "qa-thread";
-
-        const isCaptain = q.email === CAPTAIN_EMAIL;
-        const avatarClass = isCaptain ? "qa-avatar captain" : "qa-avatar";
-        const badge = isCaptain ? '<span class="qa-badge">CAPTAIN</span>' : "";
-        const displayName = q.displayName || q.email.split("@")[0];
-
-        let html = `
-          <div class="qa-question">
-            <div class="${avatarClass}">${getInitials(q.email)}</div>
-            <div class="qa-content">
-              <span class="qa-name">${displayName}${badge}<span class="qa-time">${timeAgo(q.timestamp)}</span></span>
-              <div class="qa-text">${escapeHtml(q.text)}</div>
-            </div>
-          </div>`;
-
-        if (q.replies && q.replies.length > 0) {
-          q.replies.forEach(r => {
-            const rIsCaptain = r.email === CAPTAIN_EMAIL;
-            const rAvClass = rIsCaptain ? "qa-avatar captain" : "qa-avatar";
-            const rBadge = rIsCaptain ? '<span class="qa-badge">CAPTAIN</span>' : "";
-            const rName = r.displayName || r.email.split("@")[0];
-            html += `
-              <div class="qa-reply">
-                <div class="qa-question">
-                  <div class="${rAvClass}" style="width:22px;height:22px;font-size:10px;">${getInitials(r.email)}</div>
-                  <div class="qa-content">
-                    <span class="qa-name">${rName}${rBadge}<span class="qa-time">${timeAgo(r.timestamp)}</span></span>
-                    <div class="qa-text">${escapeHtml(r.text)}</div>
-                  </div>
-                </div>
-              </div>`;
-          });
-        }
-
-        const user = auth.currentUser;
-        if (user) {
-          const canReply = user.email.toLowerCase() === CAPTAIN_EMAIL || user.email.toLowerCase() === q.email;
-          if (canReply) {
-            html += `<button class="qa-reply-btn" onclick="showReplyForm('${q.id}', this)">↩ Reply</button>`;
-          }
-        }
-
-        thread.innerHTML = html;
-        scroll.appendChild(thread);
+    upcoming.forEach((m, i) => {
+      const dateObj = new Date(m["Schedule Date"]);
+      const dateStr = dateObj.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
       });
-      scroll.scrollTop = scroll.scrollHeight;
-    }
 
-    function escapeHtml(text) {
-      const div = document.createElement("div");
-      div.textContent = text;
-      return div.innerHTML;
-    }
+      const { opponent, homeAway } = getOpponent(m);
+      const location = m["Facility/Match Site"] || "TBA";
+      const time = m["Schedule Time"] || "TBA";
+      const league = m["League"] || "";
 
-    function showReplyForm(questionId, btn) {
-      document.querySelectorAll(".qa-reply-form").forEach(f => f.remove());
-      const form = document.createElement("div");
-      form.className = "qa-reply-form";
-      form.innerHTML = `<input type="text" placeholder="Write a reply…" onkeydown="if(event.key==='Enter')this.nextElementSibling.click();" />
-        <button onclick="postReply('${questionId}', this.previousElementSibling.value, this.parentElement)">Reply</button>`;
-      btn.parentElement.appendChild(form);
-      form.querySelector("input").focus();
-    }
+      const leagueShort =
+        league.includes("55") ? "55+" :
+        league.includes("40") ? "40+" :
+        league;
 
-    async function postReply(questionId, text, formEl) {
-      if (!text.trim()) return;
-      const user = auth.currentUser;
-      if (!user) return;
+      const leagueBg =
+        league.includes("55") ? "rgba(234,179,8,0.12)" : "rgba(59,130,246,0.12)";
+
+      const leagueColor =
+        league.includes("55") ? "#a16207" : "#2563eb";
+
+      const border = i > 0
+        ? 'border-top:1px solid var(--border-subtle); margin-top:8px; padding-top:8px;'
+        : '';
+
+      container.innerHTML += `
+        <div style="${border}">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+            <div class="next-match-main">
+              <strong>PLC vs ${opponent}</strong><br />
+              <span class="next-match-meta">${dateStr} · ${time} · ${homeAway}</span><br />
+              <span class="next-match-meta">${location}</span>
+            </div>
+            <span style="
+              font-size:10px;
+              font-weight:600;
+              padding:3px 9px;
+              border-radius:999px;
+              background:${leagueBg};
+              color:${leagueColor};
+              white-space:nowrap;
+              flex-shrink:0;
+            ">${leagueShort}</span>
+          </div>
+        </div>`;
+    });
+
+    container.innerHTML += `
+      <div style="border-top:1px solid var(--border-subtle); margin-top:10px; padding-top:8px; text-align:center;">
+        <a href="availability.html" class="btn-small">Update availability</a>
+      </div>`;
+
+  } catch (e) {
+    document.getElementById("nextMatchContent").innerHTML = `
+      <div class="next-match-row">
+        <div class="next-match-main">
+          <span style="color:var(--text-muted); font-size:12px;">Could not load match data.</span>
+        </div>
+      </div>`;
+  }
+}
+
+loadNextMatches();
+function getNextThursdays(count) {
+  const dates = [];
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+
+  const day = d.getDay();
+  if (day !== 4) {
+    const diff = (4 - day + 7) % 7;
+    d.setDate(d.getDate() + diff);
+  }
+
+  for (let i = 0; i < count; i++) {
+    dates.push(new Date(d));
+    d.setDate(d.getDate() + 7);
+  }
+
+  return dates;
+}
+
+async function loadUpcomingPractices() {
+  const container = document.getElementById("practiceContent");
+
+  try {
+    const thursdays = getNextThursdays(3);
+    let html = "";
+
+    for (let i = 0; i < thursdays.length; i++) {
+      const dt = thursdays[i];
+      const key = dt.toISOString().split("T")[0];
+
+      const dateStr = dt.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
+      });
+
+      const border =
+        i > 0
+          ? "border-top:1px solid var(--border-subtle); margin-top:8px; padding-top:8px;"
+          : "";
+
+      let yesCount = 0;
+      let maybeCount = 0;
+      let cancelled = false;
+      let cancelReason = "";
+
       try {
-        const docRef = db.collection("qa").doc(questionId);
-        const doc = await docRef.get();
-        const data = doc.data();
-        const replies = data.replies || [];
-        replies.push({
-          email: user.email.toLowerCase(),
-          displayName: user.displayName || user.email.split("@")[0],
-          text: text.trim(),
-          timestamp: Date.now()
+        const metaDoc = await db.collection("practice").doc(key).get();
+        if (metaDoc.exists) {
+          const md = metaDoc.data();
+          cancelled = !!md.cancelled;
+          cancelReason = md.cancelReason || "";
+        }
+
+        const rsvpSnap = await db
+          .collection("practice")
+          .doc(key)
+          .collection("rsvps")
+          .get();
+
+        rsvpSnap.forEach(doc => {
+          const s = doc.data().status;
+          if (s === "yes") yesCount++;
+          else if (s === "maybe") maybeCount++;
         });
-        await docRef.update({ replies });
-        formEl.remove();
-      } catch (e) {
-        alert("Error posting reply: " + e.message);
+      } catch (e) {}
+
+      if (cancelled) {
+        html += `
+          <div style="${border}">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <div class="next-match-main">
+                <strong style="text-decoration:line-through; color:var(--text-muted);">${dateStr}</strong><br/>
+                <span class="next-match-meta" style="color:#dc2626;">
+                  Cancelled${cancelReason ? " – " + cancelReason : ""}
+                </span>
+              </div>
+            </div>
+          </div>`;
+      } else {
+        const spots = Math.max(0, 12 - yesCount);
+
+        const spotColor =
+          spots === 0 ? "#dc2626" : spots <= 4 ? "#a16207" : "#15803d";
+
+        const spotBg =
+          spots === 0
+            ? "rgba(239,68,68,.1)"
+            : spots <= 4
+            ? "rgba(234,179,8,.1)"
+            : "rgba(34,197,94,.1)";
+
+        html += `
+          <div style="${border}">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <div class="next-match-main">
+                <strong>${dateStr}</strong><br/>
+                <span class="next-match-meta">
+                  ${yesCount} confirmed${maybeCount > 0 ? " · " + maybeCount + " maybe" : ""}
+                </span>
+              </div>
+              <span style="
+                font-size:10px;
+                font-weight:600;
+                padding:3px 9px;
+                border-radius:999px;
+                background:${spotBg};
+                color:${spotColor};
+                white-space:nowrap;
+                flex-shrink:0;
+              ">
+                ${spots === 0 ? "Full" : spots + " spots"}
+              </span>
+            </div>
+          </div>`;
       }
     }
 
-    async function postQuestion() {
-      const input = document.getElementById("qaInput");
-      const text = input.value.trim();
-      if (!text) return;
-      const user = auth.currentUser;
-      if (!user) return;
-      input.disabled = true;
-      try {
-        await db.collection("qa").add({
-          email: user.email.toLowerCase(),
-          displayName: user.displayName || user.email.split("@")[0],
-          text: text,
-          timestamp: Date.now(),
-          replies: []
-        });
-        input.value = "";
-      } catch (e) {
-        alert("Error posting: " + e.message);
-      }
-      input.disabled = false;
-      input.focus();
+    html += `
+      <div style="border-top:1px solid var(--border-subtle); margin-top:10px; padding-top:8px; text-align:center;">
+        <a href="practice.html" class="btn-small">RSVP for practice</a>
+      </div>`;
+
+    container.innerHTML = html;
+
+  } catch (e) {
+    container.innerHTML = `
+      <div style="color:var(--text-muted); font-size:12px;">
+        Could not load practice data.
+      </div>`;
+  }
+}
+
+loadUpcomingPractices();
+
+/* ===== ASK THE CAPTAIN Q&A ===== */
+
+const CAPTAIN_EMAIL = "gaylorde@outlook.com";
+
+function timeAgo(ts) {
+  if (!ts) return "";
+  const now = Date.now();
+  const diff = now - ts;
+
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return mins + "m ago";
+
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + "h ago";
+
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return days + "d ago";
+
+  return new Date(ts).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric"
+  });
+}
+
+function getInitials(email) {
+  const name = (email || "").split("@")[0].replace(/[._]/g, " ").trim();
+  const parts = name.split(/\s+/);
+
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.substring(0, 2).toUpperCase();
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function renderQA(questions) {
+  const scroll = document.getElementById("qaScroll");
+  const empty = document.getElementById("qaEmpty");
+
+  if (questions.length === 0) {
+    empty.textContent = "No questions yet – be the first to ask!";
+    empty.style.display = "block";
+    return;
+  }
+
+  empty.style.display = "none";
+  scroll.innerHTML = "";
+
+  questions.forEach(q => {
+    const thread = document.createElement("div");
+    thread.className = "qa-thread";
+
+    const isCaptain = q.email === CAPTAIN_EMAIL;
+    const avatarClass = isCaptain ? "qa-avatar captain" : "qa-avatar";
+    const badge = isCaptain ? '<span class="qa-badge">CAPTAIN</span>' : "";
+    const displayName = q.displayName || q.email.split("@")[0];
+
+    let html = `
+      <div class="qa-question">
+        <div class="${avatarClass}">${getInitials(q.email)}</div>
+        <div class="qa-content">
+          <span class="qa-name">${displayName}${badge}
+            <span class="qa-time">${timeAgo(q.timestamp)}</span>
+          </span>
+          <div class="qa-text">${escapeHtml(q.text)}</div>
+        </div>
+      </div>`;
+
+    if (q.replies && q.replies.length > 0) {
+      q.replies.forEach(r => {
+        const rIsCaptain = r.email === CAPTAIN_EMAIL;
+        const rAvClass = rIsCaptain ? "qa-avatar captain" : "qa-avatar";
+        const rBadge = rIsCaptain ? '<span class="qa-badge">CAPTAIN</span>' : "";
+        const rName = r.displayName || r.email.split("@")[0];
+
+        html += `
+          <div class="qa-reply">
+            <div class="qa-question">
+              <div class="${rAvClass}" style="width:22px; height:22px; font-size:10px;">
+                ${getInitials(r.email)}
+              </div>
+              <div class="qa-content">
+                <span class="qa-name">${rName}${rBadge}
+                  <span class="qa-time">${timeAgo(r.timestamp)}</span>
+                </span>
+                <div class="qa-text">${escapeHtml(r.text)}</div>
+              </div>
+            </div>
+          </div>`;
+      });
     }
 
-    function loadQA() {
-      const user = auth.currentUser;
-      if (!user) return;
-      document.getElementById("qaInputRow").style.display = "flex";
-      db.collection("qa").orderBy("timestamp", "asc").onSnapshot(snapshot => {
+    const user = auth.currentUser;
+    if (user) {
+      const canReply =
+        user.email.toLowerCase() === CAPTAIN_EMAIL ||
+        user.email.toLowerCase() === q.email;
+
+      if (canReply) {
+        html += `
+          <button class="qa-reply-btn" onclick="showReplyForm('${q.id}', this)">
+            Reply
+          </button>`;
+      }
+    }
+
+    thread.innerHTML = html;
+    scroll.appendChild(thread);
+  });
+
+  scroll.scrollTop = scroll.scrollHeight;
+}
+
+function showReplyForm(questionId, btn) {
+  document.querySelectorAll(".qa-reply-form").forEach(f => f.remove());
+
+  const form = document.createElement("div");
+  form.className = "qa-reply-form";
+
+  form.innerHTML = `
+    <input type="text" placeholder="Write a reply..."
+      onkeydown="if(event.key === 'Enter') this.nextElementSibling.click();" />
+    <button onclick="postReply('${questionId}', this.previousElementSibling.value, this.parentElement)">
+      Reply
+    </button>`;
+
+  btn.parentElement.appendChild(form);
+  form.querySelector("input").focus();
+}
+
+async function postReply(questionId, text, formEl) {
+  if (!text.trim()) return;
+
+  const user = auth.currentUser;
+  if (!user) return;
+
+  try {
+    const docRef = db.collection("qa").doc(questionId);
+    const doc = await docRef.get();
+    const data = doc.data();
+
+    const replies = data.replies || [];
+    replies.push({
+      email: user.email.toLowerCase(),
+      displayName: user.displayName || user.email.split("@")[0],
+      text: text.trim(),
+      timestamp: Date.now()
+    });
+
+    await docRef.update({ replies });
+    formEl.remove();
+
+  } catch (e) {
+    alert("Error posting reply: " + e.message);
+  }
+}
+
+async function postQuestion() {
+  const input = document.getElementById("qaInput");
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  const user = auth.currentUser;
+  if (!user) return;
+
+  input.disabled = true;
+
+  try {
+    await db.collection("qa").add({
+      email: user.email.toLowerCase(),
+      displayName: user.displayName || user.email.split("@")[0],
+      text: text,
+      timestamp: Date.now(),
+      replies: []
+    });
+
+    input.value = "";
+
+  } catch (e) {
+    alert("Error posting: " + e.message);
+  }
+
+  input.disabled = false;
+  input.focus();
+}
+
+function loadQA() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  document.getElementById("qaInputRow").style.display = "flex";
+
+  db.collection("qa")
+    .orderBy("timestamp", "asc")
+    .onSnapshot(
+      snapshot => {
         const questions = [];
         snapshot.forEach(doc => {
           questions.push({ id: doc.id, ...doc.data() });
         });
         renderQA(questions);
-      }, err => {
+      },
+      err => {
         document.getElementById("qaEmpty").textContent = "Could not load Q&A.";
-      });
-    }
+      }
+    );
+}
 
-    auth.onAuthStateChanged(user => {
-      if (user) loadQA();
-    });
-  </script>
+auth.onAuthStateChanged(user => {
+  if (user) loadQA();
+});
+</script>
+
 </body>
 </html>

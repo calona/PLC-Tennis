@@ -6,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
-    :root{--navy:#1d3563;--navy-soft:#243c6f;--blue:#4a6fa5;--green:#1d6f42;--bg:#f5f7fa;--card-bg:#fff;--text-main:#1f2933;--text-muted:#6b7280;--border-subtle:#e5e7eb;--shadow-soft:0 10px 25px rgba(15,23,42,.08);--radius-lg:18px;--radius-pill:999px}
+    :root{--navy:#1d3563;--navy-soft:#243c6f;--blue:#4a6fa5;--green:#1d6f42;--bg:#f5f7fa;--card-bg:#fff;--text-main:#1f2933;--text-muted:#6b7280;--border-subtle:#e5e7eb;--shadow-soft:0 10px 25px rgba(15,23,42,.08);--radius-pill:999px}
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,sans-serif;background:radial-gradient(circle at top left,#e0ecff 0,var(--bg) 40%,var(--bg) 100%);color:var(--text-main);min-height:100vh;display:flex;flex-direction:column}
     .nav{position:sticky;top:0;z-index:20;backdrop-filter:blur(12px);background:linear-gradient(to right,rgba(245,247,250,.95),rgba(245,247,250,.9));border-bottom:1px solid rgba(148,163,184,.25)}
     .nav-inner{max-width:1100px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
     .nav-left{display:flex;align-items:center;gap:10px}
-    .nav-logo{width:34px;height:34px;border-radius:12px;background:radial-gradient(circle at 30% 20%,#facc15,#f97316 40%,#b91c1c 100%);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;box-shadow:0 6px 14px rgba(15,23,42,.25)}
+    .nav-logo{width:34px;height:34px;border-radius:12px;background:radial-gradient(circle at 30% 20%,#facc15,#f97316 40%,#b91c1c 100%);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:0 8px 20px rgba(0,0,0,.15)}
     .nav-title{display:flex;flex-direction:column}
     .nav-title-main{font-family:"Poppins",sans-serif;font-weight:700;font-size:18px;color:var(--navy)}
     .nav-title-sub{font-size:12px;color:var(--text-muted)}
@@ -20,7 +20,8 @@
     .nav-link{padding:6px 12px;border-radius:var(--radius-pill);color:var(--text-muted);text-decoration:none;transition:all .2s ease}
     .nav-link:hover{background:rgba(148,163,184,.12);color:var(--navy)}
     .nav-link.active{background:var(--navy);color:#fff;box-shadow:0 6px 14px rgba(15,23,42,.25)}
-    .nav-cta{padding:7px 14px;border-radius:var(--radius-pill);border:1px solid rgba(148,163,184,.5);font-size:12px;color:var(--text-muted);background:rgba(255,255,255,.8);display:flex;align-items:center;gap:6px;cursor:pointer}
+    .nav-cta{padding:7px 14px;border-radius:var(--radius-pill);border:1px solid rgba(148,163,184,.5);font-size:12px;color:var(--text-muted);background:rgba(255,255,255,.8);display:flex;align-items:center;gap:8px;text-decoration:none;transition:all .2s ease}
+    .nav-cta:hover{color:var(--navy);border-color:rgba(74,111,165,.45);transform:translateY(-1px)}
     .nav-cta span{font-size:16px}
     .page{flex:1;display:flex;justify-content:center;padding:24px 16px 32px}
     .page-inner{max-width:900px;width:100%}
@@ -33,7 +34,7 @@
     .info-item-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#bfdbfe;margin-bottom:3px}
     .info-item-value{font-family:"Poppins",sans-serif;font-weight:600;font-size:15px}
     .date-nav{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-    .date-btn{padding:8px 16px;border-radius:12px;border:1px solid var(--border-subtle);background:var(--card-bg);font-family:"Inter",sans-serif;font-size:13px;font-weight:500;color:var(--navy-soft);cursor:pointer;transition:all .2s}
+    .date-btn{padding:8px 16px;border-radius:12px;border:1px solid var(--border-subtle);background:var(--card-bg);font-family:"Inter",sans-serif;font-size:13px;font-weight:500;color:var(--navy-soft);cursor:pointer;transition:all .2s ease}
     .date-btn:hover{border-color:var(--blue);background:rgba(74,111,165,.04)}
     .date-btn:disabled{opacity:.4;cursor:not-allowed}
     .date-current{font-family:"Poppins",sans-serif;font-weight:600;font-size:16px;color:var(--navy)}
@@ -55,14 +56,14 @@
     .schedule-note{font-size:12px;color:var(--text-muted);font-style:italic;margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.15)}
 
     /* CANCELLED BANNER */
-    .cancelled-banner{background:linear-gradient(135deg,#dc2626,#ef4444);border-radius:16px;padding:18px 22px;color:#fff;margin-bottom:20px;display:none;align-items:center;gap:12px;box-shadow:0 8px 16px rgba(220,38,38,.3)}
+    .cancelled-banner{background:linear-gradient(135deg,#dc2626,#ef4444);border-radius:16px;padding:18px 22px;color:#fff;margin-bottom:20px;display:none;align-items:center;gap:12px;box-shadow:0 8px 16px rgba(220,38,38,.18)}
     .cancelled-banner.show{display:flex}
     .cancelled-banner .cb-icon{font-size:28px;flex-shrink:0}
     .cancelled-banner .cb-text h3{font-family:"Poppins",sans-serif;font-weight:700;font-size:16px;margin-bottom:2px}
     .cancelled-banner .cb-text p{font-size:13px;opacity:.9}
 
     /* CAPTAIN CONTROLS */
-    .captain-bar{background:var(--card-bg);border-radius:16px;padding:14px 18px;box-shadow:var(--shadow-soft);border:1px solid rgba(148,163,184,.25);margin-bottom:20px;display:none;align-items:center;gap:14px;flex-wrap:wrap}
+    .captain-bar{background:var(--card-bg);border-radius:16px;padding:14px 18px;box-shadow:var(--shadow-soft);border:1px solid rgba(148,163,184,.25);margin-bottom:20px;display:none;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
     .captain-bar.show{display:flex}
     .captain-bar-label{font-size:13px;font-weight:500;color:var(--navy-soft);display:flex;align-items:center;gap:6px}
     .captain-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
@@ -74,7 +75,7 @@
     .reason-input{padding:7px 12px;border-radius:10px;border:1px solid var(--border-subtle);font-family:"Inter",sans-serif;font-size:12px;color:var(--text-main);width:220px;outline:none}
     .reason-input:focus{border-color:var(--blue)}
     .captain-label{font-size:11px;font-weight:500;color:var(--text-muted);display:flex;flex-direction:column;gap:3px}
-    .captain-select,.captain-time{padding:6px 8px;border:1px solid var(--border-subtle);border-radius:8px;font-family:"Inter",sans-serif;font-size:12px;color:var(--text-main);background:var(--card-bg);outline:none;cursor:pointer}
+    .captain-select,.captain-time{padding:6px 8px;border:1px solid var(--border-subtle);border-radius:8px;font-family:"Inter",sans-serif;font-size:12px;color:var(--text-main);background:var(--card-bg);outline:none}
     .captain-select:focus,.captain-time:focus{border-color:var(--blue)}
 
     .rsvp-card{background:var(--card-bg);border-radius:22px;padding:22px 24px;box-shadow:var(--shadow-soft);border:1px solid rgba(148,163,184,.25);margin-bottom:20px}
@@ -82,7 +83,7 @@
     .rsvp-title{font-family:"Poppins",sans-serif;font-weight:600;font-size:16px;color:var(--navy);margin-bottom:4px}
     .rsvp-sub{font-size:13px;color:var(--text-muted);margin-bottom:16px}
     .rsvp-buttons{display:flex;gap:10px;flex-wrap:wrap}
-    .rsvp-btn{flex:1;min-width:100px;padding:12px;border:2px solid var(--border-subtle);border-radius:14px;background:var(--card-bg);font-family:"Inter",sans-serif;font-size:14px;font-weight:500;color:var(--text-main);cursor:pointer;transition:all .2s}
+    .rsvp-btn{flex:1;min-width:100px;padding:12px;border:2px solid var(--border-subtle);border-radius:14px;background:var(--card-bg);font-family:"Inter",sans-serif;font-size:14px;font-weight:500;color:var(--text-main);cursor:pointer;transition:all .2s ease}
     .rsvp-btn:hover{border-color:var(--blue);background:rgba(74,111,165,.04)}
     .rsvp-btn.selected{box-shadow:0 0 0 3px rgba(29,53,99,.12)}
     .rsvp-btn.yes.selected{border-color:#22c55e;background:rgba(34,197,94,.06)}
@@ -93,7 +94,7 @@
     #rsvpMsg.info{display:block;background:rgba(59,130,246,.08);color:#2563eb}
 
     .summary-strip{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
-    .summary-item{background:var(--card-bg);border-radius:14px;padding:14px 18px;box-shadow:var(--shadow-soft);border:1px solid rgba(148,163,184,.25);display:flex;align-items:center;gap:10px;flex:1;min-width:140px}
+    .summary-item{background:var(--card-bg);border-radius:14px;padding:14px 18px;box-shadow:var(--shadow-soft);border:1px solid rgba(148,163,184,.25);display:flex;align-items:center;gap:10px;flex:1;min-width:150px}
     .summary-number{font-family:"Poppins",sans-serif;font-weight:700;font-size:22px;color:var(--navy)}
     .summary-label{font-size:12px;color:var(--text-muted);line-height:1.3}
 
@@ -519,19 +520,16 @@
       const practiceType = cfg.practiceType || "Match Practice";
       const practiceTime = cfg.practiceTime || "";
 
-      // Update info card
       document.getElementById("practiceTimeDisplay").textContent = practiceTime ? formatTime12(practiceTime) : "—";
       document.getElementById("practiceFormatDisplay").textContent = `${courtCount} Courts · ${practiceType}`;
       document.getElementById("practiceCapacityDisplay").textContent = `${courtCount * 4} Players (4/court)`;
 
-      // Update captain controls
       if (isCaptain) {
         document.getElementById("courtCountSelect").value = String(courtCount);
         document.getElementById("practiceTypeSelect").value = practiceType;
         document.getElementById("practiceTimeInput").value = practiceTime;
       }
 
-      // Handle cancelled state
       const cancelled = cfg.cancelled || false;
       const cancelReason = cfg.cancelReason || "";
       const banner = document.getElementById("cancelledBanner");
@@ -568,11 +566,16 @@
       const practiceTime = document.getElementById("practiceTimeInput").value || "";
 
       const existing = (practiceConfig && practiceConfig[dateStr]) || {};
-      const updated = { ...practiceConfig, [dateStr]: { ...existing, courtCount, practiceType, practiceTime } };
+      const updatedDate = { ...existing, courtCount, practiceType, practiceTime };
 
       try {
-        await db.collection("settings").doc("practiceConfig").set(updated);
-        practiceConfig = updated;
+        await db.collection("settings").doc("practiceConfig").set({
+          [dateStr]: updatedDate
+        }, { merge: true });
+        practiceConfig = {
+          ...(practiceConfig || {}),
+          [dateStr]: updatedDate
+        };
         applyPracticeConfig(dateStr);
         loadRSVPs(dateStr);
       } catch (e) {
@@ -590,15 +593,16 @@
       const existing = (practiceConfig && practiceConfig[dateStr]) || {};
       const wasCancelled = existing.cancelled || false;
       const reason = document.getElementById("cancelReasonInput").value.trim();
-
-      const updated = {
-        ...practiceConfig,
-        [dateStr]: { ...existing, cancelled: !wasCancelled, cancelReason: !wasCancelled ? reason : "" }
-      };
+      const updatedDate = { ...existing, cancelled: !wasCancelled, cancelReason: !wasCancelled ? reason : "" };
 
       try {
-        await db.collection("settings").doc("practiceConfig").set(updated);
-        practiceConfig = updated;
+        await db.collection("settings").doc("practiceConfig").set({
+          [dateStr]: updatedDate
+        }, { merge: true });
+        practiceConfig = {
+          ...(practiceConfig || {}),
+          [dateStr]: updatedDate
+        };
         applyPracticeConfig(dateStr);
       } catch (e) {
         alert("Error: " + e.message);
@@ -655,8 +659,8 @@
         const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
         const courtCount = cfg.courtCount || 3;
         const capacity = courtCount * 4;
-        const courtAssignments = (cfg.courtAssignments || []).map(arr => Array.isArray(arr) ? arr : []);
-        const substituteList = cfg.substituteList || [];
+        const rawAssignments = cfg.courtAssignments || [];
+        const rawSubstituteList = cfg.substituteList || [];
 
         const yesPlayers = [];
         const maybePlayers = [];
@@ -669,8 +673,10 @@
         const confirmed = yesPlayers.slice(0, capacity);
         const waitlist = yesPlayers.slice(capacity);
         currentConfirmedPlayers = confirmed;
+        const sanitizedState = sanitizePracticeState(rawAssignments, rawSubstituteList, courtCount);
+        const courtAssignments = sanitizedState.assignments;
+        const substituteList = sanitizedState.substituteList;
 
-        // Summary strip
         const strip = document.getElementById("summaryStrip");
         strip.innerHTML = `
           <div class="summary-item"><div><div class="summary-number">${confirmed.length}</div><div class="summary-label">Confirmed</div></div></div>
@@ -679,23 +685,18 @@
           <div class="summary-item"><div><div class="summary-number">${Math.max(0, capacity - confirmed.length)}</div><div class="summary-label">Spots Left</div></div></div>
         `;
 
-        // Determine display assignments: use manual assignments if any exist, else sequential
         const hasManualAssignments = courtAssignments.some(arr => arr.length > 0);
         let displayAssignments;
         if (hasManualAssignments) {
-          // Pad to courtCount
           displayAssignments = Array.from({ length: courtCount }, (_, i) => courtAssignments[i] || []);
         } else {
-          // Sequential fallback: first 4 confirmed to court 0, next 4 to court 1, etc.
           displayAssignments = Array.from({ length: courtCount }, (_, c) =>
             confirmed.slice(c * 4, c * 4 + 4).map(p => p.email)
           );
         }
 
-        // Courts grid
         renderCourtsGrid(courtCount, displayAssignments, responses);
 
-        // Unassigned confirmed players (only shown when manual assignments active)
         if (hasManualAssignments) {
           const allAssigned = displayAssignments.flat();
           const unassignedEmails = confirmed.filter(p => !allAssigned.includes(p.email)).map(p => p.email);
@@ -704,15 +705,12 @@
           document.getElementById("unassignedCard").classList.remove("show");
         }
 
-        // Substitute list
         renderSubCard(substituteList, responses, courtCount);
 
-        // Captain assignment panel
         if (isCaptain) {
           renderAssignmentPanel(courtCount, confirmed, displayAssignments, substituteList, responses);
         }
 
-        // Waitlist
         const waitlistCard = document.getElementById("waitlistCard");
         const waitlistRows = document.getElementById("waitlistRows");
         if (waitlist.length > 0) {
@@ -732,7 +730,6 @@
           waitlistCard.classList.remove("show");
         }
 
-        // Signups table
         const signupsTable = document.getElementById("signupsTable");
         const allEntries = Object.entries(responses);
         if (allEntries.length === 0) {
@@ -755,7 +752,6 @@
           }).join("");
         }
 
-        // Restore current user's RSVP highlight
         if (currentUser && responses[currentUser.email]) {
           const myStatus = responses[currentUser.email].status;
           const btns = document.querySelectorAll(".rsvp-btn");
@@ -768,10 +764,50 @@
       }
     }
 
-    /* ── RENDERING HELPERS ── */
-
     function getPlayerName(email, responses) {
       return (responses[email] && responses[email].name) || email.split("@")[0];
+    }
+
+    function normalizeAssignments(courtAssignments, courtCount) {
+      return Array.from({ length: courtCount }, (_, i) =>
+        Array.isArray(courtAssignments?.[i]) ? [...courtAssignments[i]] : []
+      );
+    }
+
+    function removePlayerFromAssignments(courtAssignments, email, courtCount) {
+      const assignments = normalizeAssignments(courtAssignments, courtCount);
+      return assignments.map(court => court.filter(e => e !== email));
+    }
+
+    function isConfirmedPlayer(email) {
+      return currentConfirmedPlayers.some(p => p.email === email);
+    }
+
+    function sanitizePracticeState(courtAssignments, substituteList, courtCount) {
+      let assignments = normalizeAssignments(courtAssignments, courtCount);
+      let subs = Array.isArray(substituteList) ? [...substituteList] : [];
+      const seen = new Set();
+
+      assignments = assignments.map(court => {
+        const cleaned = [];
+        for (const email of court) {
+          if (!email) continue;
+          if (seen.has(email)) continue;
+          if (!isConfirmedPlayer(email)) continue;
+          if (cleaned.length >= 4) continue;
+          cleaned.push(email);
+          seen.add(email);
+        }
+        return cleaned;
+      });
+
+      subs = subs.filter(email => {
+        if (!email) return false;
+        if (seen.has(email)) return false;
+        return true;
+      });
+
+      return { assignments, substituteList: subs };
     }
 
     function renderCourtsGrid(courtCount, displayAssignments, responses) {
@@ -832,12 +868,8 @@
     }
 
     function renderAssignmentPanel(courtCount, confirmedPlayers, displayAssignments, substituteList, responses) {
-      const panel = document.getElementById("assignmentPanel");
       if (!isCaptain) return;
-
       const allAssigned = displayAssignments.flat();
-
-      // Court slots
       const apCourts = document.getElementById("apCourtsGrid");
       apCourts.innerHTML = "";
       for (let c = 0; c < courtCount; c++) {
@@ -860,7 +892,6 @@
         apCourts.appendChild(div);
       }
 
-      // Unassigned confirmed section
       const unassignedSection = document.getElementById("apUnassignedSection");
       const unassigned = confirmedPlayers.filter(p => !allAssigned.includes(p.email));
       const courtOptions = Array.from({ length: courtCount }, (_, i) =>
@@ -882,7 +913,6 @@
           <div class="ap-empty">✅ All confirmed players are assigned!</div>`;
       }
 
-      // Sub management: waitlist + maybe not already in sub list
       const confirmedEmails = confirmedPlayers.map(p => p.email);
       const potentialSubs = [];
       Object.entries(responses).forEach(([email, data]) => {
@@ -909,8 +939,6 @@
       }
     }
 
-    /* ── ASSIGNMENT ACTIONS ── */
-
     function toggleAssignmentPanel() {
       document.getElementById("assignmentPanel").classList.toggle("show");
     }
@@ -920,16 +948,28 @@
       const dateStr = currentDisplayDate.toISOString().split("T")[0];
       const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
       const courtCount = cfg.courtCount || 3;
-      const courtIdx = parseInt(courtNumStr) - 1;
+      const courtIdx = parseInt(courtNumStr, 10) - 1;
 
-      let assignments = Array.from({ length: courtCount }, (_, i) =>
-        ((cfg.courtAssignments || [])[i] || []).filter(e => e !== email));
+      if (courtIdx < 0 || courtIdx >= courtCount) {
+        alert("Invalid court selection.");
+        return;
+      }
+
+      if (!isConfirmedPlayer(email)) {
+        alert("Only confirmed players can be assigned to a court.");
+        return;
+      }
+
+      let assignments = removePlayerFromAssignments(cfg.courtAssignments || [], email, courtCount);
+      let subList = (cfg.substituteList || []).filter(e => e !== email);
+
       if (assignments[courtIdx].length >= 4) {
         alert(`Court ${courtIdx + 1} is full (4 players max). Unassign a player first.`);
         return;
       }
       assignments[courtIdx].push(email);
-      await saveAssignments(assignments, cfg.substituteList || []);
+      const sanitized = sanitizePracticeState(assignments, subList, courtCount);
+      await saveAssignments(sanitized.assignments, sanitized.substituteList);
     }
 
     async function unassignFromCourt(email) {
@@ -937,9 +977,9 @@
       const dateStr = currentDisplayDate.toISOString().split("T")[0];
       const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
       const courtCount = cfg.courtCount || 3;
-      const assignments = Array.from({ length: courtCount }, (_, i) =>
-        ((cfg.courtAssignments || [])[i] || []).filter(e => e !== email));
-      await saveAssignments(assignments, cfg.substituteList || []);
+      const assignments = removePlayerFromAssignments(cfg.courtAssignments || [], email, courtCount);
+      const sanitized = sanitizePracticeState(assignments, cfg.substituteList || [], courtCount);
+      await saveAssignments(sanitized.assignments, sanitized.substituteList);
     }
 
     async function autoDistribute() {
@@ -952,16 +992,20 @@
         const courtIdx = Math.floor(i / 4);
         if (courtIdx < courtCount) assignments[courtIdx].push(player.email);
       });
-      await saveAssignments(assignments, cfg.substituteList || []);
+      const sanitized = sanitizePracticeState(assignments, cfg.substituteList || [], courtCount);
+      await saveAssignments(sanitized.assignments, sanitized.substituteList);
     }
 
     async function addToSubList(email) {
       if (!currentDisplayDate) return;
       const dateStr = currentDisplayDate.toISOString().split("T")[0];
       const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
-      const subList = [...(cfg.substituteList || [])];
+      const courtCount = cfg.courtCount || 3;
+      let assignments = removePlayerFromAssignments(cfg.courtAssignments || [], email, courtCount);
+      let subList = [...(cfg.substituteList || [])];
       if (!subList.includes(email)) subList.push(email);
-      await saveAssignments(cfg.courtAssignments || [], subList);
+      const sanitized = sanitizePracticeState(assignments, subList, courtCount);
+      await saveAssignments(sanitized.assignments, sanitized.substituteList);
     }
 
     async function removeFromSubList(email) {
@@ -969,7 +1013,9 @@
       const dateStr = currentDisplayDate.toISOString().split("T")[0];
       const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
       const subList = (cfg.substituteList || []).filter(e => e !== email);
-      await saveAssignments(cfg.courtAssignments || [], subList);
+      const courtCount = cfg.courtCount || 3;
+      const sanitized = sanitizePracticeState(cfg.courtAssignments || [], subList, courtCount);
+      await saveAssignments(sanitized.assignments, sanitized.substituteList);
     }
 
     async function callInSub(email, courtNumStr) {
@@ -977,25 +1023,37 @@
       const dateStr = currentDisplayDate.toISOString().split("T")[0];
       const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
       const courtCount = cfg.courtCount || 3;
-      const courtIdx = parseInt(courtNumStr) - 1;
-      let assignments = Array.from({ length: courtCount }, (_, i) =>
-        ((cfg.courtAssignments || [])[i] || []).filter(e => e !== email));
+      const courtIdx = parseInt(courtNumStr, 10) - 1;
+
+      if (courtIdx < 0 || courtIdx >= courtCount) {
+        alert("Invalid court selection.");
+        return;
+      }
+
+      let assignments = removePlayerFromAssignments(cfg.courtAssignments || [], email, courtCount);
+      let subList = (cfg.substituteList || []).filter(e => e !== email);
+      if (assignments[courtIdx].length >= 4) {
+        alert(`Court ${courtIdx + 1} is full (4 players max). Unassign a player first.`);
+        return;
+      }
       assignments[courtIdx].push(email);
-      const subList = (cfg.substituteList || []).filter(e => e !== email);
-      await saveAssignments(assignments, subList);
+      const sanitized = sanitizePracticeState(assignments, subList, courtCount);
+      await saveAssignments(sanitized.assignments, sanitized.substituteList);
     }
 
     async function saveAssignments(courtAssignments, substituteList) {
       if (!currentDisplayDate) return;
       const dateStr = currentDisplayDate.toISOString().split("T")[0];
       const existing = (practiceConfig && practiceConfig[dateStr]) || {};
-      const updated = {
-        ...practiceConfig,
-        [dateStr]: { ...existing, courtAssignments, substituteList }
-      };
+      const updatedDate = { ...existing, courtAssignments, substituteList };
       try {
-        await db.collection("settings").doc("practiceConfig").set(updated);
-        practiceConfig = updated;
+        await db.collection("settings").doc("practiceConfig").set({
+          [dateStr]: updatedDate
+        }, { merge: true });
+        practiceConfig = {
+          ...(practiceConfig || {}),
+          [dateStr]: updatedDate
+        };
         loadRSVPs(dateStr);
       } catch (e) {
         alert("Error saving assignments: " + e.message);

@@ -915,6 +915,8 @@ auth.onAuthStateChanged(user => {
     const cn = document.getElementById("captainNav");
     if (cn) cn.style.display = "";
   }
+  // Reload practice widget with user context for court assignment display
+  setupPracticeWidget();
 });
 
 function logout() {
@@ -1073,83 +1075,119 @@ async function loadNextMatches() {
 }
 
 loadNextMatches();
-function getNextThursdays(count) {
-  const dates = [];
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-
-  const day = d.getDay();
-  if (day !== 4) {
-    const diff = (4 - day + 7) % 7;
-    d.setDate(d.getDate() + diff);
-  }
-
-  for (let i = 0; i < count; i++) {
-    dates.push(new Date(d));
-    d.setDate(d.getDate() + 7);
-  }
-
-  return dates;
+function formatPracticeTime(timeStr) {
+  if (!timeStr) return "";
+  const [h, m] = timeStr.split(":").map(Number);
+  const period = h >= 12 ? "PM" : "AM";
+  const hour = h % 12 || 12;
+  return `${hour}:${String(m).padStart(2, "0")} ${period}`;
 }
 
-async function loadUpcomingPractices() {
+let practiceWidgetUnsubscribe = null;
+let practiceWidgetDates = [];
+
+function setupPracticeWidget() {
+  if (practiceWidgetUnsubscribe) { practiceWidgetUnsubscribe(); practiceWidgetUnsubscribe = null; }
   const container = document.getElementById("practiceContent");
 
-  try {
-    const thursdays = getNextThursdays(3);
-    let html = "";
+  db.collection("settings").doc("practiceSchedule").get().then(schedDoc => {
+    if (!schedDoc.exists || !schedDoc.data().dates) {
+      container.innerHTML = '<div style="color:var(--text-muted); font-size:12px;">No practices scheduled.</div>';
+      return;
+    }
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const dates = schedDoc.data().dates.map(d => {
+      const date = new Date(d);
+      return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+    }).sort((a, b) => a - b);
+    practiceWidgetDates = dates.filter(d => d >= today).slice(0, 3);
 
-    for (let i = 0; i < thursdays.length; i++) {
-      const dt = thursdays[i];
-      const key = dt.toISOString().split("T")[0];
-
-      const dateStr = dt.toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric"
-      });
-
-      const border =
-        i > 0
-          ? "border-top:1px solid var(--border-subtle); margin-top:8px; padding-top:8px;"
-          : "";
-
-      let yesCount = 0;
-      let maybeCount = 0;
-      let cancelled = false;
-      let cancelReason = "";
-
-      try {
-        const metaDoc = await db.collection("practice").doc(key).get();
-        if (metaDoc.exists) {
-          const md = metaDoc.data();
-          cancelled = !!md.cancelled;
-          cancelReason = md.cancelReason || "";
-        }
-
-        const snap = await db.collection("practice").doc(key).collection("availability").get();
-        snap.forEach(doc => {
-          const s = doc.data().status || "";
-          if (s === "Yes") yesCount++;
-          if (s === "Maybe") maybeCount++;
-        });
-      } catch (e) {}
-
-      const statusMsg = cancelled ? `<strong style="color:#ef4444;">❌ CANCELLED${cancelReason ? ': ' + cancelReason : ''}</strong>` : `<strong>${yesCount}</strong> yes, <strong>${maybeCount}</strong> maybe`;
-
-      html += `<div style="${border}">
-        <div class="next-match-meta" style="margin-bottom:4px;">${dateStr}</div>
-        <div style="font-size:11px;">${statusMsg}</div>
-      </div>`;
+    if (practiceWidgetDates.length === 0) {
+      container.innerHTML = '<div style="color:var(--text-muted); font-size:12px;">No upcoming practices scheduled.</div>';
+      return;
     }
 
-    container.innerHTML = html;
-  } catch (e) {
+    // Real-time listener on practiceConfig
+    practiceWidgetUnsubscribe = db.collection("settings").doc("practiceConfig").onSnapshot(cfgDoc => {
+      const cfg = cfgDoc.exists ? cfgDoc.data() : {};
+      renderPracticeWidget(practiceWidgetDates, cfg, container);
+    }, () => {
+      renderPracticeWidget(practiceWidgetDates, {}, container);
+    });
+  }).catch(() => {
     container.innerHTML = '<div style="color:var(--text-muted); font-size:12px;">Could not load practices.</div>';
-  }
+  });
 }
 
-loadUpcomingPractices();
+async function renderPracticeWidget(upcomingDates, cfg, container) {
+  const user = auth.currentUser;
+  let html = "";
+
+  for (let i = 0; i < upcomingDates.length; i++) {
+    const dt = upcomingDates[i];
+    const dateKey = dt.toISOString().split("T")[0];
+    const dateCfg = cfg[dateKey] || {};
+
+    const dateStr = dt.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    const border = i > 0 ? "border-top:1px solid var(--border-subtle); margin-top:10px; padding-top:10px;" : "";
+
+    const courtCount = dateCfg.courtCount || 3;
+    const practiceType = dateCfg.practiceType || "Match Practice";
+    const practiceTime = dateCfg.practiceTime ? formatPracticeTime(dateCfg.practiceTime) : "6:45 PM";
+    const cancelled = dateCfg.cancelled || false;
+    const cancelReason = dateCfg.cancelReason || "";
+    const courtAssignments = (dateCfg.courtAssignments || []).map(a => Array.isArray(a) ? a : []);
+    const substituteList = dateCfg.substituteList || [];
+
+    // Fetch RSVP count
+    let confirmedCount = 0;
+    try {
+      const rsvpDoc = await db.collection("rsvps").doc(dateKey).get();
+      if (rsvpDoc.exists) {
+        const responses = rsvpDoc.data().responses || {};
+        const capacity = courtCount * 4;
+        let yesCount = 0;
+        Object.values(responses).forEach(r => { if (r.status === "Yes") yesCount++; });
+        confirmedCount = Math.min(yesCount, capacity);
+      }
+    } catch (e) {}
+
+    // Check user's court assignment
+    let myCourtInfo = "";
+    if (user) {
+      const myCourtIdx = courtAssignments.findIndex(arr => arr.includes(user.email));
+      if (myCourtIdx >= 0) {
+        myCourtInfo = `<div style="font-size:11px;color:#15803d;font-weight:600;margin-top:3px;">✅ Assigned to Court ${myCourtIdx + 1}</div>`;
+      } else if (substituteList.includes(user.email)) {
+        myCourtInfo = `<div style="font-size:11px;color:#7c3aed;font-weight:600;margin-top:3px;">🔄 On Sub List</div>`;
+      }
+    }
+
+    let statusHtml;
+    if (cancelled) {
+      statusHtml = `<strong style="color:#ef4444;">❌ CANCELLED${cancelReason ? ": " + cancelReason : ""}</strong>`;
+    } else {
+      statusHtml = `${confirmedCount}/${courtCount * 4} confirmed · ${courtCount} courts · ${practiceType}`;
+    }
+
+    html += `<div style="${border}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;flex-wrap:wrap;">
+        <div>
+          <div class="next-match-meta" style="margin-bottom:2px;">${dateStr} · ${practiceTime}</div>
+          <div style="font-size:11px;">${statusHtml}</div>
+          ${myCourtInfo}
+        </div>
+        <a href="practice.html" style="font-size:10px;padding:4px 8px;border-radius:999px;background:rgba(29,53,99,.08);color:var(--navy);text-decoration:none;white-space:nowrap;flex-shrink:0;min-height:unset;display:inline-block;line-height:1.6;">View →</a>
+      </div>
+    </div>`;
+  }
+
+  html += `<div style="border-top:1px solid var(--border-subtle); margin-top:10px; padding-top:8px; text-align:center;">
+    <a href="practice.html" class="btn-small">View Practice Page</a>
+  </div>`;
+
+  container.innerHTML = html;
+}
 
 function postQuestion() {
   const input = document.getElementById("qaInput");

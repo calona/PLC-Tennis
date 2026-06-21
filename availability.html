@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
   <title>Set Availability — PLC Tennis</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -19,8 +19,11 @@
       --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
       --radius-lg: 18px;
       --radius-pill: 999px;
+      --safe-area-inset-left: env(safe-area-inset-left, 0);
+      --safe-area-inset-right: env(safe-area-inset-right, 0);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; overflow-x: hidden; }
     body {
       font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       background: radial-gradient(circle at top left, #e0ecff 0, var(--bg) 40%, var(--bg) 100%);
@@ -28,6 +31,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      padding: 0 max(14px, var(--safe-area-inset-left)) 0 max(14px, var(--safe-area-inset-right));
     }
 
     /* NAVBAR */
@@ -36,53 +40,54 @@
       backdrop-filter: blur(12px);
       background: linear-gradient(to right, rgba(245,247,250,0.95), rgba(245,247,250,0.9));
       border-bottom: 1px solid rgba(148,163,184,0.25);
+      margin: 0 calc(-1 * max(14px, var(--safe-area-inset-left))) 0 calc(-1 * max(14px, var(--safe-area-inset-right)));
+      padding: 0 max(14px, var(--safe-area-inset-left)) 0 max(14px, var(--safe-area-inset-right));
     }
     .nav-inner {
-      max-width: 1100px; margin: 0 auto; padding: 12px 20px;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      max-width: 1100px; margin: 0 auto; padding: 10px 0;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
     }
-    .nav-left { display: flex; align-items: center; gap: 10px; }
+    .nav-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
     .nav-logo {
       width: 34px; height: 34px; border-radius: 12px;
       background: radial-gradient(circle at 30% 20%, #facc15, #f97316 40%, #b91c1c 100%);
       display: flex; align-items: center; justify-content: center;
-      color: #fff; font-weight: 700; font-size: 18px;
+      color: #fff; font-weight: 700; font-size: 16px;
       box-shadow: 0 6px 14px rgba(15,23,42,0.25);
+      flex-shrink: 0;
     }
-    .nav-title { display: flex; flex-direction: column; }
-    .nav-title-main { font-family: "Poppins", sans-serif; font-weight: 700; font-size: 18px; color: var(--navy); }
-    .nav-title-sub { font-size: 12px; color: var(--text-muted); }
-    .nav-links { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+    .nav-title-main { font-family: "Poppins", sans-serif; font-weight: 700; font-size: clamp(14px, 3vw, 18px); color: var(--navy); line-height: 1.2; }
+    .nav-title-sub { font-size: clamp(10px, 2vw, 12px); color: var(--text-muted); }
+    .nav-links { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: clamp(12px, 2.5vw, 14px); width: 100%; justify-content: flex-start; margin-top: 8px; }
     .nav-link {
-      padding: 6px 12px; border-radius: var(--radius-pill);
-      color: var(--text-muted); text-decoration: none; transition: all 0.2s ease;
+      padding: 6px 10px; border-radius: var(--radius-pill);
+      color: var(--text-muted); text-decoration: none; transition: all 0.2s ease; white-space: nowrap;
     }
     .nav-link:hover { background: rgba(148,163,184,0.12); color: var(--navy); }
     .nav-link.active { background: var(--navy); color: #fff; box-shadow: 0 6px 14px rgba(15,23,42,0.25); }
     .nav-cta {
-      padding: 7px 14px; border-radius: var(--radius-pill);
-      border: 1px solid rgba(148,163,184,0.5); font-size: 12px;
+      padding: 6px 10px; border-radius: var(--radius-pill);
+      border: 1px solid rgba(148,163,184,0.5); font-size: clamp(11px, 2vw, 12px);
       color: var(--text-muted); background: rgba(255,255,255,0.8);
-      display: flex; align-items: center; gap: 6px; cursor: pointer;
+      display: flex; align-items: center; gap: 4px; white-space: nowrap; cursor: pointer;
     }
-    .nav-cta span { font-size: 16px; }
 
     /* PAGE */
-    .page { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 32px 16px 48px; }
+    .page { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 16px 0 24px; width: 100%; }
     .page-inner { max-width: 560px; width: 100%; }
 
     /* CARD */
     .card {
-      background: var(--card-bg); border-radius: 22px;
-      padding: 28px 26px; box-shadow: var(--shadow-soft);
+      background: var(--card-bg); border-radius: 18px;
+      padding: clamp(16px, 4vw, 28px); box-shadow: var(--shadow-soft);
       border: 1px solid rgba(148,163,184,0.25);
     }
 
     /* MATCH HEADER */
     .match-header {
       background: linear-gradient(135deg, var(--navy), var(--blue));
-      border-radius: 16px; padding: 18px 20px; color: #e5ecff;
-      margin-bottom: 20px; position: relative; overflow: hidden;
+      border-radius: 16px; padding: clamp(14px, 3vw, 18px); color: #e5ecff;
+      margin-bottom: 18px; position: relative; overflow: hidden;
     }
     .match-header-pill {
       position: absolute; right: -30px; top: -30px;
@@ -93,49 +98,49 @@
     .match-league-pill {
       display: inline-block;
       background: rgba(255,255,255,0.15);
-      color: #c7d8ff; font-size: 11px; font-weight: 600;
+      color: #c7d8ff; font-size: clamp(10px, 2vw, 11px); font-weight: 600;
       letter-spacing: 0.05em; text-transform: uppercase;
       padding: 3px 10px; border-radius: 999px;
-      margin-bottom: 10px; position: relative; z-index: 1;
+      margin-bottom: 8px; position: relative; z-index: 1;
     }
     .match-datetime {
-      display: flex; align-items: center; gap: 10px;
-      margin-bottom: 10px; position: relative; z-index: 1; flex-wrap: wrap;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 8px; position: relative; z-index: 1; flex-wrap: wrap;
     }
     .match-date {
       font-family: "Poppins", sans-serif; font-weight: 700;
-      font-size: 20px; color: #ffffff; letter-spacing: -0.01em;
+      font-size: clamp(16px, 4vw, 20px); color: #ffffff; letter-spacing: -0.01em;
     }
     .match-time {
       font-family: "Poppins", sans-serif; font-weight: 600;
-      font-size: 17px; color: #facc15;
+      font-size: clamp(14px, 3vw, 17px); color: #facc15;
       background: rgba(255,255,255,0.1);
       padding: 2px 10px; border-radius: 8px;
     }
     .match-teams {
-      font-size: 13px; font-weight: 600; color: #e0eaff;
-      margin-bottom: 6px; position: relative; z-index: 1; line-height: 1.4;
+      font-size: clamp(12px, 2.5vw, 13px); font-weight: 600; color: #e0eaff;
+      margin-bottom: 4px; position: relative; z-index: 1; line-height: 1.4;
     }
     .match-venue {
-      font-size: 12px; color: rgba(210,225,255,0.75);
+      font-size: clamp(11px, 2vw, 12px); color: rgba(210,225,255,0.75);
       position: relative; z-index: 1;
     }
     .match-counter {
-      position: absolute; top: 14px; right: 16px;
+      position: absolute; top: 12px; right: 14px;
       font-size: 11px; color: rgba(200,220,255,0.7);
       font-weight: 500; z-index: 1;
     }
 
     /* NAV BUTTONS */
     .match-nav {
-      display: flex; gap: 10px; margin-bottom: 20px;
+      display: flex; gap: 10px; margin-bottom: 18px;
     }
     .match-nav-btn {
-      flex: 1; padding: 10px; border: 1px solid var(--border-subtle);
+      flex: 1; padding: clamp(10px, 2vw, 12px); border: 1px solid var(--border-subtle);
       border-radius: 12px; background: var(--card-bg);
-      font-family: "Inter", sans-serif; font-size: 13px; font-weight: 500;
+      font-family: "Inter", sans-serif; font-size: clamp(12px, 2vw, 13px); font-weight: 500;
       color: var(--navy-soft); cursor: pointer;
-      transition: all 0.2s ease; text-align: center;
+      transition: all 0.2s ease; text-align: center; min-height: 44px;
     }
     .match-nav-btn:hover {
       background: rgba(74,111,165,0.06); border-color: var(--blue);
@@ -143,34 +148,35 @@
 
     /* LEAGUE FILTER */
     .filter-row {
-      display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
     }
-    .filter-label { font-size: 13px; font-weight: 500; color: var(--navy-soft); }
+    .filter-label { font-size: clamp(12px, 2.5vw, 13px); font-weight: 500; color: var(--navy-soft); }
     .filter-select {
-      flex: 1; padding: 10px 14px; font-size: 14px; border-radius: 12px;
+      flex: 1; padding: clamp(10px, 2vw, 12px); font-size: clamp(13px, 2.5vw, 14px); border-radius: 12px;
       border: 1px solid var(--border-subtle); background: var(--card-bg);
       color: var(--text-main); font-family: "Inter", sans-serif;
-      cursor: pointer; outline: none; transition: border-color 0.2s;
+      cursor: pointer; outline: none; transition: border-color 0.2s; min-height: 44px;
     }
     .filter-select:focus { border-color: var(--blue); }
 
     /* SECTION TITLE */
     .section-label {
-      font-size: 13px; font-weight: 500; color: var(--text-muted);
+      font-size: clamp(12px, 2vw, 13px); font-weight: 500; color: var(--text-muted);
       margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.04em;
     }
 
     /* AVAILABILITY BUTTONS */
-    .avail-buttons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+    .avail-buttons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
     .avail-btn {
-      width: 100%; padding: 13px 16px; border: 2px solid var(--border-subtle);
+      width: 100%; padding: clamp(12px, 2.5vw, 14px); border: 2px solid var(--border-subtle);
       border-radius: 14px; background: var(--card-bg);
-      font-family: "Inter", sans-serif; font-size: 14px; font-weight: 500;
+      font-family: "Inter", sans-serif; font-size: clamp(13px, 2.5vw, 14px); font-weight: 500;
       color: var(--text-main); cursor: pointer;
       transition: all 0.2s ease; text-align: left;
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: center; gap: 10px; min-height: 48px; touch-action: manipulation;
     }
     .avail-btn:hover { border-color: var(--blue); background: rgba(74,111,165,0.04); }
+    .avail-btn:active { opacity: 0.95; }
     .avail-btn.selected {
       border-color: var(--navy); background: rgba(29,53,99,0.06);
       box-shadow: 0 0 0 3px rgba(29,53,99,0.12);
@@ -183,32 +189,31 @@
 
     /* NOTES */
     .notes-textarea {
-      width: 100%; padding: 12px 14px; border-radius: 12px;
+      width: 100%; padding: clamp(10px, 2vw, 14px); border-radius: 12px;
       border: 1px solid var(--border-subtle); background: var(--card-bg);
-      font-family: "Inter", sans-serif; font-size: 14px;
-      color: var(--text-main); resize: vertical; min-height: 70px;
-      outline: none; transition: border-color 0.2s; margin-bottom: 18px;
+      font-family: "Inter", sans-serif; font-size: clamp(13px, 2.5vw, 14px);
+      color: var(--text-main); resize: vertical; min-height: 80px;
+      outline: none; transition: border-color 0.2s; margin-bottom: 16px;
     }
     .notes-textarea:focus { border-color: var(--blue); }
 
     /* MESSAGE */
     #msg {
-      margin-top: 12px; font-size: 13px; font-weight: 500;
+      margin-top: 12px; font-size: clamp(12px, 2vw, 13px); font-weight: 500;
       padding: 10px 14px; border-radius: 10px; display: none;
     }
     #msg.success { display: block; background: rgba(34,197,94,0.08); color: #15803d; }
     #msg.error { display: block; background: rgba(239,68,68,0.08); color: #dc2626; }
-
 
     /* NO RESPONSE BANNER */
     .no-response-banner {
       background: rgba(234,179,8,0.12);
       border: 1px solid rgba(234,179,8,0.4);
       border-radius: 12px;
-      padding: 10px 14px;
+      padding: 12px 14px;
       margin-bottom: 14px;
-      display: flex; align-items: center; gap: 8px;
-      font-size: 13px; color: #92400e;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      font-size: clamp(12px, 2.5vw, 13px); color: #92400e;
       font-weight: 500;
       animation: pulse-banner 2s ease-in-out infinite;
     }
@@ -218,40 +223,38 @@
       50% { border-color: rgba(234,179,8,0.8); }
     }
 
-
-    /* MOBILE IMPROVEMENTS */
-    @media (max-width: 600px) {
-      .avail-btn { padding: 14px 12px; font-size: 14px; min-height: 48px; }
-      .match-header { padding: 16px; border-radius: 14px; }
-      .match-date { font-size: 18px; }
-      .match-time { font-size: 15px; }
-      .match-nav-btn { padding: 10px 16px; font-size: 13px; min-height: 44px; }
-      .filter-select { padding: 10px 14px; font-size: 14px; min-height: 44px; }
-      .no-response-banner { font-size: 12px; padding: 10px 12px; }
-    }
-
     /* FOOTER */
     .footer {
       border-top: 1px solid rgba(148,163,184,0.3);
-      padding: 10px 16px 14px; font-size: 11px; color: var(--text-muted);
+      padding: 10px 0 12px;
+      font-size: 11px; color: var(--text-muted);
       display: flex; justify-content: center;
+      margin: 0 calc(-1 * max(14px, var(--safe-area-inset-left))) 0 calc(-1 * max(14px, var(--safe-area-inset-right)));
+      padding-left: max(14px, var(--safe-area-inset-left));
+      padding-right: max(14px, var(--safe-area-inset-right));
     }
     .footer-inner {
       max-width: 1100px; width: 100%;
       display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
     }
-    .footer-links { display: flex; gap: 10px; flex-wrap: wrap; }
-    .footer-link { color: var(--text-muted); text-decoration: none; }
+    .footer-links { display: flex; gap: 12px; flex-wrap: wrap; }
+    .footer-link { color: var(--text-muted); text-decoration: none; font-size: clamp(9px, 2vw, 11px); }
     .footer-link:hover { text-decoration: underline; }
 
-    /* RESPONSIVE */
-    @media (max-width: 900px) {
-      .nav-inner { flex-wrap: wrap; }
-      .nav-links { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
-    }
     @media (max-width: 600px) {
-      .card { padding: 20px 16px; }
-      .match-header h2 { font-size: 13px; }
+      body { padding: 0 12px; }
+      .nav { margin: 0 -12px; padding: 0 12px; }
+      .page { padding: 12px 0 16px; }
+      .card { padding: 16px; border-radius: 16px; }
+      .avail-btn { padding: 12px; }
+      .footer { margin: 0 -12px; padding: 8px 12px; }
+    }
+
+    button, a, input, textarea, select {
+      min-height: 44px;
+    }
+    input, textarea, select {
+      font-size: 16px !important;
     }
   </style>
 </head>
@@ -262,9 +265,9 @@
     <div class="nav-inner">
       <div class="nav-left">
         <div class="nav-logo">PLC</div>
-        <div class="nav-title">
+        <div>
           <div class="nav-title-main">PLC Tennis</div>
-          <div class="nav-title-sub">USTA Team Hub · 2026 Season</div>
+          <div class="nav-title-sub">USTA Team Hub · 2026</div>
         </div>
       </div>
       <div class="nav-links">
@@ -283,8 +286,10 @@
   <main class="page">
     <div class="page-inner">
       <div class="card">
+        <div class="no-response-banner hidden" id="noResponseBanner">
+          ⚠️ You haven't responded to this match yet
+        </div>
 
-        <!-- League filter — above match card -->
         <div class="filter-row">
           <span class="filter-label">League:</span>
           <select id="leagueSelect" class="filter-select" onchange="changeLeague()">
@@ -294,13 +299,11 @@
           </select>
         </div>
 
-        <!-- Previous / Next -->
         <div class="match-nav">
           <button class="match-nav-btn" onclick="prevMatch()">⬅ Previous</button>
           <button class="match-nav-btn" onclick="nextMatch()">Next ➡</button>
         </div>
 
-        <!-- Match info header -->
         <div class="match-header">
           <div class="match-header-pill"></div>
           <span class="match-counter" id="matchCounter"></span>
@@ -313,7 +316,6 @@
           <div class="match-venue" id="matchVenue">📍 —</div>
         </div>
 
-        <!-- Availability buttons -->
         <div class="section-label">Your availability</div>
         <div class="avail-buttons">
           <button class="avail-btn yes" onclick="setAvailability('Yes')">
@@ -326,13 +328,12 @@
             <span class="icon">❓</span> Maybe
           </button>
           <button class="avail-btn conflict" onclick="setAvailability('Maybe - conflict')">
-            <span class="icon">⚠</span> Maybe — conflicts with another match
+            <span class="icon">⚠</span> Conflict with another match
           </button>
         </div>
 
-        <!-- Notes -->
         <div class="section-label">Notes (optional)</div>
-        <textarea id="playerNotes" class="notes-textarea" rows="3" placeholder="e.g., 'I can play only after 6pm'"></textarea>
+        <textarea id="playerNotes" class="notes-textarea" rows="3" placeholder="e.g., 'I can only play after 6pm'"></textarea>
 
         <div id="msg"></div>
       </div>
@@ -342,12 +343,10 @@
   <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-inner">
-      <span>&copy; 2026 Calona Consulting · Sammamish, WA</span>
+      <span>&copy; 2026 Calona Consulting</span>
       <div class="footer-links">
         <a href="calendar.html" class="footer-link">Calendar</a>
         <a href="availability.html" class="footer-link">Availability</a>
-        <a href="practice.html" class="footer-link">Practice</a>
-        <a href="roster.html" class="footer-link">Roster</a>
       </div>
     </div>
   </footer>
@@ -406,7 +405,6 @@
         if (match["Match ID"]) matches.push(match);
       }
       matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
-      // Filter out past matches
       const today = new Date(); today.setHours(0,0,0,0);
       allMatches = matches.filter(m => {
         const d = parseMatchDate(m["Schedule Date"]);
@@ -429,59 +427,32 @@
       loadMatchInfo();
     }
 
-
-    async function advanceToNextUnanswered() {
-      const user = auth.currentUser; if (!user) return;
-      const email = user.email;
-      // Look ahead from current position for a match without a response
-      for (let i = currentIndex + 1; i < filteredMatches.length; i++) {
-        const mid = filteredMatches[i]["Match ID"];
-        try {
-          const doc = await db.collection("availability").doc(mid).collection("players").doc(email).get();
-          if (!doc.exists) {
-            currentIndex = i;
-            loadMatchInfo();
-            return;
-          }
-        } catch (e) {}
-      }
-      // No unanswered matches ahead — just go to next if available
-      if (currentIndex < filteredMatches.length - 1) {
-        currentIndex++;
-        loadMatchInfo();
-      } else {
-        showMsg("🎉 All matches answered! You're all set.", "success");
-      }
-    }
     function changeLeague() { applyLeagueFilter(); }
     function prevMatch() { if (currentIndex > 0) { currentIndex--; loadMatchInfo(); } }
     function nextMatch() { if (currentIndex < filteredMatches.length - 1) { currentIndex++; loadMatchInfo(); } }
 
     function clearSelectedButtons() {
-      document.querySelectorAll('.avail-btn').forEach(b => {
-        b.classList.remove('selected');
-        b.style.opacity = '1';
-        b.style.transform = '';
-      });
+      document.querySelectorAll('.avail-btn').forEach(b => { b.classList.remove('selected'); });
     }
 
     function parseMatchDate(raw) {
-      // Handles "6/14/2026", "2026-06-14", "06/14/2026"
       if (!raw) return null;
-      // Try M/D/YYYY or MM/DD/YYYY
-      const mdy = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      const mdy = raw.match(/^(\d{1,2})\/(
+{1,2})\/(
+{4})$/);
       if (mdy) return new Date(parseInt(mdy[3]), parseInt(mdy[1])-1, parseInt(mdy[2]));
-      // Try YYYY-MM-DD
-      const ymd = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      const ymd = raw.match(/^(
+{4})-(\d{2})-(\d{2})$/);
       if (ymd) return new Date(parseInt(ymd[1]), parseInt(ymd[2])-1, parseInt(ymd[3]));
       return null;
     }
+
     function parseMatchTime(raw) {
-      // If already has AM/PM just return it cleaned up
       if (!raw) return "—";
       if (/[AP]M/i.test(raw)) return raw.trim();
-      // HH:MM 24h format
-      const parts = raw.match(/^(\d{1,2}):(\d{2})/);
+      const parts = raw.match(/^(
+{1,2}):(
+{2})/);
       if (parts) {
         const h = parseInt(parts[1]), m = parts[2];
         const ampm = h >= 12 ? "PM" : "AM";
@@ -489,18 +460,16 @@
       }
       return raw;
     }
+
     function loadMatchInfo() {
       const match = filteredMatches[currentIndex]; if (!match) return;
-      // Scroll to top on match change (especially helpful on mobile)
       window.scrollTo({ top: 0, behavior: "smooth" });
 
-      // Date
       const d = parseMatchDate(match["Schedule Date"]);
       const dateStr = d
         ? d.toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric", year:"numeric" })
         : (match["Schedule Date"] || "—");
 
-      // Time
       const timeStr = parseMatchTime(match["Schedule Time"]);
 
       document.getElementById("matchLeaguePill").textContent = match["League"] || "Match";
@@ -525,11 +494,9 @@
         document.getElementById("playerNotes").value = "";
         hideMsg();
         if (!doc.exists) {
-          // Show "no response" banner
           banner.classList.remove("hidden");
           return;
         }
-        // Hide banner — player has responded
         banner.classList.add("hidden");
         const data = doc.data(); const status = data.status || ""; const notes = data.notes || "";
         document.getElementById("playerNotes").value = notes;
@@ -537,26 +504,17 @@
           "Yes": "Yes, I can play",
           "No": "No, I cannot play",
           "Maybe": "Maybe",
-          "Maybe - conflict": "Maybe — conflicts with another match"
+          "Maybe - conflict": "Conflict with another match"
         };
         const label = labelMap[status]; if (!label) return;
         document.querySelectorAll('.avail-btn').forEach(b => {
-          if (b.textContent.trim().includes(label)) { b.classList.add('selected'); }
+          if (b.textContent.includes(label)) { b.classList.add('selected'); }
         });
       });
     }
 
-    function showMsg(text, type) {
-      const el = document.getElementById("msg");
-      el.textContent = text;
-      el.className = type;
-    }
-    function hideMsg() {
-      const el = document.getElementById("msg");
-      el.textContent = "";
-      el.className = "";
-      el.style.display = "none";
-    }
+    function showMsg(text, type) { const el = document.getElementById("msg"); el.textContent = text; el.className = type; }
+    function hideMsg() { const el = document.getElementById("msg"); el.textContent = ""; el.className = ""; }
 
     function setAvailability(status) {
       const user = auth.currentUser; if (!user) return;
@@ -572,15 +530,15 @@
           "Yes": "Yes, I can play",
           "No": "No, I cannot play",
           "Maybe": "Maybe",
-          "Maybe - conflict": "Maybe — conflicts with another match"
+          "Maybe - conflict": "Conflict with another match"
         };
         const label = labelMap[status];
         document.querySelectorAll('.avail-btn').forEach(b => {
-          if (b.textContent.trim().includes(label)) { b.classList.add('selected'); }
+          if (b.textContent.includes(label)) { b.classList.add('selected'); }
         });
-        showMsg("Availability saved! Moving to next match…", "success");
+        showMsg("✅ Saved! Moving to next match…", "success");
         document.getElementById("noResponseBanner").classList.add("hidden");
-        setTimeout(() => { advanceToNextUnanswered(); document.getElementById("playerNotes").value = ""; hideMsg(); }, 800);
+        setTimeout(() => { nextMatch(); document.getElementById("playerNotes").value = ""; hideMsg(); }, 800);
       }).catch(err => { showMsg("Error: " + err.message, "error"); });
     }
   </script>

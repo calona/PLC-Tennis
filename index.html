@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <title>PLC Tennis Team</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 
 <style>
@@ -20,9 +20,13 @@
   --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
   --radius-lg: 18px;
   --radius-pill: 999px;
+  --safe-area-inset-left: env(safe-area-inset-left, 0);
+  --safe-area-inset-right: env(safe-area-inset-right, 0);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { width: 100%; overflow-x: hidden; }
 
 body {
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -31,7 +35,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 0 14px; /* mobile breathing room */
+  padding: 0 max(14px, var(--safe-area-inset-left)) 0 max(14px, var(--safe-area-inset-right));
 }
 
 /* NAVBAR */
@@ -42,25 +46,26 @@ body {
   backdrop-filter: blur(12px);
   background: linear-gradient(to right, rgba(245,247,250,0.95), rgba(245,247,250,0.9));
   border-bottom: 1px solid rgba(148,163,184,0.25);
-  margin: 0 -14px; /* counter body padding */
-  padding: 0 14px;
+  margin: 0 calc(-1 * max(14px, var(--safe-area-inset-left))) 0 calc(-1 * max(14px, var(--safe-area-inset-right)));
+  padding: 0 max(14px, var(--safe-area-inset-left)) 0 max(14px, var(--safe-area-inset-right));
 }
 
 .nav-inner {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 12px 0;
+  padding: 10px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .nav-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
 }
 
 .nav-logo {
@@ -73,36 +78,43 @@ body {
   justify-content: center;
   color: #fff;
   font-weight: 700;
-  font-size: 18px;
+  font-size: 16px;
   box-shadow: 0 6px 14px rgba(15, 23, 42, 0.25);
+  flex-shrink: 0;
 }
 
 .nav-title-main {
   font-family: "Poppins", sans-serif;
   font-weight: 700;
-  font-size: 18px;
+  font-size: clamp(14px, 3vw, 18px);
   color: var(--navy);
+  line-height: 1.2;
 }
 
 .nav-title-sub {
-  font-size: 12px;
+  font-size: clamp(10px, 2vw, 12px);
   color: var(--text-muted);
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   flex-wrap: wrap;
-  font-size: 14px;
+  font-size: clamp(12px, 2.5vw, 14px);
+  width: 100%;
+  justify-content: flex-start;
+  margin-top: 8px;
 }
 
 .nav-link {
-  padding: 8px 14px;
+  padding: 6px 10px;
   border-radius: 999px;
   color: var(--text-muted);
   text-decoration: none;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  font-size: inherit;
 }
 
 .nav-link:hover {
@@ -117,15 +129,25 @@ body {
 }
 
 .nav-cta {
-  padding: 7px 14px;
+  padding: 6px 10px;
   border-radius: 999px;
   border: 1px solid rgba(148,163,184,0.5);
-  font-size: 12px;
+  font-size: clamp(11px, 2vw, 12px);
   color: var(--text-muted);
   background: rgba(255,255,255,0.8);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .nav-links {
+    width: 100%;
+    gap: 4px;
+  }
+  .nav-link { padding: 5px 8px; }
 }
 
 /* MAIN LAYOUT */
@@ -133,7 +155,8 @@ body {
   flex: 1;
   display: flex;
   justify-content: center;
-  padding: 24px 0 32px;
+  padding: 16px 0 24px;
+  width: 100%;
 }
 
 .page-inner {
@@ -141,19 +164,22 @@ body {
   width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.4fr);
-  gap: 22px;
+  gap: 16px;
   align-items: flex-start;
 }
 
 @media (max-width: 900px) {
-  .page-inner { grid-template-columns: 1fr; }
+  .page-inner {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 /* HERO CARD */
 .hero-card {
   background: linear-gradient(135deg, #3b5998, #6b8cce);
-  border-radius: 26px;
-  padding: 22px;
+  border-radius: 18px;
+  padding: clamp(16px, 4vw, 22px);
   color: #e5ecff;
   box-shadow: var(--shadow-soft);
   position: relative;
@@ -161,7 +187,7 @@ body {
 }
 
 .hero-kicker {
-  font-size: 12px;
+  font-size: clamp(11px, 2vw, 12px);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: #bfdbfe;
@@ -171,23 +197,16 @@ body {
 .hero-title {
   font-family: "Poppins", sans-serif;
   font-weight: 700;
-  font-size: 22px;
-  line-height: 1.2;
-  margin-bottom: 6px;
-}
-
-@media (max-width: 480px) {
-  .hero-title { font-size: 18px; }
+  font-size: clamp(18px, 5vw, 22px);
+  line-height: 1.3;
+  margin-bottom: 8px;
 }
 
 .hero-subtitle {
-  font-size: 14px;
+  font-size: clamp(13px, 2.5vw, 14px);
   color: #dbeafe;
   margin-bottom: 14px;
-}
-
-@media (max-width: 480px) {
-  .hero-subtitle { font-size: 13px; }
+  line-height: 1.5;
 }
 
 .hero-cta-row {
@@ -200,13 +219,15 @@ body {
   background: #facc15;
   color: #1f2933;
   border-radius: var(--radius-pill);
-  padding: 8px 16px;
-  font-size: 13px;
+  padding: 10px 16px;
+  font-size: clamp(12px, 2vw, 13px);
   font-weight: 600;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  min-height: 44px;
+  touch-action: manipulation;
 }
 
 .hero-cta-primary:hover {
@@ -217,10 +238,13 @@ body {
   background: rgba(15,23,42,0.35);
   color: #e5ecff;
   border-radius: var(--radius-pill);
-  padding: 7px 14px;
-  font-size: 12px;
+  padding: 10px 14px;
+  font-size: clamp(11px, 2vw, 12px);
   border: 1px solid rgba(191,219,254,0.5);
   text-decoration: none;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .hero-pill {
@@ -233,37 +257,38 @@ body {
   background: radial-gradient(circle at 30% 30%, #facc15, #f97316 40%, #b91c1c 100%);
   opacity: 0.18;
 }
+
 /* QUICK ACTIONS */
-.section { margin-top: 18px; }
+.section { margin-top: 16px; }
 
 .section-title {
-  font-size: 15px;
+  font-size: clamp(13px, 3vw, 15px);
   font-weight: 600;
   color: var(--navy);
 }
 
 .section-subtitle {
-  font-size: 12px;
+  font-size: clamp(11px, 2vw, 12px);
   color: var(--text-muted);
 }
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
-}
-
-@media (max-width: 800px) {
-  .card-grid { grid-template-columns: repeat(2, 1fr); }
+  margin-top: 8px;
 }
 
 @media (max-width: 600px) {
-  .card-grid { grid-template-columns: 1fr; }
+  .card-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
 }
 
 .action-card {
   background: var(--card-bg);
-  border-radius: var(--radius-lg);
+  border-radius: 16px;
   padding: 14px;
   box-shadow: var(--shadow-soft);
   border: 1px solid rgba(148,163,184,0.25);
@@ -273,6 +298,8 @@ body {
   text-decoration: none;
   color: inherit;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
+  min-height: 140px;
+  touch-action: manipulation;
 }
 
 .action-card:hover {
@@ -280,14 +307,18 @@ body {
   box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
 }
 
+.action-card:active {
+  transform: translateY(0);
+}
+
 .action-icon {
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .action-icon.calendar { background: rgba(59,130,246,0.12); color: #2563eb; }
@@ -295,47 +326,50 @@ body {
 .action-icon.clipboard { background: rgba(234,179,8,0.12); color: #ca8a04; }
 
 .action-title {
-  font-size: 13px;
+  font-size: clamp(12px, 2.5vw, 13px);
   font-weight: 600;
   color: var(--navy-soft);
 }
 
 .action-desc {
-  font-size: 11px;
+  font-size: clamp(11px, 2vw, 11px);
   color: var(--text-muted);
+  flex: 1;
 }
 
 .action-meta {
-  font-size: 11px;
+  font-size: clamp(10px, 1.5vw, 11px);
   color: #6b7280;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 /* SIDE COLUMN */
 .side-column {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .card {
   background: var(--card-bg);
-  border-radius: 22px;
-  padding: 14px;
+  border-radius: 18px;
+  padding: clamp(12px, 3vw, 14px);
   box-shadow: var(--shadow-soft);
   border: 1px solid rgba(148,163,184,0.25);
 }
 
 .card-title {
-  font-size: 14px;
+  font-size: clamp(13px, 2.5vw, 14px);
   font-weight: 600;
   color: var(--navy-soft);
 }
 
 .card-subtitle {
-  font-size: 11px;
+  font-size: clamp(10px, 2vw, 11px);
   color: var(--text-muted);
 }
 
@@ -344,11 +378,12 @@ body {
   justify-content: space-between;
   gap: 10px;
   margin-top: 6px;
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
 }
 
 .next-match-main {
-  font-size: 12px;
+  font-size: clamp(11px, 2vw, 12px);
   color: var(--text-main);
 }
 
@@ -357,15 +392,15 @@ body {
 }
 
 .next-match-meta {
-  font-size: 11px;
+  font-size: clamp(10px, 1.5vw, 11px);
   color: var(--text-muted);
   margin-top: 3px;
 }
 
 .btn-small {
   border-radius: 999px;
-  padding: 6px 11px;
-  font-size: 11px;
+  padding: 8px 12px;
+  font-size: clamp(10px, 2vw, 11px);
   border: none;
   cursor: pointer;
   background: var(--green);
@@ -374,24 +409,30 @@ body {
   align-items: center;
   gap: 6px;
   text-decoration: none;
+  min-height: 40px;
+  touch-action: manipulation;
 }
 
 .btn-small:hover {
   background: #166534;
 }
 
+.btn-small:active {
+  opacity: 0.9;
+}
+
 /* LISTS */
 .list {
   margin-top: 6px;
-  font-size: 11px;
+  font-size: clamp(10px, 2vw, 11px);
   color: var(--text-muted);
   list-style: none;
 }
 
 .list li {
-  margin-bottom: 3px;
+  margin-bottom: 6px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
 }
 
@@ -400,21 +441,28 @@ body {
   height: 6px;
   border-radius: 999px;
   background: #9ca3af;
+  flex-shrink: 0;
+  margin-top: 4px;
 }
 
 /* Q&A */
-.qa-card { max-height: 500px; display: flex; flex-direction: column; }
+.qa-card {
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+}
 
 .qa-scroll {
   flex: 1;
   overflow-y: auto;
-  max-height: 320px;
+  -webkit-overflow-scrolling: touch;
+  max-height: 280px;
   margin-bottom: 10px;
 }
 
 .qa-thread {
   border-bottom: 1px solid var(--border-subtle);
-  padding: 10px 0;
+  padding: 8px 0;
 }
 
 .qa-question {
@@ -424,14 +472,14 @@ body {
 }
 
 .qa-avatar {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: #fff;
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
@@ -441,10 +489,13 @@ body {
   background: linear-gradient(135deg, #f59e0b, #d97706);
 }
 
-.qa-content { flex: 1; min-width: 0; }
+.qa-content {
+  flex: 1;
+  min-width: 0;
+}
 
 .qa-name {
-  font-size: 11px;
+  font-size: clamp(10px, 2vw, 11px);
   font-weight: 600;
   color: var(--navy-soft);
 }
@@ -454,42 +505,25 @@ body {
   font-weight: 700;
   color: #d97706;
   background: rgba(234,179,8,0.12);
-  padding: 1px 6px;
+  padding: 2px 6px;
   border-radius: 999px;
   margin-left: 4px;
+  display: inline-block;
 }
 
 .qa-time {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-muted);
   margin-left: 6px;
 }
 
 .qa-text {
-  font-size: 12px;
+  font-size: clamp(11px, 2vw, 12px);
   color: var(--text-main);
-  margin-top: 2px;
+  margin-top: 3px;
   line-height: 1.45;
   word-break: break-word;
-}
-
-.qa-reply {
-  margin-left: 34px;
-  margin-top: 8px;
-}
-
-.qa-reply-btn {
-  font-size: 10px;
-  color: var(--blue);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin-top: 4px;
-}
-
-.qa-reply-btn:hover {
-  text-decoration: underline;
+  overflow-wrap: break-word;
 }
 
 .qa-input-row {
@@ -500,17 +534,18 @@ body {
 
 .qa-input {
   flex: 1;
-  padding: 8px 12px;
+  padding: 10px 12px;
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
   font-size: 12px;
   resize: none;
-  min-height: 38px;
-  max-height: 80px;
+  min-height: 40px;
+  max-height: 100px;
+  font-family: "Inter", sans-serif;
 }
 
 .qa-send {
-  padding: 8px 14px;
+  padding: 10px 14px;
   border-radius: 12px;
   border: none;
   background: var(--navy);
@@ -518,58 +553,41 @@ body {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  min-height: 40px;
+  touch-action: manipulation;
 }
 
 .qa-send:hover {
   background: var(--navy-soft);
 }
 
+.qa-send:active {
+  opacity: 0.9;
+}
+
 .qa-send:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
 .qa-empty {
   font-size: 12px;
   color: var(--text-muted);
   text-align: center;
-  padding: 20px 0;
-}
-
-.qa-reply-form {
-  display: flex;
-  gap: 6px;
-  margin-top: 6px;
-  margin-left: 34px;
-}
-
-.qa-reply-form input {
-  flex: 1;
-  padding: 5px 10px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  font-size: 11px;
-}
-
-.qa-reply-form button {
-  padding: 5px 10px;
-  border-radius: 8px;
-  border: none;
-  background: #f59e0b;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
+  padding: 16px 0;
 }
 
 /* FOOTER */
 .footer {
   border-top: 1px solid rgba(148,163,184,0.3);
-  padding: 10px 16px 14px;
+  padding: 10px 0 14px;
   font-size: 11px;
   color: var(--text-muted);
   display: flex;
   justify-content: center;
-  margin: 0 -14px; /* counter body padding */
+  margin: 0 calc(-1 * max(14px, var(--safe-area-inset-left))) 0 calc(-1 * max(14px, var(--safe-area-inset-right)));
+  padding-left: max(14px, var(--safe-area-inset-left));
+  padding-right: max(14px, var(--safe-area-inset-right));
 }
 
 .footer-inner {
@@ -578,22 +596,136 @@ body {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .footer-links {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .footer-link {
   color: var(--text-muted);
   text-decoration: none;
+  font-size: clamp(9px, 2vw, 11px);
 }
 
 .footer-link:hover {
   text-decoration: underline;
+}
+
+/* MOBILE OPTIMIZATIONS */
+@media (max-width: 600px) {
+  body {
+    padding: 0 12px;
+  }
+
+  .nav {
+    margin: 0 -12px;
+    padding: 0 12px;
+  }
+
+  .nav-inner {
+    padding: 8px 0;
+  }
+
+  .nav-logo {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .nav-links {
+    font-size: 12px;
+    gap: 4px;
+    row-gap: 6px;
+  }
+
+  .page {
+    padding: 12px 0 16px;
+  }
+
+  .page-inner {
+    gap: 10px;
+  }
+
+  .card-grid {
+    gap: 8px;
+  }
+
+  .action-card {
+    padding: 12px;
+    min-height: auto;
+    border-radius: 14px;
+  }
+
+  .hero-card {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .card {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .footer {
+    margin: 0 -12px;
+    padding: 8px 12px 10px;
+  }
+
+  .footer-links {
+    width: 100%;
+  }
+}
+
+@media (max-width: 400px) {
+  body {
+    padding: 0 10px;
+  }
+
+  .nav {
+    margin: 0 -10px;
+    padding: 0 10px;
+  }
+
+  .page {
+    padding: 10px 0 12px;
+  }
+
+  .nav-logo {
+    width: 30px;
+    height: 30px;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-cta-row {
+    flex-direction: column;
+  }
+
+  .hero-cta-primary, .hero-cta-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .footer {
+    margin: 0 -10px;
+    padding: 8px 10px;
+  }
+}
+
+/* TOUCH-FRIENDLY ADJUSTMENTS */
+button, a, input, textarea, select {
+  min-height: 44px;
+}
+
+/* PREVENT ZOOM ON INPUT FOCUS (iOS) */
+input, textarea, select {
+  font-size: 16px !important;
 }
 </style>
 </head>
@@ -604,7 +736,7 @@ body {
   <div class="nav-inner">
     <div class="nav-left">
       <div class="nav-logo">PLC</div>
-      <div class="nav-title">
+      <div>
         <div class="nav-title-main">PLC Tennis</div>
         <div class="nav-title-sub">USTA Team Hub · 2026 Season</div>
       </div>
@@ -652,8 +784,7 @@ body {
             <div class="action-title">Match Calendar</div>
             <div class="action-desc">See all upcoming matches, locations, and start times.</div>
             <div class="action-meta">
-              <span>Next 4 weeks at a glance</span>
-              <span class="action-pill">Schedule</span>
+              <span>Next 4 weeks</span>
             </div>
           </a>
 
@@ -662,18 +793,16 @@ body {
             <div class="action-title">Submit Availability</div>
             <div class="action-desc">Tell the captain which matches you can play.</div>
             <div class="action-meta">
-              <span>Keep your status up to date</span>
-              <span class="action-pill">Players</span>
+              <span>Keep updated</span>
             </div>
           </a>
 
           <a href="captain.html" class="action-card">
             <div class="action-icon clipboard"></div>
             <div class="action-title">Captain Dashboard</div>
-            <div class="action-desc">View responses, export lineups, and plan rosters.</div>
+            <div class="action-desc">View responses and plan rosters.</div>
             <div class="action-meta">
-              <span>Matrix & Excel export</span>
-              <span class="action-pill">Captains</span>
+              <span>Excel export</span>
             </div>
           </a>
         </div>
@@ -690,7 +819,7 @@ body {
         <div id="nextMatchContent">
           <div class="next-match-row">
             <div class="next-match-main">
-              <span style="color:var(--text-muted); font-size:12px;">Loading next match...</span>
+              <span style="color:var(--text-muted);">Loading next match...</span>
             </div>
           </div>
         </div>
@@ -733,14 +862,14 @@ body {
 
       <section class="card qa-card">
         <div class="card-title">Ask the Captain</div>
-        <div class="card-subtitle">Questions, comments, or match‑day logistics.</div>
+        <div class="card-subtitle">Questions, comments, or logistics.</div>
 
         <div class="qa-scroll" id="qaScroll">
           <div class="qa-empty" id="qaEmpty">Loading...</div>
         </div>
 
         <div class="qa-input-row" id="qaInputRow" style="display:none;">
-          <textarea class="qa-input" id="qaInput" placeholder="Type a question or comment..." rows="1"
+          <textarea class="qa-input" id="qaInput" placeholder="Type a question..." rows="1"
             onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); postQuestion(); }"></textarea>
           <button class="qa-send" onclick="postQuestion()">Post</button>
         </div>
@@ -870,7 +999,7 @@ async function loadNextMatches() {
       container.innerHTML = `
         <div class="next-match-row">
           <div class="next-match-main">
-            <span style="color:var(--text-muted); font-size:12px;">No upcoming matches on the schedule.</span>
+            <span style="color:var(--text-muted);">No upcoming matches on the schedule.</span>
           </div>
         </div>`;
       return;
@@ -908,7 +1037,7 @@ async function loadNextMatches() {
 
       container.innerHTML += `
         <div style="${border}">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; flex-wrap:wrap;">
             <div class="next-match-main">
               <strong>PLC vs ${opponent}</strong><br />
               <span class="next-match-meta">${dateStr} · ${time} · ${homeAway}</span><br />
@@ -937,7 +1066,7 @@ async function loadNextMatches() {
     document.getElementById("nextMatchContent").innerHTML = `
       <div class="next-match-row">
         <div class="next-match-main">
-          <span style="color:var(--text-muted); font-size:12px;">Could not load match data.</span>
+          <span style="color:var(--text-muted);">Could not load match data.</span>
         </div>
       </div>`;
   }
@@ -998,304 +1127,100 @@ async function loadUpcomingPractices() {
           cancelReason = md.cancelReason || "";
         }
 
-        const rsvpSnap = await db
-          .collection("practice")
-          .doc(key)
-          .collection("rsvps")
-          .get();
-
-        rsvpSnap.forEach(doc => {
-          const s = doc.data().status;
-          if (s === "yes") yesCount++;
-          else if (s === "maybe") maybeCount++;
+        const snap = await db.collection("practice").doc(key).collection("availability").get();
+        snap.forEach(doc => {
+          const s = doc.data().status || "";
+          if (s === "Yes") yesCount++;
+          if (s === "Maybe") maybeCount++;
         });
       } catch (e) {}
 
-      if (cancelled) {
-        html += `
-          <div style="${border}">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-              <div class="next-match-main">
-                <strong style="text-decoration:line-through; color:var(--text-muted);">${dateStr}</strong><br/>
-                <span class="next-match-meta" style="color:#dc2626;">
-                  Cancelled${cancelReason ? " – " + cancelReason : ""}
-                </span>
-              </div>
-            </div>
-          </div>`;
-      } else {
-        const spots = Math.max(0, 12 - yesCount);
+      const statusMsg = cancelled ? `<strong style="color:#ef4444;">❌ CANCELLED${cancelReason ? ': ' + cancelReason : ''}</strong>` : `<strong>${yesCount}</strong> yes, <strong>${maybeCount}</strong> maybe`;
 
-        const spotColor =
-          spots === 0 ? "#dc2626" : spots <= 4 ? "#a16207" : "#15803d";
-
-        const spotBg =
-          spots === 0
-            ? "rgba(239,68,68,.1)"
-            : spots <= 4
-            ? "rgba(234,179,8,.1)"
-            : "rgba(34,197,94,.1)";
-
-        html += `
-          <div style="${border}">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-              <div class="next-match-main">
-                <strong>${dateStr}</strong><br/>
-                <span class="next-match-meta">
-                  ${yesCount} confirmed${maybeCount > 0 ? " · " + maybeCount + " maybe" : ""}
-                </span>
-              </div>
-              <span style="
-                font-size:10px;
-                font-weight:600;
-                padding:3px 9px;
-                border-radius:999px;
-                background:${spotBg};
-                color:${spotColor};
-                white-space:nowrap;
-                flex-shrink:0;
-              ">
-                ${spots === 0 ? "Full" : spots + " spots"}
-              </span>
-            </div>
-          </div>`;
-      }
+      html += `<div style="${border}">
+        <div class="next-match-meta" style="margin-bottom:4px;">${dateStr}</div>
+        <div style="font-size:11px;">${statusMsg}</div>
+      </div>`;
     }
 
-    html += `
-      <div style="border-top:1px solid var(--border-subtle); margin-top:10px; padding-top:8px; text-align:center;">
-        <a href="practice.html" class="btn-small">RSVP for practice</a>
-      </div>`;
-
     container.innerHTML = html;
-
   } catch (e) {
-    container.innerHTML = `
-      <div style="color:var(--text-muted); font-size:12px;">
-        Could not load practice data.
-      </div>`;
+    container.innerHTML = '<div style="color:var(--text-muted); font-size:12px;">Could not load practices.</div>';
   }
 }
 
 loadUpcomingPractices();
 
-/* ===== ASK THE CAPTAIN Q&A ===== */
+function postQuestion() {
+  const input = document.getElementById("qaInput");
+  const text = input.value.trim();
+  if (!text) return;
+  const user = auth.currentUser;
+  if (!user) { alert("Not logged in."); return; }
 
-const CAPTAIN_EMAIL = "gaylorde@outlook.com";
-
-function timeAgo(ts) {
-  if (!ts) return "";
-  const now = Date.now();
-  const diff = now - ts;
-
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return mins + "m ago";
-
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return hrs + "h ago";
-
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return days + "d ago";
-
-  return new Date(ts).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric"
-  });
+  db.collection("qa").add({
+    user_email: user.email,
+    text: text,
+    timestamp: new Date()
+  }).then(() => {
+    input.value = "";
+    loadQA();
+  }).catch(e => alert("Error posting: " + e.message));
 }
 
-function getInitials(email) {
-  const name = (email || "").split("@")[0].replace(/[._]/g, " ").trim();
-  const parts = name.split(/\s+/);
+async function loadQA() {
+  const container = document.getElementById("qaScroll");
+  const inputRow = document.getElementById("qaInputRow");
+  const user = auth.currentUser;
 
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return name.substring(0, 2).toUpperCase();
-}
-
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function renderQA(questions) {
-  const scroll = document.getElementById("qaScroll");
-  const empty = document.getElementById("qaEmpty");
-
-  if (questions.length === 0) {
-    empty.textContent = "No questions yet – be the first to ask!";
-    empty.style.display = "block";
+  if (!user) {
+    container.innerHTML = '<div class="qa-empty">Please log in to ask questions.</div>';
+    inputRow.style.display = "none";
     return;
   }
 
-  empty.style.display = "none";
-  scroll.innerHTML = "";
+  inputRow.style.display = "flex";
 
-  questions.forEach(q => {
-    const thread = document.createElement("div");
-    thread.className = "qa-thread";
+  try {
+    const snap = await db.collection("qa").orderBy("timestamp", "desc").limit(20).get();
+    const docs = snap.docs;
 
-    const isCaptain = q.email === CAPTAIN_EMAIL;
-    const avatarClass = isCaptain ? "qa-avatar captain" : "qa-avatar";
-    const badge = isCaptain ? '<span class="qa-badge">CAPTAIN</span>' : "";
-    const displayName = q.displayName || q.email.split("@")[0];
+    if (docs.length === 0) {
+      container.innerHTML = '<div class="qa-empty">No questions yet. Be the first to ask!</div>';
+      return;
+    }
 
-    let html = `
-      <div class="qa-question">
-        <div class="${avatarClass}">${getInitials(q.email)}</div>
-        <div class="qa-content">
-          <span class="qa-name">${displayName}${badge}
-            <span class="qa-time">${timeAgo(q.timestamp)}</span>
-          </span>
-          <div class="qa-text">${escapeHtml(q.text)}</div>
-        </div>
-      </div>`;
+    let html = "";
+    for (const doc of docs) {
+      const d = doc.data();
+      const isCapt = d.user_email.toLowerCase() === "gaylorde@outlook.com";
+      const nameShort = d.user_email.split("@")[0].charAt(0).toUpperCase();
+      const timeStr = d.timestamp ? new Date(d.timestamp.toDate()).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "?";
 
-    if (q.replies && q.replies.length > 0) {
-      q.replies.forEach(r => {
-        const rIsCaptain = r.email === CAPTAIN_EMAIL;
-        const rAvClass = rIsCaptain ? "qa-avatar captain" : "qa-avatar";
-        const rBadge = rIsCaptain ? '<span class="qa-badge">CAPTAIN</span>' : "";
-        const rName = r.displayName || r.email.split("@")[0];
-
-        html += `
-          <div class="qa-reply">
-            <div class="qa-question">
-              <div class="${rAvClass}" style="width:22px; height:22px; font-size:10px;">
-                ${getInitials(r.email)}
+      html += `
+        <div class="qa-thread">
+          <div class="qa-question">
+            <div class="qa-avatar ${isCapt ? 'captain' : ''}">${nameShort}</div>
+            <div class="qa-content">
+              <div>
+                <span class="qa-name">${d.user_email}</span>
+                ${isCapt ? '<span class="qa-badge">CAPTAIN</span>' : ''}
+                <span class="qa-time">${timeStr}</span>
               </div>
-              <div class="qa-content">
-                <span class="qa-name">${rName}${rBadge}
-                  <span class="qa-time">${timeAgo(r.timestamp)}</span>
-                </span>
-                <div class="qa-text">${escapeHtml(r.text)}</div>
-              </div>
+              <div class="qa-text">${d.text}</div>
             </div>
-          </div>`;
-      });
+          </div>
+        </div>
+      `;
     }
 
-    const user = auth.currentUser;
-    if (user) {
-      const canReply =
-        user.email.toLowerCase() === CAPTAIN_EMAIL ||
-        user.email.toLowerCase() === q.email;
-
-      if (canReply) {
-        html += `
-          <button class="qa-reply-btn" onclick="showReplyForm('${q.id}', this)">
-            Reply
-          </button>`;
-      }
-    }
-
-    thread.innerHTML = html;
-    scroll.appendChild(thread);
-  });
-
-  scroll.scrollTop = scroll.scrollHeight;
-}
-
-function showReplyForm(questionId, btn) {
-  document.querySelectorAll(".qa-reply-form").forEach(f => f.remove());
-
-  const form = document.createElement("div");
-  form.className = "qa-reply-form";
-
-  form.innerHTML = `
-    <input type="text" placeholder="Write a reply..."
-      onkeydown="if(event.key === 'Enter') this.nextElementSibling.click();" />
-    <button onclick="postReply('${questionId}', this.previousElementSibling.value, this.parentElement)">
-      Reply
-    </button>`;
-
-  btn.parentElement.appendChild(form);
-  form.querySelector("input").focus();
-}
-
-async function postReply(questionId, text, formEl) {
-  if (!text.trim()) return;
-
-  const user = auth.currentUser;
-  if (!user) return;
-
-  try {
-    const docRef = db.collection("qa").doc(questionId);
-    const doc = await docRef.get();
-    const data = doc.data();
-
-    const replies = data.replies || [];
-    replies.push({
-      email: user.email.toLowerCase(),
-      displayName: user.displayName || user.email.split("@")[0],
-      text: text.trim(),
-      timestamp: Date.now()
-    });
-
-    await docRef.update({ replies });
-    formEl.remove();
-
+    container.innerHTML = html;
   } catch (e) {
-    alert("Error posting reply: " + e.message);
+    container.innerHTML = '<div class="qa-empty">Could not load questions.</div>';
   }
 }
 
-async function postQuestion() {
-  const input = document.getElementById("qaInput");
-  const text = input.value.trim();
-
-  if (!text) return;
-
-  const user = auth.currentUser;
-  if (!user) return;
-
-  input.disabled = true;
-
-  try {
-    await db.collection("qa").add({
-      email: user.email.toLowerCase(),
-      displayName: user.displayName || user.email.split("@")[0],
-      text: text,
-      timestamp: Date.now(),
-      replies: []
-    });
-
-    input.value = "";
-
-  } catch (e) {
-    alert("Error posting: " + e.message);
-  }
-
-  input.disabled = false;
-  input.focus();
-}
-
-function loadQA() {
-  const user = auth.currentUser;
-  if (!user) return;
-
-  document.getElementById("qaInputRow").style.display = "flex";
-
-  db.collection("qa")
-    .orderBy("timestamp", "asc")
-    .onSnapshot(
-      snapshot => {
-        const questions = [];
-        snapshot.forEach(doc => {
-          questions.push({ id: doc.id, ...doc.data() });
-        });
-        renderQA(questions);
-      },
-      err => {
-        document.getElementById("qaEmpty").textContent = "Could not load Q&A.";
-      }
-    );
-}
-
-auth.onAuthStateChanged(user => {
-  if (user) loadQA();
-});
+loadQA();
 </script>
-
 </body>
 </html>

@@ -150,6 +150,61 @@
     @media(max-width:900px){.nav-inner{flex-wrap:wrap}.nav-links{width:100%;justify-content:flex-start}}
     @media(max-width:700px){.courts-grid{grid-template-columns:1fr}}
     @media(max-width:600px){.page-header{flex-direction:column;align-items:flex-start}.info-grid{grid-template-columns:1fr 1fr}.reason-input{width:100%}.add-date-row{flex-direction:column}}
+
+    /* ASSIGNMENT PANEL (CAPTAIN ONLY) */
+    .assignment-panel{background:var(--card-bg);border-radius:22px;padding:22px 24px;box-shadow:var(--shadow-soft);border:2px solid rgba(29,53,99,.2);margin-bottom:20px;display:none}
+    .assignment-panel.show{display:block}
+    .ap-title{font-family:"Poppins",sans-serif;font-weight:700;font-size:16px;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .ap-auto-btn{padding:8px 16px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-pill);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;margin-bottom:16px;display:inline-flex;align-items:center;gap:6px;min-height:0}
+    .ap-auto-btn:hover{background:#2d5a8c}
+    .ap-courts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:4px}
+    .ap-court{background:rgba(74,111,165,.04);border:1px solid rgba(74,111,165,.15);border-radius:14px;padding:12px}
+    .ap-court-hdr{font-family:"Poppins",sans-serif;font-weight:700;font-size:13px;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:4px}
+    .ap-count-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:var(--radius-pill);background:rgba(74,111,165,.12);color:var(--blue)}
+    .ap-player-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(148,163,184,.08);font-size:12px}
+    .ap-player-row:last-child{border-bottom:none}
+    .ap-player-name{flex:1;font-weight:500;font-size:12px}
+    .ap-unassign-btn{padding:2px 7px;background:rgba(239,68,68,.1);color:#dc2626;border:none;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;min-height:0;line-height:1.4}
+    .ap-unassign-btn:hover{background:rgba(239,68,68,.2)}
+    .ap-empty-slot{font-size:11px;color:var(--text-muted);font-style:italic;padding:3px 0}
+    .ap-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:8px;padding-top:14px;margin-top:14px;border-top:1px solid rgba(148,163,184,.15)}
+    .ap-unassigned-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(148,163,184,.08);font-size:13px;flex-wrap:wrap}
+    .ap-unassigned-row:last-child{border-bottom:none}
+    .ap-unassigned-name{flex:1;font-weight:500;font-size:13px}
+    .ap-assign-select{padding:4px 6px;border:1px solid var(--border-subtle);border-radius:8px;font-family:"Inter",sans-serif;font-size:12px;color:var(--text-main);background:var(--card-bg);outline:none;cursor:pointer;min-height:0}
+    .ap-assign-btn{padding:4px 10px;background:rgba(34,197,94,.1);color:#15803d;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;min-height:0;line-height:1.4}
+    .ap-assign-btn:hover{background:rgba(34,197,94,.2)}
+    .ap-sub-move-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(148,163,184,.08);font-size:13px;flex-wrap:wrap}
+    .ap-sub-move-row:last-child{border-bottom:none}
+    .ap-sub-move-name{flex:1;font-weight:500;font-size:13px}
+    .ap-sub-origin{font-size:10px;color:var(--text-muted);padding:2px 6px;background:rgba(148,163,184,.1);border-radius:4px;white-space:nowrap}
+    .ap-to-sub-btn{padding:4px 10px;background:rgba(168,85,247,.1);color:#7c3aed;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;min-height:0;line-height:1.4}
+    .ap-to-sub-btn:hover{background:rgba(168,85,247,.2)}
+    .ap-empty{font-size:12px;color:var(--text-muted);font-style:italic;padding:6px 0}
+    @media(max-width:700px){.ap-courts{grid-template-columns:1fr}}
+
+    /* UNASSIGNED PLAYERS CARD */
+    .unassigned-card{background:var(--card-bg);border-radius:18px;padding:16px 20px;box-shadow:var(--shadow-soft);border:1px dashed rgba(74,111,165,.4);margin-bottom:20px;display:none}
+    .unassigned-card.show{display:block}
+    .unassigned-title{font-family:"Poppins",sans-serif;font-weight:600;font-size:14px;color:var(--navy-soft);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+    .unassigned-row{display:flex;align-items:center;padding:6px 0;border-bottom:1px solid rgba(148,163,184,.08);font-size:13px;gap:8px}
+    .unassigned-row:last-child{border-bottom:none}
+
+    /* SUBSTITUTE LIST CARD */
+    .sub-card{background:var(--card-bg);border-radius:22px;padding:22px 24px;box-shadow:var(--shadow-soft);border:2px solid rgba(168,85,247,.25);margin-bottom:20px;display:none}
+    .sub-card.show{display:block}
+    .sub-title{font-family:"Poppins",sans-serif;font-weight:600;font-size:16px;color:#7c3aed;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+    .sub-sub-text{font-size:12px;color:var(--text-muted);margin-bottom:12px}
+    .sub-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(148,163,184,.08);font-size:13px;flex-wrap:wrap}
+    .sub-row:last-child{border-bottom:none}
+    .sub-name{flex:1;font-weight:500}
+    .sub-callin-select{padding:4px 6px;border:1px solid var(--border-subtle);border-radius:8px;font-family:"Inter",sans-serif;font-size:12px;color:var(--text-main);background:var(--card-bg);outline:none;cursor:pointer;min-height:0}
+    .sub-callin-btn{padding:4px 10px;background:rgba(34,197,94,.1);color:#15803d;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;min-height:0;line-height:1.4}
+    .sub-callin-btn:hover{background:rgba(34,197,94,.2)}
+    .sub-remove-btn{padding:4px 10px;background:rgba(239,68,68,.1);color:#dc2626;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;min-height:0;line-height:1.4}
+    .sub-remove-btn:hover{background:rgba(239,68,68,.2)}
+    .waitlist-to-sub-btn{padding:3px 8px;background:rgba(168,85,247,.1);color:#7c3aed;border:none;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;margin-left:auto;min-height:0;line-height:1.4}
+    .waitlist-to-sub-btn:hover{background:rgba(168,85,247,.2)}
   </style>
 </head>
 <body>
@@ -247,7 +302,17 @@
           </label>
           <input type="text" class="reason-input" id="cancelReasonInput" placeholder="Reason (e.g. Holiday, Weather)" />
           <button class="cancel-btn" id="cancelToggle" onclick="toggleCancel()">Cancel Practice</button>
+          <button class="schedule-toggle-btn" onclick="toggleAssignmentPanel()">👤 Assignments</button>
         </div>
+      </div>
+
+      <!-- ASSIGNMENT PANEL (CAPTAIN ONLY) -->
+      <div class="assignment-panel" id="assignmentPanel">
+        <div class="ap-title">⚙️ Court Assignment</div>
+        <button class="ap-auto-btn" onclick="autoDistribute()">⚡ Auto-Distribute Evenly</button>
+        <div class="ap-courts" id="apCourtsGrid"></div>
+        <div id="apUnassignedSection"></div>
+        <div id="apSubSection"></div>
       </div>
 
       <div class="rsvp-card" id="rsvpCard">
@@ -264,6 +329,19 @@
       <div class="summary-strip" id="summaryStrip"></div>
       <div class="courts-header" id="courseHeader">🏆 Courts</div>
       <div class="courts-grid" id="courtsGrid"></div>
+
+      <!-- UNASSIGNED CONFIRMED PLAYERS (all users) -->
+      <div class="unassigned-card" id="unassignedCard">
+        <div class="unassigned-title">📌 Unassigned Confirmed Players</div>
+        <div id="unassignedRows"></div>
+      </div>
+
+      <!-- SUBSTITUTE LIST (all users) -->
+      <div class="sub-card" id="subCard">
+        <div class="sub-title">🔄 Substitute List</div>
+        <div class="sub-sub-text">Available players for last-minute replacements</div>
+        <div id="subRows"></div>
+      </div>
 
       <div class="waitlist-card" id="waitlistCard">
         <div class="waitlist-title">⏳ Waitlist</div>
@@ -310,6 +388,8 @@
     let currentDisplayDate = null;
     let currentUser = null;
     let isCaptain = false;
+    let currentRSVPResponses = {};
+    let currentConfirmedPlayers = [];
     const CAPTAIN_EMAIL = "gaylorde@outlook.com";
 
     auth.onAuthStateChanged(user => {
@@ -570,10 +650,13 @@
       try {
         const doc = await db.collection("rsvps").doc(dateStr).get();
         const responses = doc.exists ? (doc.data().responses || {}) : {};
+        currentRSVPResponses = responses;
 
         const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
         const courtCount = cfg.courtCount || 3;
         const capacity = courtCount * 4;
+        const courtAssignments = (cfg.courtAssignments || []).map(arr => Array.isArray(arr) ? arr : []);
+        const substituteList = cfg.substituteList || [];
 
         const yesPlayers = [];
         const maybePlayers = [];
@@ -585,6 +668,7 @@
 
         const confirmed = yesPlayers.slice(0, capacity);
         const waitlist = yesPlayers.slice(capacity);
+        currentConfirmedPlayers = confirmed;
 
         // Summary strip
         const strip = document.getElementById("summaryStrip");
@@ -595,22 +679,37 @@
           <div class="summary-item"><div><div class="summary-number">${Math.max(0, capacity - confirmed.length)}</div><div class="summary-label">Spots Left</div></div></div>
         `;
 
+        // Determine display assignments: use manual assignments if any exist, else sequential
+        const hasManualAssignments = courtAssignments.some(arr => arr.length > 0);
+        let displayAssignments;
+        if (hasManualAssignments) {
+          // Pad to courtCount
+          displayAssignments = Array.from({ length: courtCount }, (_, i) => courtAssignments[i] || []);
+        } else {
+          // Sequential fallback: first 4 confirmed to court 0, next 4 to court 1, etc.
+          displayAssignments = Array.from({ length: courtCount }, (_, c) =>
+            confirmed.slice(c * 4, c * 4 + 4).map(p => p.email)
+          );
+        }
+
         // Courts grid
-        const grid = document.getElementById("courtsGrid");
-        grid.innerHTML = "";
-        for (let c = 1; c <= courtCount; c++) {
-          const courtPlayers = confirmed.slice((c - 1) * 4, c * 4);
-          const card = document.createElement("div");
-          card.className = "court-card";
-          card.innerHTML = `
-            <div class="court-label">🎾 Court ${c}</div>
-            <div class="court-players">
-              ${courtPlayers.length === 0
-                ? '<div class="court-empty">No players yet</div>'
-                : courtPlayers.map(p => `<div class="court-player">${p.name || p.email}</div>`).join("")}
-            </div>
-          `;
-          grid.appendChild(card);
+        renderCourtsGrid(courtCount, displayAssignments, responses);
+
+        // Unassigned confirmed players (only shown when manual assignments active)
+        if (hasManualAssignments) {
+          const allAssigned = displayAssignments.flat();
+          const unassignedEmails = confirmed.filter(p => !allAssigned.includes(p.email)).map(p => p.email);
+          renderUnassignedCard(unassignedEmails, responses);
+        } else {
+          document.getElementById("unassignedCard").classList.remove("show");
+        }
+
+        // Substitute list
+        renderSubCard(substituteList, responses, courtCount);
+
+        // Captain assignment panel
+        if (isCaptain) {
+          renderAssignmentPanel(courtCount, confirmed, displayAssignments, substituteList, responses);
         }
 
         // Waitlist
@@ -618,12 +717,17 @@
         const waitlistRows = document.getElementById("waitlistRows");
         if (waitlist.length > 0) {
           waitlistCard.classList.add("show");
-          waitlistRows.innerHTML = waitlist.map((p, i) => `
-            <div class="waitlist-row">
+          waitlistRows.innerHTML = waitlist.map((p, i) => {
+            const isMe = currentUser && p.email === currentUser.email;
+            const subBtn = isCaptain
+              ? `<button class="waitlist-to-sub-btn" onclick="addToSubList('${p.email}')">→ Sub</button>`
+              : "";
+            return `<div class="waitlist-row">
               <div class="waitlist-pos">#${i + 1}</div>
-              <div>${p.name || p.email}</div>
-            </div>
-          `).join("");
+              <div>${isMe ? "⭐ " : ""}${p.name || p.email}</div>
+              ${subBtn}
+            </div>`;
+          }).join("");
         } else {
           waitlistCard.classList.remove("show");
         }
@@ -636,14 +740,18 @@
         } else {
           signupsTable.innerHTML = allEntries.map(([email, data]) => {
             const onWaitlist = waitlist.some(p => p.email === email);
-            const statusClass = data.status === "Yes" ? (onWaitlist ? "status-waitlist" : "status-yes") : "status-maybe";
-            const statusText = onWaitlist ? "Waitlist" : data.status;
-            return `
-              <div class="signup-row">
-                <div class="signup-name">${data.name || email}</div>
-                <div class="signup-status ${statusClass}">${statusText}</div>
-              </div>
-            `;
+            const onSub = substituteList.includes(email);
+            const courtIdx = displayAssignments.findIndex(arr => arr.includes(email));
+            let statusClass, statusText;
+            if (onWaitlist) { statusClass = "status-waitlist"; statusText = "Waitlist"; }
+            else if (onSub) { statusClass = "status-maybe"; statusText = "Sub"; }
+            else if (courtIdx >= 0) { statusClass = "status-yes"; statusText = `Court ${courtIdx + 1}`; }
+            else if (data.status === "Yes") { statusClass = "status-yes"; statusText = "Confirmed"; }
+            else { statusClass = "status-maybe"; statusText = data.status; }
+            return `<div class="signup-row">
+              <div class="signup-name">${data.name || email}</div>
+              <div class="signup-status ${statusClass}">${statusText}</div>
+            </div>`;
           }).join("");
         }
 
@@ -657,6 +765,240 @@
         }
       } catch (e) {
         console.error("Error loading RSVPs:", e);
+      }
+    }
+
+    /* ── RENDERING HELPERS ── */
+
+    function getPlayerName(email, responses) {
+      return (responses[email] && responses[email].name) || email.split("@")[0];
+    }
+
+    function renderCourtsGrid(courtCount, displayAssignments, responses) {
+      const grid = document.getElementById("courtsGrid");
+      grid.innerHTML = "";
+      for (let c = 0; c < courtCount; c++) {
+        const players = displayAssignments[c] || [];
+        const card = document.createElement("div");
+        card.className = "court-card";
+        const playerHTML = players.length === 0
+          ? '<div class="court-empty">No players assigned</div>'
+          : players.map(email => {
+              const name = getPlayerName(email, responses);
+              const isMe = currentUser && email === currentUser.email;
+              return `<div class="court-player">${isMe ? "⭐ " : ""}${name}</div>`;
+            }).join("");
+        card.innerHTML = `
+          <div class="court-label">🎾 Court ${c + 1}<span class="court-type" style="margin-left:8px">${players.length}/4</span></div>
+          <div class="court-players">${playerHTML}</div>
+        `;
+        grid.appendChild(card);
+      }
+    }
+
+    function renderUnassignedCard(unassignedEmails, responses) {
+      const card = document.getElementById("unassignedCard");
+      const rows = document.getElementById("unassignedRows");
+      if (unassignedEmails.length === 0) { card.classList.remove("show"); return; }
+      card.classList.add("show");
+      rows.innerHTML = unassignedEmails.map(email => {
+        const name = getPlayerName(email, responses);
+        const isMe = currentUser && email === currentUser.email;
+        return `<div class="unassigned-row">${isMe ? "⭐ " : ""}${name}</div>`;
+      }).join("");
+    }
+
+    function renderSubCard(substituteList, responses, courtCount) {
+      const card = document.getElementById("subCard");
+      const rows = document.getElementById("subRows");
+      if (substituteList.length === 0) { card.classList.remove("show"); return; }
+      card.classList.add("show");
+      rows.innerHTML = substituteList.map(email => {
+        const name = getPlayerName(email, responses);
+        const isMe = currentUser && email === currentUser.email;
+        const safeId = email.replace(/[@.]/g, "-");
+        const captainControls = isCaptain ? `
+          <select class="sub-callin-select" id="callin-${safeId}">
+            ${Array.from({ length: courtCount }, (_, i) => `<option value="${i + 1}">Court ${i + 1}</option>`).join("")}
+          </select>
+          <button class="sub-callin-btn" onclick="callInSub('${email}',document.getElementById('callin-${safeId}').value)">📞 Call In</button>
+          <button class="sub-remove-btn" onclick="removeFromSubList('${email}')">✕</button>
+        ` : "";
+        return `<div class="sub-row">
+          <span class="sub-name">${isMe ? "⭐ " : ""}${name}</span>
+          ${captainControls}
+        </div>`;
+      }).join("");
+    }
+
+    function renderAssignmentPanel(courtCount, confirmedPlayers, displayAssignments, substituteList, responses) {
+      const panel = document.getElementById("assignmentPanel");
+      if (!isCaptain) return;
+
+      const allAssigned = displayAssignments.flat();
+
+      // Court slots
+      const apCourts = document.getElementById("apCourtsGrid");
+      apCourts.innerHTML = "";
+      for (let c = 0; c < courtCount; c++) {
+        const players = displayAssignments[c] || [];
+        const emptySlots = Math.max(0, 4 - players.length);
+        const div = document.createElement("div");
+        div.className = "ap-court";
+        div.innerHTML = `
+          <div class="ap-court-hdr">Court ${c + 1} <span class="ap-count-badge">${players.length}/4</span></div>
+          <div>
+            ${players.map(email => {
+              const name = getPlayerName(email, responses);
+              return `<div class="ap-player-row">
+                <span class="ap-player-name">${name}</span>
+                <button class="ap-unassign-btn" onclick="unassignFromCourt('${email}')">✕</button>
+              </div>`;
+            }).join("")}
+            ${emptySlots > 0 ? `<div class="ap-empty-slot">${emptySlots} slot${emptySlots > 1 ? "s" : ""} open</div>` : ""}
+          </div>`;
+        apCourts.appendChild(div);
+      }
+
+      // Unassigned confirmed section
+      const unassignedSection = document.getElementById("apUnassignedSection");
+      const unassigned = confirmedPlayers.filter(p => !allAssigned.includes(p.email));
+      const courtOptions = Array.from({ length: courtCount }, (_, i) =>
+        `<option value="${i + 1}">Court ${i + 1}</option>`).join("");
+      if (unassigned.length > 0) {
+        unassignedSection.innerHTML = `
+          <div class="ap-section-title">Unassigned Confirmed Players (${unassigned.length})</div>
+          ${unassigned.map(p => {
+            const safeId = p.email.replace(/[@.]/g, "-");
+            return `<div class="ap-unassigned-row">
+              <span class="ap-unassigned-name">${p.name || p.email.split("@")[0]}</span>
+              <select class="ap-assign-select" id="asel-${safeId}">${courtOptions}</select>
+              <button class="ap-assign-btn" onclick="assignPlayer('${p.email}',document.getElementById('asel-${safeId}').value)">Assign →</button>
+            </div>`;
+          }).join("")}`;
+      } else {
+        unassignedSection.innerHTML = `
+          <div class="ap-section-title">Unassigned Confirmed Players</div>
+          <div class="ap-empty">✅ All confirmed players are assigned!</div>`;
+      }
+
+      // Sub management: waitlist + maybe not already in sub list
+      const confirmedEmails = confirmedPlayers.map(p => p.email);
+      const potentialSubs = [];
+      Object.entries(responses).forEach(([email, data]) => {
+        if (substituteList.includes(email)) return;
+        if (data.status === "Yes" && !confirmedEmails.includes(email)) {
+          potentialSubs.push({ email, name: data.name || email.split("@")[0], origin: "Waitlist" });
+        } else if (data.status === "Maybe") {
+          potentialSubs.push({ email, name: data.name || email.split("@")[0], origin: "Maybe" });
+        }
+      });
+
+      const apSubSection = document.getElementById("apSubSection");
+      if (potentialSubs.length > 0) {
+        apSubSection.innerHTML = `
+          <div class="ap-section-title">Move to Substitute List</div>
+          ${potentialSubs.map(p => `
+            <div class="ap-sub-move-row">
+              <span class="ap-sub-move-name">${p.name}</span>
+              <span class="ap-sub-origin">${p.origin}</span>
+              <button class="ap-to-sub-btn" onclick="addToSubList('${p.email}')">→ Sub List</button>
+            </div>`).join("")}`;
+      } else {
+        apSubSection.innerHTML = "";
+      }
+    }
+
+    /* ── ASSIGNMENT ACTIONS ── */
+
+    function toggleAssignmentPanel() {
+      document.getElementById("assignmentPanel").classList.toggle("show");
+    }
+
+    async function assignPlayer(email, courtNumStr) {
+      if (!currentDisplayDate) return;
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
+      const courtCount = cfg.courtCount || 3;
+      const courtIdx = parseInt(courtNumStr) - 1;
+
+      let assignments = Array.from({ length: courtCount }, (_, i) =>
+        ((cfg.courtAssignments || [])[i] || []).filter(e => e !== email));
+      if (assignments[courtIdx].length >= 4) {
+        alert(`Court ${courtIdx + 1} is full (4 players max). Unassign a player first.`);
+        return;
+      }
+      assignments[courtIdx].push(email);
+      await saveAssignments(assignments, cfg.substituteList || []);
+    }
+
+    async function unassignFromCourt(email) {
+      if (!currentDisplayDate) return;
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
+      const courtCount = cfg.courtCount || 3;
+      const assignments = Array.from({ length: courtCount }, (_, i) =>
+        ((cfg.courtAssignments || [])[i] || []).filter(e => e !== email));
+      await saveAssignments(assignments, cfg.substituteList || []);
+    }
+
+    async function autoDistribute() {
+      if (!currentDisplayDate) return;
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
+      const courtCount = cfg.courtCount || 3;
+      const assignments = Array.from({ length: courtCount }, () => []);
+      currentConfirmedPlayers.forEach((player, i) => {
+        const courtIdx = Math.floor(i / 4);
+        if (courtIdx < courtCount) assignments[courtIdx].push(player.email);
+      });
+      await saveAssignments(assignments, cfg.substituteList || []);
+    }
+
+    async function addToSubList(email) {
+      if (!currentDisplayDate) return;
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
+      const subList = [...(cfg.substituteList || [])];
+      if (!subList.includes(email)) subList.push(email);
+      await saveAssignments(cfg.courtAssignments || [], subList);
+    }
+
+    async function removeFromSubList(email) {
+      if (!currentDisplayDate) return;
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
+      const subList = (cfg.substituteList || []).filter(e => e !== email);
+      await saveAssignments(cfg.courtAssignments || [], subList);
+    }
+
+    async function callInSub(email, courtNumStr) {
+      if (!currentDisplayDate) return;
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
+      const courtCount = cfg.courtCount || 3;
+      const courtIdx = parseInt(courtNumStr) - 1;
+      let assignments = Array.from({ length: courtCount }, (_, i) =>
+        ((cfg.courtAssignments || [])[i] || []).filter(e => e !== email));
+      assignments[courtIdx].push(email);
+      const subList = (cfg.substituteList || []).filter(e => e !== email);
+      await saveAssignments(assignments, subList);
+    }
+
+    async function saveAssignments(courtAssignments, substituteList) {
+      if (!currentDisplayDate) return;
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      const existing = (practiceConfig && practiceConfig[dateStr]) || {};
+      const updated = {
+        ...practiceConfig,
+        [dateStr]: { ...existing, courtAssignments, substituteList }
+      };
+      try {
+        await db.collection("settings").doc("practiceConfig").set(updated);
+        practiceConfig = updated;
+        loadRSVPs(dateStr);
+      } catch (e) {
+        alert("Error saving assignments: " + e.message);
       }
     }
   </script>

@@ -256,6 +256,24 @@
     input, textarea, select {
       font-size: 16px !important;
     }
+
+    /* PRACTICE BANNER */
+    .practice-banner {
+      background: linear-gradient(135deg, var(--navy), var(--blue));
+      border-radius: 16px; padding: 14px 18px; color: #e5ecff;
+      margin-bottom: 16px; display: none;
+      justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+    }
+    .practice-banner.show { display: flex; }
+    .practice-banner-info { flex: 1; }
+    .practice-banner-title { font-family: "Poppins", sans-serif; font-weight: 700; font-size: 13px; color: #fff; margin-bottom: 3px; }
+    .practice-banner-sub { font-size: 12px; color: #bfdbfe; }
+    .practice-banner-link {
+      padding: 6px 14px; background: rgba(255,255,255,0.15); color: #fff;
+      border-radius: 999px; text-decoration: none; font-size: 12px; font-weight: 600;
+      white-space: nowrap; min-height: unset; display: inline-block; line-height: 1.6;
+    }
+    .practice-banner-link:hover { background: rgba(255,255,255,0.25); color: #fff; }
   </style>
 </head>
 <body>
@@ -285,6 +303,16 @@
   <!-- MAIN -->
   <main class="page">
     <div class="page-inner">
+
+      <!-- PRACTICE ASSIGNMENT BANNER -->
+      <div class="practice-banner" id="practiceBanner">
+        <div class="practice-banner-info">
+          <div class="practice-banner-title" id="practiceBannerTitle">🎾 Upcoming Practice</div>
+          <div class="practice-banner-sub" id="practiceBannerSub">Loading…</div>
+        </div>
+        <a href="practice.html" class="practice-banner-link">View →</a>
+      </div>
+
       <div class="card">
         <div class="no-response-banner hidden" id="noResponseBanner">
           ⚠️ You haven't responded to this match yet
@@ -369,7 +397,10 @@
     const db = firebase.firestore();
 
     auth.onAuthStateChanged(user => {
-      if (!user) { window.location.href = "login.html"; } else { loadAllMatches(); }
+      if (!user) { window.location.href = "login.html"; } else {
+        loadAllMatches();
+        loadPracticeAssignment(user);
+      }
     });
     function logout() { auth.signOut().then(() => window.location.href = "login.html"); }
 
@@ -535,6 +566,69 @@
         document.getElementById("noResponseBanner").classList.add("hidden");
         setTimeout(() => { nextMatch(); document.getElementById("playerNotes").value = ""; hideMsg(); }, 800);
       }).catch(err => { showMsg("Error: " + err.message, "error"); });
+    }
+
+    /* ── PRACTICE ASSIGNMENT BANNER ── */
+
+    function formatPracticeTime(timeStr) {
+      if (!timeStr) return "";
+      const [h, m] = timeStr.split(":").map(Number);
+      const period = h >= 12 ? "PM" : "AM";
+      const hour = h % 12 || 12;
+      return `${hour}:${String(m).padStart(2, "0")} ${period}`;
+    }
+
+    let practiceConfigUnsubscribe = null;
+
+    function loadPracticeAssignment(user) {
+      if (!user) return;
+      db.collection("settings").doc("practiceSchedule").get().then(schedDoc => {
+        if (!schedDoc.exists || !schedDoc.data().dates) return;
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const dates = schedDoc.data().dates.map(d => {
+          const date = new Date(d);
+          return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+        }).sort((a, b) => a - b).filter(d => d >= today);
+        if (dates.length === 0) return;
+
+        const nextDate = dates[0];
+        const dateKey = nextDate.toISOString().split("T")[0];
+        const dateStr = nextDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+
+        if (practiceConfigUnsubscribe) practiceConfigUnsubscribe();
+        practiceConfigUnsubscribe = db.collection("settings").doc("practiceConfig").onSnapshot(cfgDoc => {
+          const cfg = cfgDoc.exists ? cfgDoc.data() : {};
+          const dateCfg = cfg[dateKey] || {};
+          const practiceTime = dateCfg.practiceTime ? formatPracticeTime(dateCfg.practiceTime) : "";
+          const courtCount = dateCfg.courtCount || 3;
+          const courtAssignments = (dateCfg.courtAssignments || []).map(a => Array.isArray(a) ? a : []);
+          const substituteList = dateCfg.substituteList || [];
+          const cancelled = dateCfg.cancelled || false;
+
+          const banner = document.getElementById("practiceBanner");
+          const title = document.getElementById("practiceBannerTitle");
+          const sub = document.getElementById("practiceBannerSub");
+          const timeLabel = practiceTime ? ` · ${practiceTime}` : "";
+
+          if (cancelled) {
+            title.textContent = "❌ Practice Cancelled";
+            sub.textContent = `${dateStr}${dateCfg.cancelReason ? " — " + dateCfg.cancelReason : ""}`;
+          } else {
+            const myCourtIdx = courtAssignments.findIndex(arr => arr.includes(user.email));
+            if (myCourtIdx >= 0) {
+              title.textContent = `✅ Assigned to Court ${myCourtIdx + 1}`;
+              sub.textContent = `${dateStr}${timeLabel} · ${courtCount} courts — tap to view practice page`;
+            } else if (substituteList.includes(user.email)) {
+              title.textContent = "🔄 You're on the Sub List";
+              sub.textContent = `${dateStr}${timeLabel} — available for last-minute replacement`;
+            } else {
+              title.textContent = "🎾 Upcoming Practice";
+              sub.textContent = `${dateStr}${timeLabel} · ${courtCount} courts`;
+            }
+          }
+          banner.classList.add("show");
+        });
+      }).catch(() => {});
     }
   </script>
 </body>

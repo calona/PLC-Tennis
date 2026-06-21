@@ -124,6 +124,12 @@
       border-radius: 8px; font-size: 12px; border-left: 3px solid var(--blue);
     }
     .match-entry strong { color: var(--navy-soft); font-weight: 500; font-size: 11px; }
+    .practice-entry {
+      margin-top: 6px; padding: 6px 8px; background: rgba(29,111,66,0.08);
+      border-radius: 8px; font-size: 12px; border-left: 3px solid var(--green);
+    }
+    .practice-entry strong { color: var(--green); font-weight: 600; font-size: 11px; display: block; }
+    .practice-entry span { display: block; margin-top: 2px; color: var(--text-main); font-size: 11px; }
     .status-pill {
       display: inline-block; padding: 2px 10px; border-radius: var(--radius-pill);
       font-size: 10px; font-weight: 600; color: white; margin-top: 4px;
@@ -162,14 +168,14 @@
       .nav-links { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
       .calendar-grid { grid-template-columns: repeat(7, 1fr); gap: 4px; }
       .day-cell { min-height: 80px; padding: 5px; font-size: 11px; }
-      .match-entry { font-size: 10px; padding: 4px 5px; }
+      .match-entry, .practice-entry { font-size: 10px; padding: 4px 5px; }
     }
     @media (max-width: 600px) {
       .calendar-grid { grid-template-columns: repeat(7, 1fr); gap: 2px; }
       .day-cell { min-height: 60px; padding: 3px; border-radius: 8px; }
       .day-header { font-size: 10px; padding: 6px 0; }
       .day-number { font-size: 11px; }
-      .match-entry strong { font-size: 9px; }
+      .match-entry strong, .practice-entry strong, .practice-entry span { font-size: 9px; }
       .page-header { flex-direction: column; align-items: flex-start; }
     }
     .loading-msg { text-align: center; padding: 40px; color: var(--text-muted); font-size: 15px; }
@@ -206,7 +212,7 @@
         <div class="page-header">
           <div class="page-header-text">
             <h1>📅 Match Calendar</h1>
-            <p>View upcoming matches with your availability status at a glance.</p>
+            <p>View upcoming matches and scheduled practices with your availability status at a glance.</p>
           </div>
           <div class="filter-group">
             <span class="filter-label">League:</span>
@@ -259,6 +265,9 @@
     function logout() { auth.signOut().then(() => window.location.href = "login.html"); }
 
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
+    let allMatches = [];
+    let practiceSchedule = [];
+    let practiceConfig = {};
 
     function parseCSV(text) {
       const rows = []; let row = []; let cell = ""; let insideQuotes = false;
@@ -274,10 +283,14 @@
       return rows;
     }
 
-    let allMatches = [];
     async function loadMatches() {
-      const res = await fetch(SHEET_URL);
-      const csv = await res.text();
+      const [sheetRes, schedDoc, cfgDoc] = await Promise.all([
+        fetch(SHEET_URL),
+        db.collection("settings").doc("practiceSchedule").get(),
+        db.collection("settings").doc("practiceConfig").get()
+      ]);
+
+      const csv = await sheetRes.text();
       const rows = parseCSV(csv);
       const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
       const matches = []; const numMatches = rows[0].length - 1;
@@ -291,6 +304,17 @@
       }
       matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
       allMatches = matches;
+
+      if (schedDoc.exists && Array.isArray(schedDoc.data().dates)) {
+        practiceSchedule = schedDoc.data().dates.map(d => {
+          const date = new Date(d);
+          return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+        });
+      } else {
+        practiceSchedule = [];
+      }
+      practiceConfig = cfgDoc.exists ? (cfgDoc.data() || {}) : {};
+
       renderFilteredMatches();
     }
 
@@ -312,10 +336,8 @@
         .get().then(doc => doc.exists ? doc.data() : null);
     }
 
-    // Parse time string to minutes for sorting (handles "4:15 PM", "16:15", etc.)
     function parseTimeToMinutes(timeStr) {
       if (!timeStr) return 9999;
-      // Already has AM/PM
       const ampm = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
       if (ampm) {
         let h = parseInt(ampm[1]);
@@ -325,16 +347,58 @@
         if (period === "AM" && h === 12) h = 0;
         return h * 60 + m;
       }
-      // 24-hour format
       const mil = timeStr.match(/(\d{1,2}):(\d{2})/);
       if (mil) return parseInt(mil[1]) * 60 + parseInt(mil[2]);
       return 9999;
     }
 
+    function getPracticeForDate(year, month, day) {
+      const match = practiceSchedule.find(d =>
+        d.getFullYear() === year && d.getMonth() === month && d.getDate() === day
+      );
+      if (!match) return null;
+      const dateStr = match.toISOString().split("T")[0];
+      const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
+      if (cfg.cancelled) return null;
+      return {
+        dateStr,
+        time: cfg.practiceTime || "",
+        type: cfg.practiceType || "Practice"
+      };
+    }
+
+    function formatPracticeTime(timeStr) {
+      if (!timeStr) return "Time TBD";
+      const [h, m] = timeStr.split(":").map(Number);
+      const period = h >= 12 ? "PM" : "AM";
+      const hour = h % 12 || 12;
+      return `${hour}:${String(m).padStart(2, "0")} ${period}`;
+    }
+
     async function renderCalendar(matches) {
       const container = document.getElementById("calendarContainer");
       container.innerHTML = "";
-      if (matches.length === 0) { container.innerHTML = '<p class="loading-msg">No matches found for this filter.</p>'; return; }
+
+      const monthKeys = new Set();
+      matches.forEach(match => {
+        const date = new Date(match["Schedule Date"]);
+        monthKeys.add(`${date.getFullYear()}-${date.getMonth()}`);
+      });
+      practiceSchedule.forEach(date => {
+        monthKeys.add(`${date.getFullYear()}-${date.getMonth()}`);
+      });
+
+      const sortedMonthKeys = Array.from(monthKeys).sort((a, b) => {
+        const [aYear, aMonth] = a.split("-").map(Number);
+        const [bYear, bMonth] = b.split("-").map(Number);
+        return new Date(aYear, aMonth) - new Date(bYear, bMonth);
+      });
+
+      if (sortedMonthKeys.length === 0) {
+        container.innerHTML = '<p class="loading-msg">No matches or practices found.</p>';
+        return;
+      }
+
       const months = {};
       for (const match of matches) {
         const date = new Date(match["Schedule Date"]);
@@ -342,14 +406,16 @@
         if (!months[key]) months[key] = [];
         months[key].push(match);
       }
-      for (const key of Object.keys(months)) {
+
+      for (const key of sortedMonthKeys) {
         const [year, month] = key.split("-").map(Number);
-        const monthMatches = months[key];
+        const monthMatches = months[key] || [];
         const monthName = new Date(year, month).toLocaleString("default", { month: "long" });
         const title = document.createElement("div");
         title.className = "month-title";
         title.innerText = `${monthName} ${year}`;
         container.appendChild(title);
+
         const grid = document.createElement("div");
         grid.className = "calendar-grid";
         const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -359,12 +425,14 @@
           h.innerText = d;
           grid.appendChild(h);
         });
+
         const firstDay = new Date(year, month, 1).getDay();
         for (let i = 0; i < firstDay; i++) {
           const empty = document.createElement("div");
           empty.className = "empty-day";
           grid.appendChild(empty);
         }
+
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         for (let day = 1; day <= daysInMonth; day++) {
           const cell = document.createElement("div");
@@ -373,20 +441,19 @@
           num.className = "day-number";
           num.innerText = day;
           cell.appendChild(num);
+
           const todaysMatches = monthMatches.filter(m => {
             const d = new Date(m["Schedule Date"]);
             return d.getDate() === day;
           });
 
-          // Sort today's matches by time — earliest first
           todaysMatches.sort((a, b) => parseTimeToMinutes(a["Schedule Time"]) - parseTimeToMinutes(b["Schedule Time"]));
 
-          // Add practice entry for every Thursday
-          const cellDate = new Date(year, month, day);
-          if (cellDate.getDay() === 4) {
+          const practice = getPracticeForDate(year, month, day);
+          if (practice) {
             const practiceEl = document.createElement("div");
             practiceEl.className = "practice-entry";
-            practiceEl.innerHTML = `<strong>🎾 Practice</strong><span>6:45 PM · PLC Indoor</span>`;
+            practiceEl.innerHTML = `<strong>🎾 ${practice.type}</strong><span>${formatPracticeTime(practice.time)} · PLC Indoor</span>`;
             cell.appendChild(practiceEl);
           }
 

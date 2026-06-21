@@ -65,7 +65,7 @@
     .captain-bar{background:var(--card-bg);border-radius:16px;padding:14px 18px;box-shadow:var(--shadow-soft);border:1px solid rgba(148,163,184,.25);margin-bottom:20px;display:none;align-items:center;gap:14px;flex-wrap:wrap}
     .captain-bar.show{display:flex}
     .captain-bar-label{font-size:13px;font-weight:500;color:var(--navy-soft);display:flex;align-items:center;gap:6px}
-    .captain-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .captain-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
     .schedule-toggle-btn{padding:8px 16px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-pill);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
     .schedule-toggle-btn:hover{background:#2d5a8c}
     .cancel-btn{padding:8px 16px;border-radius:var(--radius-pill);border:2px solid #ef4444;background:rgba(239,68,68,.06);font-family:"Inter",sans-serif;font-size:12px;font-weight:600;color:#dc2626;cursor:pointer;transition:all .2s}
@@ -73,6 +73,9 @@
     .cancel-btn.active{background:#dc2626;color:#fff}
     .reason-input{padding:7px 12px;border-radius:10px;border:1px solid var(--border-subtle);font-family:"Inter",sans-serif;font-size:12px;color:var(--text-main);width:220px;outline:none}
     .reason-input:focus{border-color:var(--blue)}
+    .captain-label{font-size:11px;font-weight:500;color:var(--text-muted);display:flex;flex-direction:column;gap:3px}
+    .captain-select,.captain-time{padding:6px 8px;border:1px solid var(--border-subtle);border-radius:8px;font-family:"Inter",sans-serif;font-size:12px;color:var(--text-main);background:var(--card-bg);outline:none;cursor:pointer}
+    .captain-select:focus,.captain-time:focus{border-color:var(--blue)}
 
     .rsvp-card{background:var(--card-bg);border-radius:22px;padding:22px 24px;box-shadow:var(--shadow-soft);border:1px solid rgba(148,163,184,.25);margin-bottom:20px}
     .rsvp-card.disabled{opacity:.5;pointer-events:none}
@@ -184,10 +187,10 @@
       <div class="info-card">
         <div class="info-card-pill"></div>
         <div class="info-grid">
-          <div><div class="info-item-label">Time</div><div class="info-item-value">6:45 PM</div></div>
+          <div><div class="info-item-label">Time</div><div class="info-item-value" id="practiceTimeDisplay">—</div></div>
           <div><div class="info-item-label">Location</div><div class="info-item-value">PLC Indoor Courts</div></div>
-          <div><div class="info-item-label">Format</div><div class="info-item-value">3 Courts · Doubles</div></div>
-          <div><div class="info-item-label">Capacity</div><div class="info-item-value">12 Players (4/court)</div></div>
+          <div><div class="info-item-label">Format</div><div class="info-item-value" id="practiceFormatDisplay">—</div></div>
+          <div><div class="info-item-label">Capacity</div><div class="info-item-value" id="practiceCapacityDisplay">12 Players (4/court)</div></div>
           <div><div class="info-item-label">Focus</div><div class="info-item-value">Mixed Doubles</div></div>
         </div>
       </div>
@@ -223,6 +226,25 @@
         <div class="captain-bar-label">👑 Captain Controls</div>
         <div class="captain-actions">
           <button class="schedule-toggle-btn" onclick="toggleScheduleEditor()">⚙️ Edit Schedule</button>
+          <label class="captain-label">Courts
+            <select id="courtCountSelect" class="captain-select" onchange="savePracticeConfig()">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+            </select>
+          </label>
+          <label class="captain-label">Type
+            <select id="practiceTypeSelect" class="captain-select" onchange="savePracticeConfig()">
+              <option value="Match Practice">Match Practice</option>
+              <option value="Live Ball">Live Ball</option>
+            </select>
+          </label>
+          <label class="captain-label">Start Time
+            <input type="time" id="practiceTimeInput" class="captain-time" onchange="savePracticeConfig()" />
+          </label>
           <input type="text" class="reason-input" id="cancelReasonInput" placeholder="Reason (e.g. Holiday, Weather)" />
           <button class="cancel-btn" id="cancelToggle" onclick="toggleCancel()">Cancel Practice</button>
         </div>
@@ -284,13 +306,16 @@
     const db = firebase.firestore();
 
     let practiceSchedule = [];
-    let currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
+    let practiceConfig = {};
+    let currentDisplayDate = null;
+    let currentUser = null;
+    let isCaptain = false;
     const CAPTAIN_EMAIL = "gaylorde@outlook.com";
 
     auth.onAuthStateChanged(user => {
       if (!user) { window.location.href = "login.html"; return; }
-      const isCaptain = user.email.toLowerCase() === CAPTAIN_EMAIL;
+      currentUser = user;
+      isCaptain = user.email.toLowerCase() === CAPTAIN_EMAIL;
       document.getElementById("captainBar").classList.toggle("show", isCaptain);
       document.getElementById("scheduleEditor").classList.toggle("show", isCaptain);
       loadPracticeSchedule();
@@ -300,15 +325,19 @@
 
     async function loadPracticeSchedule() {
       try {
-        const doc = await db.collection("settings").doc("practiceSchedule").get();
-        if (doc.exists && doc.data().dates) {
-          practiceSchedule = doc.data().dates.map(d => {
+        const [schedDoc, cfgDoc] = await Promise.all([
+          db.collection("settings").doc("practiceSchedule").get(),
+          db.collection("settings").doc("practiceConfig").get()
+        ]);
+        if (schedDoc.exists && schedDoc.data().dates) {
+          practiceSchedule = schedDoc.data().dates.map(d => {
             const date = new Date(d);
             return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
           });
         } else {
           practiceSchedule = [];
         }
+        practiceConfig = cfgDoc.exists ? cfgDoc.data() : {};
       } catch (e) {
         console.error("Error loading schedule:", e);
         practiceSchedule = [];
@@ -368,33 +397,268 @@
     }
 
     function displayCurrentPractice() {
-      const upcoming = practiceSchedule.filter(d => d >= currentDate).sort((a, b) => a - b);
-      if (upcoming.length === 0) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const sorted = [...practiceSchedule].sort((a, b) => a - b);
+      const upcoming = sorted.filter(d => d >= today);
+
+      if (sorted.length === 0) {
         document.getElementById("rsvpCard").classList.add("disabled");
         document.getElementById("courseHeader").style.display = "none";
         document.getElementById("courtsGrid").style.display = "none";
         document.getElementById("summaryStrip").style.display = "none";
         return;
       }
-      const nextPractice = upcoming[0];
+
+      currentDisplayDate = upcoming.length > 0 ? upcoming[0] : sorted[sorted.length - 1];
       document.getElementById("rsvpCard").classList.remove("disabled");
       document.getElementById("courseHeader").style.display = "flex";
       document.getElementById("courtsGrid").style.display = "grid";
       document.getElementById("summaryStrip").style.display = "flex";
 
-      const dateStr = nextPractice.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-      document.getElementById("rsvpDate").textContent = dateStr;
-      document.getElementById("dateLabel").textContent = dateStr;
+      updateDateDisplay(sorted);
+
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      applyPracticeConfig(dateStr);
+      loadRSVPs(dateStr);
+    }
+
+    function updateDateDisplay(sorted) {
+      if (!currentDisplayDate) return;
+      if (!sorted) sorted = [...practiceSchedule].sort((a, b) => a - b);
+      const label = currentDisplayDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+      document.getElementById("rsvpDate").textContent = label;
+      document.getElementById("dateLabel").textContent = label;
+      const idx = sorted.findIndex(d => d.getTime() === currentDisplayDate.getTime());
+      document.getElementById("prevBtn").disabled = idx <= 0;
+      document.getElementById("nextBtn").disabled = idx >= sorted.length - 1;
+    }
+
+    function applyPracticeConfig(dateStr) {
+      const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
+      const courtCount = cfg.courtCount || 3;
+      const practiceType = cfg.practiceType || "Match Practice";
+      const practiceTime = cfg.practiceTime || "";
+
+      // Update info card
+      document.getElementById("practiceTimeDisplay").textContent = practiceTime ? formatTime12(practiceTime) : "—";
+      document.getElementById("practiceFormatDisplay").textContent = `${courtCount} Courts · ${practiceType}`;
+      document.getElementById("practiceCapacityDisplay").textContent = `${courtCount * 4} Players (4/court)`;
+
+      // Update captain controls
+      if (isCaptain) {
+        document.getElementById("courtCountSelect").value = String(courtCount);
+        document.getElementById("practiceTypeSelect").value = practiceType;
+        document.getElementById("practiceTimeInput").value = practiceTime;
+      }
+
+      // Handle cancelled state
+      const cancelled = cfg.cancelled || false;
+      const cancelReason = cfg.cancelReason || "";
+      const banner = document.getElementById("cancelledBanner");
+      const toggle = document.getElementById("cancelToggle");
+      const reasonInput = document.getElementById("cancelReasonInput");
+
+      if (cancelled) {
+        banner.classList.add("show");
+        document.getElementById("cancelReason").textContent = cancelReason || "No practice this week.";
+        toggle.classList.add("active");
+        toggle.textContent = "Restore Practice";
+        if (reasonInput) reasonInput.value = cancelReason;
+      } else {
+        banner.classList.remove("show");
+        toggle.classList.remove("active");
+        toggle.textContent = "Cancel Practice";
+        if (reasonInput) reasonInput.value = "";
+      }
+    }
+
+    function formatTime12(timeStr) {
+      if (!timeStr) return "—";
+      const [h, m] = timeStr.split(":").map(Number);
+      const period = h >= 12 ? "PM" : "AM";
+      const hour = h % 12 || 12;
+      return `${hour}:${String(m).padStart(2, "0")} ${period}`;
+    }
+
+    async function savePracticeConfig() {
+      if (!currentDisplayDate) return;
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      const courtCount = parseInt(document.getElementById("courtCountSelect").value) || 3;
+      const practiceType = document.getElementById("practiceTypeSelect").value || "Match Practice";
+      const practiceTime = document.getElementById("practiceTimeInput").value || "";
+
+      const existing = (practiceConfig && practiceConfig[dateStr]) || {};
+      const updated = { ...practiceConfig, [dateStr]: { ...existing, courtCount, practiceType, practiceTime } };
+
+      try {
+        await db.collection("settings").doc("practiceConfig").set(updated);
+        practiceConfig = updated;
+        applyPracticeConfig(dateStr);
+        loadRSVPs(dateStr);
+      } catch (e) {
+        alert("Error saving practice settings: " + e.message);
+      }
     }
 
     function toggleScheduleEditor() {
-      const editor = document.getElementById("scheduleEditor");
-      editor.classList.toggle("show");
+      document.getElementById("scheduleEditor").classList.toggle("show");
     }
 
-    function toggleCancel() { /* existing logic */ }
-    function changeWeek(n) { /* existing logic */ }
-    function setRSVP(status) { /* existing logic */ }
+    async function toggleCancel() {
+      if (!currentDisplayDate) return;
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      const existing = (practiceConfig && practiceConfig[dateStr]) || {};
+      const wasCancelled = existing.cancelled || false;
+      const reason = document.getElementById("cancelReasonInput").value.trim();
+
+      const updated = {
+        ...practiceConfig,
+        [dateStr]: { ...existing, cancelled: !wasCancelled, cancelReason: !wasCancelled ? reason : "" }
+      };
+
+      try {
+        await db.collection("settings").doc("practiceConfig").set(updated);
+        practiceConfig = updated;
+        applyPracticeConfig(dateStr);
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+    }
+
+    function changeWeek(n) {
+      const sorted = [...practiceSchedule].sort((a, b) => a - b);
+      if (!currentDisplayDate || sorted.length === 0) return;
+      const idx = sorted.findIndex(d => d.getTime() === currentDisplayDate.getTime());
+      if (idx === -1) return;
+      const newIdx = idx + n;
+      if (newIdx < 0 || newIdx >= sorted.length) return;
+      currentDisplayDate = sorted[newIdx];
+      updateDateDisplay(sorted);
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      applyPracticeConfig(dateStr);
+      loadRSVPs(dateStr);
+    }
+
+    async function setRSVP(status) {
+      if (!currentUser) { alert("Please log in"); return; }
+      if (!currentDisplayDate) return;
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      const msg = document.getElementById("rsvpMsg");
+      try {
+        await db.collection("rsvps").doc(dateStr).set({
+          responses: {
+            [currentUser.email]: {
+              status,
+              name: currentUser.displayName || currentUser.email.split("@")[0],
+              timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }
+          }
+        }, { merge: true });
+        document.querySelectorAll(".rsvp-btn").forEach(btn => btn.classList.remove("selected"));
+        const btns = document.querySelectorAll(".rsvp-btn");
+        const map = { "Yes": 0, "Maybe": 1, "No": 2 };
+        if (btns[map[status]]) btns[map[status]].classList.add("selected");
+        msg.className = "success"; msg.textContent = `✓ RSVP saved: ${status}`;
+        setTimeout(() => { msg.className = ""; msg.textContent = ""; }, 3000);
+        loadRSVPs(dateStr);
+      } catch (e) {
+        msg.className = "info"; msg.textContent = "Error: " + e.message;
+      }
+    }
+
+    async function loadRSVPs(dateStr) {
+      try {
+        const doc = await db.collection("rsvps").doc(dateStr).get();
+        const responses = doc.exists ? (doc.data().responses || {}) : {};
+
+        const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
+        const courtCount = cfg.courtCount || 3;
+        const capacity = courtCount * 4;
+
+        const yesPlayers = [];
+        const maybePlayers = [];
+        Object.entries(responses).forEach(([email, data]) => {
+          if (data.status === "Yes") yesPlayers.push({ email, ...data });
+          else if (data.status === "Maybe") maybePlayers.push({ email, ...data });
+        });
+        yesPlayers.sort((a, b) => ((a.timestamp && a.timestamp.seconds) || 0) - ((b.timestamp && b.timestamp.seconds) || 0));
+
+        const confirmed = yesPlayers.slice(0, capacity);
+        const waitlist = yesPlayers.slice(capacity);
+
+        // Summary strip
+        const strip = document.getElementById("summaryStrip");
+        strip.innerHTML = `
+          <div class="summary-item"><div><div class="summary-number">${confirmed.length}</div><div class="summary-label">Confirmed</div></div></div>
+          <div class="summary-item"><div><div class="summary-number">${maybePlayers.length}</div><div class="summary-label">Maybe</div></div></div>
+          <div class="summary-item"><div><div class="summary-number">${waitlist.length}</div><div class="summary-label">Waitlist</div></div></div>
+          <div class="summary-item"><div><div class="summary-number">${Math.max(0, capacity - confirmed.length)}</div><div class="summary-label">Spots Left</div></div></div>
+        `;
+
+        // Courts grid
+        const grid = document.getElementById("courtsGrid");
+        grid.innerHTML = "";
+        for (let c = 1; c <= courtCount; c++) {
+          const courtPlayers = confirmed.slice((c - 1) * 4, c * 4);
+          const card = document.createElement("div");
+          card.className = "court-card";
+          card.innerHTML = `
+            <div class="court-label">🎾 Court ${c}</div>
+            <div class="court-players">
+              ${courtPlayers.length === 0
+                ? '<div class="court-empty">No players yet</div>'
+                : courtPlayers.map(p => `<div class="court-player">${p.name || p.email}</div>`).join("")}
+            </div>
+          `;
+          grid.appendChild(card);
+        }
+
+        // Waitlist
+        const waitlistCard = document.getElementById("waitlistCard");
+        const waitlistRows = document.getElementById("waitlistRows");
+        if (waitlist.length > 0) {
+          waitlistCard.classList.add("show");
+          waitlistRows.innerHTML = waitlist.map((p, i) => `
+            <div class="waitlist-row">
+              <div class="waitlist-pos">#${i + 1}</div>
+              <div>${p.name || p.email}</div>
+            </div>
+          `).join("");
+        } else {
+          waitlistCard.classList.remove("show");
+        }
+
+        // Signups table
+        const signupsTable = document.getElementById("signupsTable");
+        const allEntries = Object.entries(responses);
+        if (allEntries.length === 0) {
+          signupsTable.innerHTML = '<div style="font-size:13px;color:var(--text-muted);padding:8px 0">No signups yet.</div>';
+        } else {
+          signupsTable.innerHTML = allEntries.map(([email, data]) => {
+            const onWaitlist = waitlist.some(p => p.email === email);
+            const statusClass = data.status === "Yes" ? (onWaitlist ? "status-waitlist" : "status-yes") : "status-maybe";
+            const statusText = onWaitlist ? "Waitlist" : data.status;
+            return `
+              <div class="signup-row">
+                <div class="signup-name">${data.name || email}</div>
+                <div class="signup-status ${statusClass}">${statusText}</div>
+              </div>
+            `;
+          }).join("");
+        }
+
+        // Restore current user's RSVP highlight
+        if (currentUser && responses[currentUser.email]) {
+          const myStatus = responses[currentUser.email].status;
+          const btns = document.querySelectorAll(".rsvp-btn");
+          const map = { "Yes": 0, "Maybe": 1, "No": 2 };
+          document.querySelectorAll(".rsvp-btn").forEach(btn => btn.classList.remove("selected"));
+          if (btns[map[myStatus]]) btns[map[myStatus]].classList.add("selected");
+        }
+      } catch (e) {
+        console.error("Error loading RSVPs:", e);
+      }
+    }
   </script>
 </body>
 </html>

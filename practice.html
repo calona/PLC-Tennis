@@ -385,6 +385,7 @@
       const dateStr = nextPractice.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
       document.getElementById("rsvpDate").textContent = dateStr;
       document.getElementById("dateLabel").textContent = dateStr;
+      localStorage.setItem("currentPracticeDate", nextPractice.toISOString().split("T")[0]);
     }
 
     function toggleScheduleEditor() {
@@ -394,7 +395,46 @@
 
     function toggleCancel() { /* existing logic */ }
     function changeWeek(n) { /* existing logic */ }
-    function setRSVP(status) { /* existing logic */ }
+    async function setRSVP(status) {
+      const msgEl = document.getElementById("rsvpMsg");
+      const user = auth.currentUser;
+      if (!user || !user.email) {
+        msgEl.textContent = "Please log in to RSVP.";
+        msgEl.className = "info";
+        return;
+      }
+
+      const practiceDate = localStorage.getItem("currentPracticeDate") || localStorage.getItem("selectedPracticeDate");
+      if (!practiceDate) {
+        msgEl.textContent = "No practice date selected. Please refresh and try again.";
+        msgEl.className = "info";
+        return;
+      }
+
+      if (!["Yes", "Maybe", "No"].includes(status)) {
+        msgEl.textContent = "Invalid RSVP selection.";
+        msgEl.className = "info";
+        return;
+      }
+
+      try {
+        await db.collection("practices").doc(practiceDate).collection("rsvps").doc(user.email).set({
+          email: user.email,
+          status,
+          updatedAt: new Date()
+        }, { merge: true });
+
+        document.querySelectorAll(".rsvp-btn").forEach(btn => btn.classList.remove("selected"));
+        const selectedBtn = document.querySelector(`.rsvp-btn.${status.toLowerCase()}`);
+        if (selectedBtn) selectedBtn.classList.add("selected");
+
+        msgEl.textContent = `✅ RSVP saved: ${status}`;
+        msgEl.className = "success";
+      } catch (e) {
+        msgEl.textContent = "Error saving RSVP: " + e.message;
+        msgEl.className = "info";
+      }
+    }
   </script>
 </body>
 </html>

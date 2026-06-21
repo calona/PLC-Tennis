@@ -694,7 +694,9 @@
     async function assignPlayerToCourt(email, courtName) {
       if (!currentPracticeDate) return;
       const dateKey = currentPracticeDate.toISOString().split('T')[0];
-      if (!practiceConfigCache[dateKey]) return;
+      if (!practiceConfigCache[dateKey]) {
+        practiceConfigCache[dateKey] = { courtCount: 3, practiceType: "Match Practice", courtAssignments: {}, cancelled: false, cancelReason: "" };
+      }
 
       const assignments = practiceConfigCache[dateKey].courtAssignments || {};
 

@@ -437,12 +437,9 @@
 
     function parseMatchDate(raw) {
       if (!raw) return null;
-      const mdy = raw.match(/^(\d{1,2})\/(
-{1,2})\/(
-{4})$/);
+      const mdy = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
       if (mdy) return new Date(parseInt(mdy[3]), parseInt(mdy[1])-1, parseInt(mdy[2]));
-      const ymd = raw.match(/^(
-{4})-(\d{2})-(\d{2})$/);
+      const ymd = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
       if (ymd) return new Date(parseInt(ymd[1]), parseInt(ymd[2])-1, parseInt(ymd[3]));
       return null;
     }
@@ -450,9 +447,7 @@
     function parseMatchTime(raw) {
       if (!raw) return "—";
       if (/[AP]M/i.test(raw)) return raw.trim();
-      const parts = raw.match(/^(
-{1,2}):(
-{2})/);
+      const parts = raw.match(/^(\d{1,2}):(\d{2})/);
       if (parts) {
         const h = parseInt(parts[1]), m = parts[2];
         const ampm = h >= 12 ? "PM" : "AM";

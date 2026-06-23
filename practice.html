@@ -99,6 +99,9 @@
     .summary-label{font-size:12px;color:var(--text-muted);line-height:1.3}
 
     .courts-header{font-family:"Poppins",sans-serif;font-weight:600;font-size:16px;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .live-chip{font-size:10px;font-weight:600;color:#15803d;background:rgba(34,197,94,.1);padding:2px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:4px}
+    .live-chip .live-dot{width:6px;height:6px;border-radius:999px;background:#22c55e;animation:livePulse 1.6s ease-in-out infinite}
+    @keyframes livePulse{0%,100%{opacity:1}50%{opacity:.3}}
     .courts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
     .court-card{background:var(--card-bg);border-radius:18px;padding:16px;box-shadow:var(--shadow-soft);border:1px solid rgba(148,163,184,.25)}
     .court-label{font-family:"Poppins",sans-serif;font-weight:700;font-size:14px;color:var(--navy);margin-bottom:4px;display:flex;align-items:center;gap:6px}
@@ -182,6 +185,8 @@
     .ap-to-sub-btn{padding:4px 10px;background:rgba(168,85,247,.1);color:#7c3aed;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;min-height:0;line-height:1.4}
     .ap-to-sub-btn:hover{background:rgba(168,85,247,.2)}
     .ap-empty{font-size:12px;color:var(--text-muted);font-style:italic;padding:6px 0}
+    .ap-roster-add-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+    .ap-roster-note{font-size:11px;color:var(--text-muted);font-style:italic}
     @media(max-width:700px){.ap-courts{grid-template-columns:1fr}}
 
     /* UNASSIGNED PLAYERS CARD */
@@ -312,7 +317,9 @@
         <div class="ap-title">⚙️ Court Assignment</div>
         <button class="ap-auto-btn" onclick="autoDistribute()">⚡ Auto-Distribute Evenly</button>
         <div class="ap-courts" id="apCourtsGrid"></div>
+        <div id="apRosterSection"></div>
         <div id="apUnassignedSection"></div>
+        <div id="apAddedSection"></div>
         <div id="apSubSection"></div>
       </div>
 
@@ -328,7 +335,7 @@
       </div>
 
       <div class="summary-strip" id="summaryStrip"></div>
-      <div class="courts-header" id="courseHeader">🏆 Courts</div>
+      <div class="courts-header" id="courseHeader">🏆 Courts <span class="live-chip"><span class="live-dot"></span>Live</span></div>
       <div class="courts-grid" id="courtsGrid"></div>
 
       <!-- UNASSIGNED CONFIRMED PLAYERS (all users) -->
@@ -391,6 +398,9 @@
     let isCaptain = false;
     let currentRSVPResponses = {};
     let currentConfirmedPlayers = [];
+    let rosterPlayers = [];
+    let rsvpUnsub = null;
+    let configUnsub = null;
     const CAPTAIN_EMAIL = "gaylorde@outlook.com";
 
     auth.onAuthStateChanged(user => {
@@ -423,8 +433,54 @@
         console.error("Error loading schedule:", e);
         practiceSchedule = [];
       }
+      await loadRosterPlayers();
       renderScheduleEditor();
       displayCurrentPractice();
+      subscribeToConfig();
+    }
+
+    async function loadRosterPlayers() {
+      try {
+        const snap = await db.collection("roster").get();
+        const list = [];
+        snap.forEach(doc => {
+          const d = doc.data();
+          const email = (d.email || "").toLowerCase();
+          list.push({
+            key: email || ("roster:" + doc.id),
+            name: d.name || doc.id,
+            email: email,
+            teams: d.teams || []
+          });
+        });
+        list.sort((a, b) => a.name.localeCompare(b.name));
+        rosterPlayers = list;
+      } catch (e) {
+        console.error("Error loading roster:", e);
+        rosterPlayers = [];
+      }
+    }
+
+    /* ===== REAL-TIME LISTENERS ===== */
+    // Live updates for the currently displayed practice date's RSVPs/assignments.
+    function subscribeToPracticeDate(dateStr) {
+      if (rsvpUnsub) { rsvpUnsub(); rsvpUnsub = null; }
+      rsvpUnsub = db.collection("rsvps").doc(dateStr).onSnapshot(
+        () => loadRSVPs(dateStr),
+        err => console.error("RSVP snapshot error:", err)
+      );
+    }
+
+    // Live updates for practice config (court count, type, time, cancel, assignments).
+    function subscribeToConfig() {
+      if (configUnsub) return;
+      configUnsub = db.collection("settings").doc("practiceConfig").onSnapshot(doc => {
+        practiceConfig = doc.exists ? doc.data() : {};
+        if (!currentDisplayDate) return;
+        const dateStr = currentDisplayDate.toISOString().split("T")[0];
+        applyPracticeConfig(dateStr);
+        loadRSVPs(dateStr);
+      }, err => console.error("Config snapshot error:", err));
     }
 
     function renderScheduleEditor() {
@@ -500,7 +556,7 @@
 
       const dateStr = currentDisplayDate.toISOString().split("T")[0];
       applyPracticeConfig(dateStr);
-      loadRSVPs(dateStr);
+      subscribeToPracticeDate(dateStr);
     }
 
     function updateDateDisplay(sorted) {
@@ -620,7 +676,7 @@
       updateDateDisplay(sorted);
       const dateStr = currentDisplayDate.toISOString().split("T")[0];
       applyPracticeConfig(dateStr);
-      loadRSVPs(dateStr);
+      subscribeToPracticeDate(dateStr);
     }
 
     async function setRSVP(status) {
@@ -766,6 +822,108 @@
 
     function getPlayerName(email, responses) {
       return (responses[email] && responses[email].name) || email.split("@")[0];
+    }
+
+    function escHtml(s) {
+      return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    function escAttr(s) {
+      return (s || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
+    }
+
+    /* ===== CAPTAIN: ADD PLAYERS FROM ROSTER ===== */
+    function renderRosterAddSection(responses, courtCount) {
+      const section = document.getElementById("apRosterSection");
+      if (!section) return;
+      if (rosterPlayers.length === 0) {
+        section.innerHTML = `<div class="ap-section-title">Add Players from Roster</div>
+          <div class="ap-empty">Roster is empty. Add players on the Roster page first.</div>`;
+        return;
+      }
+      const existing = new Set(Object.keys(responses || {}));
+      const available = rosterPlayers.filter(p => !existing.has(p.key));
+      if (available.length === 0) {
+        section.innerHTML = `<div class="ap-section-title">Add Players from Roster</div>
+          <div class="ap-empty">✅ Everyone on the roster is already on this practice.</div>`;
+        return;
+      }
+      const playerOpts = available.map(p =>
+        `<option value="${escAttr(p.key)}">${escHtml(p.name)}${p.email ? "" : " · unclaimed"}</option>`).join("");
+      const courtOpts = ['<option value="0">Add to confirmed pool</option>']
+        .concat(Array.from({ length: courtCount }, (_, i) => `<option value="${i + 1}">→ Court ${i + 1}</option>`)).join("");
+      section.innerHTML = `
+        <div class="ap-section-title">Add Players from Roster (${available.length} available)</div>
+        <div class="ap-roster-add-row">
+          <select id="rosterAddSelect" class="ap-assign-select" style="flex:2;min-width:150px">${playerOpts}</select>
+          <select id="rosterAddCourt" class="ap-assign-select">${courtOpts}</select>
+          <button class="ap-assign-btn" onclick="captainAddFromRoster()">+ Add</button>
+        </div>
+        <div class="ap-roster-note">Adds the player as confirmed (Yes) on their behalf — no need to wait for them to RSVP.</div>`;
+    }
+
+    function renderAddedSection(responses) {
+      const section = document.getElementById("apAddedSection");
+      if (!section) return;
+      const added = Object.entries(responses || {}).filter(([, v]) => v && v.addedByCaptain);
+      if (added.length === 0) { section.innerHTML = ""; return; }
+      section.innerHTML = `<div class="ap-section-title">Captain-Added Players (${added.length})</div>` +
+        added.map(([k, v]) => `<div class="ap-unassigned-row">
+          <span class="ap-unassigned-name">${escHtml(v.name || k)}</span>
+          <button class="ap-unassign-btn" onclick="captainRemovePlayer('${escAttr(k)}')">Remove</button>
+        </div>`).join("");
+    }
+
+    async function captainAddFromRoster() {
+      if (!isCaptain || !currentDisplayDate) return;
+      const sel = document.getElementById("rosterAddSelect");
+      const courtSel = document.getElementById("rosterAddCourt");
+      if (!sel || !sel.value) return;
+      const key = sel.value;
+      const player = rosterPlayers.find(p => p.key === key);
+      if (!player) return;
+      const courtNum = courtSel ? (parseInt(courtSel.value, 10) || 0) : 0;
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      try {
+        await db.collection("rsvps").doc(dateStr).set({
+          responses: {
+            [key]: {
+              status: "Yes",
+              name: player.name,
+              email: player.email || "",
+              addedByCaptain: true,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }
+          }
+        }, { merge: true });
+        await loadRSVPs(dateStr);
+        if (courtNum > 0) {
+          if (isConfirmedPlayer(key)) {
+            await assignPlayer(key, String(courtNum));
+          } else {
+            alert(`${player.name} was added to the practice, but Court ${courtNum} is beyond the current capacity. Increase the court count, then assign them from the confirmed pool.`);
+          }
+        }
+      } catch (e) {
+        alert("Could not add player: " + e.message);
+      }
+    }
+
+    async function captainRemovePlayer(key) {
+      if (!isCaptain || !currentDisplayDate) return;
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
+      const courtCount = cfg.courtCount || 3;
+      const assignments = removePlayerFromAssignments(cfg.courtAssignments || [], key, courtCount);
+      const subList = (cfg.substituteList || []).filter(e => e !== key);
+      try {
+        await db.collection("rsvps").doc(dateStr).update(
+          new firebase.firestore.FieldPath("responses", key),
+          firebase.firestore.FieldValue.delete()
+        );
+        await saveAssignments(assignments, subList);
+      } catch (e) {
+        alert("Could not remove player: " + e.message);
+      }
     }
 
     function normalizeAssignments(courtAssignments, courtCount) {
@@ -937,6 +1095,9 @@
       } else {
         apSubSection.innerHTML = "";
       }
+
+      renderRosterAddSection(responses, courtCount);
+      renderAddedSection(responses);
     }
 
     function toggleAssignmentPanel() {

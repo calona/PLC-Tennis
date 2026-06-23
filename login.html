@@ -237,6 +237,7 @@
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBRS15FxZ8ekWvcAluTy2EKUVCMs0gkYPg",
@@ -248,6 +249,7 @@
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+    const db = firebase.firestore();
 
     function friendlyError(err) {
       const code = err.code || "";
@@ -284,8 +286,18 @@
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
       auth.signInWithEmailAndPassword(email, password)
-        .then(() => { window.location.href = "calendar.html"; })
+        .then(cred => routeAfterLogin(cred.user))
         .catch(err => showError(friendlyError(err)));
+    }
+
+    // Claimed roster member → Home; otherwise → Roster to claim their name.
+    async function routeAfterLogin(user) {
+      try {
+        const email = (user && user.email ? user.email : "").toLowerCase();
+        const snap = await db.collection("roster").where("email", "==", email).limit(1).get();
+        if (!snap.empty) { window.location.href = "index.html"; return; }
+      } catch (e) { /* fall through to roster */ }
+      window.location.href = "roster.html";
     }
 
     function signup() {

@@ -249,7 +249,7 @@
         <div class="info-card-pill"></div>
         <div class="info-grid">
           <div><div class="info-item-label">Time</div><div class="info-item-value" id="practiceTimeDisplay">—</div></div>
-          <div><div class="info-item-label">Location</div><div class="info-item-value">PLC Indoor Courts</div></div>
+          <div><div class="info-item-label">Location</div><div class="info-item-value" id="practiceLocationDisplay">PLC Indoor Courts</div></div>
           <div><div class="info-item-label">Format</div><div class="info-item-value" id="practiceFormatDisplay">—</div></div>
           <div><div class="info-item-label">Capacity</div><div class="info-item-value" id="practiceCapacityDisplay">12 Players (4/court)</div></div>
           <div><div class="info-item-label">Focus</div><div class="info-item-value">Mixed Doubles</div></div>
@@ -306,6 +306,9 @@
           <label class="captain-label">Start Time
             <input type="time" id="practiceTimeInput" class="captain-time" onchange="savePracticeConfig()" />
           </label>
+          <label class="captain-label">Location
+            <input type="text" id="practiceLocationInput" class="captain-select" style="min-width:160px" placeholder="e.g. PLC Indoor Courts" onchange="savePracticeConfig()" />
+          </label>
           <input type="text" class="reason-input" id="cancelReasonInput" placeholder="Reason (e.g. Holiday, Weather)" />
           <button class="cancel-btn" id="cancelToggle" onclick="toggleCancel()">Cancel Practice</button>
           <button class="schedule-toggle-btn" onclick="toggleAssignmentPanel()">👤 Assignments</button>
@@ -318,6 +321,7 @@
         <button class="ap-auto-btn" onclick="autoDistribute()">⚡ Auto-Distribute Evenly</button>
         <div class="ap-courts" id="apCourtsGrid"></div>
         <div id="apRosterSection"></div>
+        <div id="apGuestSection"></div>
         <div id="apUnassignedSection"></div>
         <div id="apAddedSection"></div>
         <div id="apSubSection"></div>
@@ -399,6 +403,7 @@
     let currentRSVPResponses = {};
     let currentConfirmedPlayers = [];
     let rosterPlayers = [];
+    let rosterNameByEmail = {};
     let rsvpUnsub = null;
     let configUnsub = null;
     const CAPTAIN_EMAIL = "gaylorde@outlook.com";
@@ -455,6 +460,8 @@
         });
         list.sort((a, b) => a.name.localeCompare(b.name));
         rosterPlayers = list;
+        rosterNameByEmail = {};
+        list.forEach(p => { if (p.email) rosterNameByEmail[p.email] = p.name; });
       } catch (e) {
         console.error("Error loading roster:", e);
         rosterPlayers = [];
@@ -575,15 +582,19 @@
       const courtCount = cfg.courtCount || 3;
       const practiceType = cfg.practiceType || "Match Practice";
       const practiceTime = cfg.practiceTime || "";
+      const practiceLocation = cfg.location || "";
+      const courtSize = courtSizeFor(cfg);
 
       document.getElementById("practiceTimeDisplay").textContent = practiceTime ? formatTime12(practiceTime) : "—";
       document.getElementById("practiceFormatDisplay").textContent = `${courtCount} Courts · ${practiceType}`;
-      document.getElementById("practiceCapacityDisplay").textContent = `${courtCount * 4} Players (4/court)`;
+      document.getElementById("practiceCapacityDisplay").textContent = `${courtCount * courtSize} Players (${courtSize}/court)`;
+      document.getElementById("practiceLocationDisplay").textContent = practiceLocation || "PLC Indoor Courts";
 
       if (isCaptain) {
         document.getElementById("courtCountSelect").value = String(courtCount);
         document.getElementById("practiceTypeSelect").value = practiceType;
         document.getElementById("practiceTimeInput").value = practiceTime;
+        document.getElementById("practiceLocationInput").value = practiceLocation;
       }
 
       const cancelled = cfg.cancelled || false;
@@ -620,9 +631,10 @@
       const courtCount = parseInt(document.getElementById("courtCountSelect").value) || 3;
       const practiceType = document.getElementById("practiceTypeSelect").value || "Match Practice";
       const practiceTime = document.getElementById("practiceTimeInput").value || "";
+      const location = document.getElementById("practiceLocationInput").value.trim();
 
       const existing = (practiceConfig && practiceConfig[dateStr]) || {};
-      const updatedDate = { ...existing, courtCount, practiceType, practiceTime };
+      const updatedDate = { ...existing, courtCount, practiceType, practiceTime, location };
 
       try {
         await db.collection("settings").doc("practiceConfig").set({
@@ -714,7 +726,8 @@
 
         const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
         const courtCount = cfg.courtCount || 3;
-        const capacity = courtCount * 4;
+        const courtSize = courtSizeFor(cfg);
+        const capacity = courtCount * courtSize;
         const rawAssignments = cfg.courtAssignments || [];
         const rawSubstituteList = cfg.substituteList || [];
 
@@ -729,7 +742,7 @@
         const confirmed = yesPlayers.slice(0, capacity);
         const waitlist = yesPlayers.slice(capacity);
         currentConfirmedPlayers = confirmed;
-        const sanitizedState = sanitizePracticeState(rawAssignments, rawSubstituteList, courtCount);
+        const sanitizedState = sanitizePracticeState(rawAssignments, rawSubstituteList, courtCount, courtSize);
         const courtAssignments = sanitizedState.assignments;
         const substituteList = sanitizedState.substituteList;
 
@@ -747,11 +760,11 @@
           displayAssignments = Array.from({ length: courtCount }, (_, i) => courtAssignments[i] || []);
         } else {
           displayAssignments = Array.from({ length: courtCount }, (_, c) =>
-            confirmed.slice(c * 4, c * 4 + 4).map(p => p.email)
+            confirmed.slice(c * courtSize, c * courtSize + courtSize).map(p => p.email)
           );
         }
 
-        renderCourtsGrid(courtCount, displayAssignments, responses);
+        renderCourtsGrid(courtCount, displayAssignments, responses, courtSize);
 
         if (hasManualAssignments) {
           const allAssigned = displayAssignments.flat();
@@ -764,7 +777,7 @@
         renderSubCard(substituteList, responses, courtCount);
 
         if (isCaptain) {
-          renderAssignmentPanel(courtCount, confirmed, displayAssignments, substituteList, responses);
+          renderAssignmentPanel(courtCount, confirmed, displayAssignments, substituteList, responses, courtSize);
         }
 
         const waitlistCard = document.getElementById("waitlistCard");
@@ -778,7 +791,7 @@
               : "";
             return `<div class="waitlist-row">
               <div class="waitlist-pos">#${i + 1}</div>
-              <div>${isMe ? "⭐ " : ""}${p.name || p.email}</div>
+              <div>${isMe ? "⭐ " : ""}${getPlayerName(p.email, responses)}</div>
               ${subBtn}
             </div>`;
           }).join("");
@@ -802,7 +815,7 @@
             else if (data.status === "Yes") { statusClass = "status-yes"; statusText = "Confirmed"; }
             else { statusClass = "status-maybe"; statusText = data.status; }
             return `<div class="signup-row">
-              <div class="signup-name">${data.name || email}</div>
+              <div class="signup-name">${getPlayerName(email, responses)}</div>
               <div class="signup-status ${statusClass}">${statusText}</div>
             </div>`;
           }).join("");
@@ -821,6 +834,7 @@
     }
 
     function getPlayerName(email, responses) {
+      if (rosterNameByEmail[email]) return rosterNameByEmail[email];
       return (responses[email] && responses[email].name) || email.split("@")[0];
     }
 
@@ -859,6 +873,58 @@
           <button class="ap-assign-btn" onclick="captainAddFromRoster()">+ Add</button>
         </div>
         <div class="ap-roster-note">Adds the player as confirmed (Yes) on their behalf — no need to wait for them to RSVP.</div>`;
+    }
+
+    /* ===== CAPTAIN: ADD A GUEST / OFF-ROSTER PLAYER ===== */
+    function renderGuestAddSection(courtCount) {
+      const section = document.getElementById("apGuestSection");
+      if (!section) return;
+      const courtOpts = ['<option value="0">Add to confirmed pool</option>']
+        .concat(Array.from({ length: courtCount }, (_, i) => `<option value="${i + 1}">→ Court ${i + 1}</option>`)).join("");
+      section.innerHTML = `
+        <div class="ap-section-title">Add a Guest / Off-Roster Player</div>
+        <div class="ap-roster-add-row">
+          <input type="text" id="guestNameInput" class="ap-assign-select" style="flex:2;min-width:150px" placeholder="Type a player's name" onkeydown="if(event.key==='Enter'){event.preventDefault();captainAddGuest();}" />
+          <select id="guestAddCourt" class="ap-assign-select">${courtOpts}</select>
+          <button class="ap-assign-btn" onclick="captainAddGuest()">+ Add</button>
+        </div>
+        <div class="ap-roster-note">For subs or players not on the roster. They're added as confirmed (Yes) for this practice only.</div>`;
+    }
+
+    async function captainAddGuest() {
+      if (!isCaptain || !currentDisplayDate) return;
+      const input = document.getElementById("guestNameInput");
+      const courtSel = document.getElementById("guestAddCourt");
+      const name = ((input && input.value) || "").trim();
+      if (!name) { alert("Enter a player name first."); return; }
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "guest";
+      const key = "guest:" + slug + "-" + Date.now().toString(36);
+      const courtNum = courtSel ? (parseInt(courtSel.value, 10) || 0) : 0;
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      try {
+        await db.collection("rsvps").doc(dateStr).set({
+          responses: {
+            [key]: {
+              status: "Yes",
+              name: name,
+              addedByCaptain: true,
+              guest: true,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }
+          }
+        }, { merge: true });
+        if (input) input.value = "";
+        await loadRSVPs(dateStr);
+        if (courtNum > 0) {
+          if (isConfirmedPlayer(key)) {
+            await assignPlayer(key, String(courtNum));
+          } else {
+            alert(`${name} was added to the practice, but Court ${courtNum} is beyond the current capacity. Increase the court count, then assign them from the confirmed pool.`);
+          }
+        }
+      } catch (e) {
+        alert("Could not add guest: " + e.message);
+      }
     }
 
     function renderAddedSection(responses) {
@@ -941,7 +1007,12 @@
       return currentConfirmedPlayers.some(p => p.email === email);
     }
 
-    function sanitizePracticeState(courtAssignments, substituteList, courtCount) {
+    function courtSizeFor(cfg) {
+      return (cfg && cfg.practiceType === "Live Ball") ? 8 : 4;
+    }
+
+    function sanitizePracticeState(courtAssignments, substituteList, courtCount, courtSize) {
+      courtSize = courtSize || 4;
       let assignments = normalizeAssignments(courtAssignments, courtCount);
       let subs = Array.isArray(substituteList) ? [...substituteList] : [];
       const seen = new Set();
@@ -952,7 +1023,7 @@
           if (!email) continue;
           if (seen.has(email)) continue;
           if (!isConfirmedPlayer(email)) continue;
-          if (cleaned.length >= 4) continue;
+          if (cleaned.length >= courtSize) continue;
           cleaned.push(email);
           seen.add(email);
         }
@@ -968,7 +1039,8 @@
       return { assignments, substituteList: subs };
     }
 
-    function renderCourtsGrid(courtCount, displayAssignments, responses) {
+    function renderCourtsGrid(courtCount, displayAssignments, responses, courtSize) {
+      courtSize = courtSize || 4;
       const grid = document.getElementById("courtsGrid");
       grid.innerHTML = "";
       for (let c = 0; c < courtCount; c++) {
@@ -983,7 +1055,7 @@
               return `<div class="court-player">${isMe ? "⭐ " : ""}${name}</div>`;
             }).join("");
         card.innerHTML = `
-          <div class="court-label">🎾 Court ${c + 1}<span class="court-type" style="margin-left:8px">${players.length}/4</span></div>
+          <div class="court-label">🎾 Court ${c + 1}<span class="court-type" style="margin-left:8px">${players.length}/${courtSize}</span></div>
           <div class="court-players">${playerHTML}</div>
         `;
         grid.appendChild(card);
@@ -1025,18 +1097,19 @@
       }).join("");
     }
 
-    function renderAssignmentPanel(courtCount, confirmedPlayers, displayAssignments, substituteList, responses) {
+    function renderAssignmentPanel(courtCount, confirmedPlayers, displayAssignments, substituteList, responses, courtSize) {
       if (!isCaptain) return;
+      courtSize = courtSize || 4;
       const allAssigned = displayAssignments.flat();
       const apCourts = document.getElementById("apCourtsGrid");
       apCourts.innerHTML = "";
       for (let c = 0; c < courtCount; c++) {
         const players = displayAssignments[c] || [];
-        const emptySlots = Math.max(0, 4 - players.length);
+        const emptySlots = Math.max(0, courtSize - players.length);
         const div = document.createElement("div");
         div.className = "ap-court";
         div.innerHTML = `
-          <div class="ap-court-hdr">Court ${c + 1} <span class="ap-count-badge">${players.length}/4</span></div>
+          <div class="ap-court-hdr">Court ${c + 1} <span class="ap-count-badge">${players.length}/${courtSize}</span></div>
           <div>
             ${players.map(email => {
               const name = getPlayerName(email, responses);
@@ -1060,7 +1133,7 @@
           ${unassigned.map(p => {
             const safeId = p.email.replace(/[@.]/g, "-");
             return `<div class="ap-unassigned-row">
-              <span class="ap-unassigned-name">${p.name || p.email.split("@")[0]}</span>
+              <span class="ap-unassigned-name">${getPlayerName(p.email, responses)}</span>
               <select class="ap-assign-select" id="asel-${safeId}">${courtOptions}</select>
               <button class="ap-assign-btn" onclick="assignPlayer('${p.email}',document.getElementById('asel-${safeId}').value)">Assign →</button>
             </div>`;
@@ -1076,9 +1149,9 @@
       Object.entries(responses).forEach(([email, data]) => {
         if (substituteList.includes(email)) return;
         if (data.status === "Yes" && !confirmedEmails.includes(email)) {
-          potentialSubs.push({ email, name: data.name || email.split("@")[0], origin: "Waitlist" });
+          potentialSubs.push({ email, name: getPlayerName(email, responses), origin: "Waitlist" });
         } else if (data.status === "Maybe") {
-          potentialSubs.push({ email, name: data.name || email.split("@")[0], origin: "Maybe" });
+          potentialSubs.push({ email, name: getPlayerName(email, responses), origin: "Maybe" });
         }
       });
 
@@ -1097,6 +1170,7 @@
       }
 
       renderRosterAddSection(responses, courtCount);
+      renderGuestAddSection(courtCount);
       renderAddedSection(responses);
     }
 
@@ -1109,6 +1183,7 @@
       const dateStr = currentDisplayDate.toISOString().split("T")[0];
       const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
       const courtCount = cfg.courtCount || 3;
+      const courtSize = courtSizeFor(cfg);
       const courtIdx = parseInt(courtNumStr, 10) - 1;
 
       if (courtIdx < 0 || courtIdx >= courtCount) {
@@ -1124,12 +1199,12 @@
       let assignments = removePlayerFromAssignments(cfg.courtAssignments || [], email, courtCount);
       let subList = (cfg.substituteList || []).filter(e => e !== email);
 
-      if (assignments[courtIdx].length >= 4) {
-        alert(`Court ${courtIdx + 1} is full (4 players max). Unassign a player first.`);
+      if (assignments[courtIdx].length >= courtSize) {
+        alert(`Court ${courtIdx + 1} is full (${courtSize} players max). Unassign a player first.`);
         return;
       }
       assignments[courtIdx].push(email);
-      const sanitized = sanitizePracticeState(assignments, subList, courtCount);
+      const sanitized = sanitizePracticeState(assignments, subList, courtCount, courtSize);
       await saveAssignments(sanitized.assignments, sanitized.substituteList);
     }
 
@@ -1138,8 +1213,9 @@
       const dateStr = currentDisplayDate.toISOString().split("T")[0];
       const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
       const courtCount = cfg.courtCount || 3;
+      const courtSize = courtSizeFor(cfg);
       const assignments = removePlayerFromAssignments(cfg.courtAssignments || [], email, courtCount);
-      const sanitized = sanitizePracticeState(assignments, cfg.substituteList || [], courtCount);
+      const sanitized = sanitizePracticeState(assignments, cfg.substituteList || [], courtCount, courtSize);
       await saveAssignments(sanitized.assignments, sanitized.substituteList);
     }
 
@@ -1148,12 +1224,13 @@
       const dateStr = currentDisplayDate.toISOString().split("T")[0];
       const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
       const courtCount = cfg.courtCount || 3;
+      const courtSize = courtSizeFor(cfg);
       const assignments = Array.from({ length: courtCount }, () => []);
       currentConfirmedPlayers.forEach((player, i) => {
-        const courtIdx = Math.floor(i / 4);
+        const courtIdx = Math.floor(i / courtSize);
         if (courtIdx < courtCount) assignments[courtIdx].push(player.email);
       });
-      const sanitized = sanitizePracticeState(assignments, cfg.substituteList || [], courtCount);
+      const sanitized = sanitizePracticeState(assignments, cfg.substituteList || [], courtCount, courtSize);
       await saveAssignments(sanitized.assignments, sanitized.substituteList);
     }
 
@@ -1162,10 +1239,11 @@
       const dateStr = currentDisplayDate.toISOString().split("T")[0];
       const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
       const courtCount = cfg.courtCount || 3;
+      const courtSize = courtSizeFor(cfg);
       let assignments = removePlayerFromAssignments(cfg.courtAssignments || [], email, courtCount);
       let subList = [...(cfg.substituteList || [])];
       if (!subList.includes(email)) subList.push(email);
-      const sanitized = sanitizePracticeState(assignments, subList, courtCount);
+      const sanitized = sanitizePracticeState(assignments, subList, courtCount, courtSize);
       await saveAssignments(sanitized.assignments, sanitized.substituteList);
     }
 
@@ -1175,7 +1253,8 @@
       const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
       const subList = (cfg.substituteList || []).filter(e => e !== email);
       const courtCount = cfg.courtCount || 3;
-      const sanitized = sanitizePracticeState(cfg.courtAssignments || [], subList, courtCount);
+      const courtSize = courtSizeFor(cfg);
+      const sanitized = sanitizePracticeState(cfg.courtAssignments || [], subList, courtCount, courtSize);
       await saveAssignments(sanitized.assignments, sanitized.substituteList);
     }
 
@@ -1184,6 +1263,7 @@
       const dateStr = currentDisplayDate.toISOString().split("T")[0];
       const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
       const courtCount = cfg.courtCount || 3;
+      const courtSize = courtSizeFor(cfg);
       const courtIdx = parseInt(courtNumStr, 10) - 1;
 
       if (courtIdx < 0 || courtIdx >= courtCount) {
@@ -1193,12 +1273,12 @@
 
       let assignments = removePlayerFromAssignments(cfg.courtAssignments || [], email, courtCount);
       let subList = (cfg.substituteList || []).filter(e => e !== email);
-      if (assignments[courtIdx].length >= 4) {
-        alert(`Court ${courtIdx + 1} is full (4 players max). Unassign a player first.`);
+      if (assignments[courtIdx].length >= courtSize) {
+        alert(`Court ${courtIdx + 1} is full (${courtSize} players max). Unassign a player first.`);
         return;
       }
       assignments[courtIdx].push(email);
-      const sanitized = sanitizePracticeState(assignments, subList, courtCount);
+      const sanitized = sanitizePracticeState(assignments, subList, courtCount, courtSize);
       await saveAssignments(sanitized.assignments, sanitized.substituteList);
     }
 

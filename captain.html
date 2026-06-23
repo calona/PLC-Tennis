@@ -330,9 +330,22 @@
     let allMatches = [];
     let allAvailability = {};
     let currentFilter = "upcoming";
+    let rosterNameByEmail = {};
+
+    async function loadRosterNames() {
+      try {
+        const snap = await db.collection("roster").get();
+        rosterNameByEmail = {};
+        snap.forEach(doc => {
+          const d = doc.data();
+          if (d.email) rosterNameByEmail[d.email.toLowerCase()] = d.name || "";
+        });
+      } catch (e) { rosterNameByEmail = {}; }
+    }
 
     async function loadEverything() {
       try {
+        await loadRosterNames();
         const res = await fetch(SHEET_URL);
         const csv = await res.text();
         const rows = parseCSV(csv);
@@ -500,6 +513,8 @@
     }
 
     function formatName(email) {
+      const byRoster = rosterNameByEmail[(email || "").toLowerCase()];
+      if (byRoster) return byRoster;
       const local = email.split("@")[0];
       return local.replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase());
     }

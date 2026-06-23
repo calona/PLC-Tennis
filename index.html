@@ -1133,6 +1133,7 @@ async function renderPracticeWidget(upcomingDates, cfg, container) {
 
     const courtCount = dateCfg.courtCount || 3;
     const practiceType = dateCfg.practiceType || "Match Practice";
+    const courtSize = practiceType === "Live Ball" ? 8 : 4;
     const practiceTime = dateCfg.practiceTime ? formatPracticeTime(dateCfg.practiceTime) : "6:45 PM";
     const cancelled = dateCfg.cancelled || false;
     const cancelReason = dateCfg.cancelReason || "";
@@ -1145,7 +1146,7 @@ async function renderPracticeWidget(upcomingDates, cfg, container) {
       const rsvpDoc = await db.collection("rsvps").doc(dateKey).get();
       if (rsvpDoc.exists) {
         const responses = rsvpDoc.data().responses || {};
-        const capacity = courtCount * 4;
+        const capacity = courtCount * courtSize;
         let yesCount = 0;
         Object.values(responses).forEach(r => { if (r.status === "Yes") yesCount++; });
         confirmedCount = Math.min(yesCount, capacity);
@@ -1167,7 +1168,7 @@ async function renderPracticeWidget(upcomingDates, cfg, container) {
     if (cancelled) {
       statusHtml = `<strong style="color:#ef4444;">❌ CANCELLED${cancelReason ? ": " + cancelReason : ""}</strong>`;
     } else {
-      statusHtml = `${confirmedCount}/${courtCount * 4} confirmed · ${courtCount} courts · ${practiceType}`;
+      statusHtml = `${confirmedCount}/${courtCount * courtSize} confirmed · ${courtCount} courts · ${practiceType}`;
     }
 
     html += `<div style="${border}">

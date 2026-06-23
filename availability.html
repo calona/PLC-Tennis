@@ -601,7 +601,7 @@
           const dateCfg = cfg[dateKey] || {};
           const practiceTime = dateCfg.practiceTime ? formatPracticeTime(dateCfg.practiceTime) : "";
           const courtCount = dateCfg.courtCount || 3;
-          const courtAssignments = (dateCfg.courtAssignments || []).map(a => Array.isArray(a) ? a : []);
+          const courtAssignments = (dateCfg.courtAssignments || []).map(a => Array.isArray(a) ? a : (a && Array.isArray(a.p) ? a.p : []));
           const substituteList = dateCfg.substituteList || [];
           const cancelled = dateCfg.cancelled || false;
 

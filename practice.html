@@ -979,7 +979,8 @@
       const dateStr = currentDisplayDate.toISOString().split("T")[0];
       const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
       const courtCount = cfg.courtCount || 3;
-      const assignments = removePlayerFromAssignments(cfg.courtAssignments || [], key, courtCount);
+      const courtSize = courtSizeFor(cfg);
+      const assignments = effectiveAssignments(cfg, courtCount, courtSize).map(c => c.filter(e => e !== key));
       const subList = (cfg.substituteList || []).filter(e => e !== key);
       try {
         await db.collection("rsvps").doc(dateStr).update(
@@ -992,15 +993,31 @@
       }
     }
 
+    // A stored court can be an array of emails (legacy) or { p: [emails] } (Firestore-safe).
+    function courtCell(raw) {
+      if (Array.isArray(raw)) return raw.filter(x => typeof x === "string");
+      if (raw && Array.isArray(raw.p)) return raw.p.filter(x => typeof x === "string");
+      return [];
+    }
+
     function normalizeAssignments(courtAssignments, courtCount) {
       return Array.from({ length: courtCount }, (_, i) =>
-        Array.isArray(courtAssignments?.[i]) ? [...courtAssignments[i]] : []
+        courtCell(courtAssignments ? courtAssignments[i] : undefined)
       );
     }
 
     function removePlayerFromAssignments(courtAssignments, email, courtCount) {
       const assignments = normalizeAssignments(courtAssignments, courtCount);
       return assignments.map(court => court.filter(e => e !== email));
+    }
+
+    // The assignments currently on screen: saved manual layout if any, else the auto-fill by confirmed order.
+    function effectiveAssignments(cfg, courtCount, courtSize) {
+      const persisted = normalizeAssignments(cfg.courtAssignments || [], courtCount);
+      if (persisted.some(c => c.length > 0)) return persisted;
+      return Array.from({ length: courtCount }, (_, c) =>
+        currentConfirmedPlayers.slice(c * courtSize, c * courtSize + courtSize).map(p => p.email)
+      );
     }
 
     function isConfirmedPlayer(email) {
@@ -1196,7 +1213,7 @@
         return;
       }
 
-      let assignments = removePlayerFromAssignments(cfg.courtAssignments || [], email, courtCount);
+      let assignments = effectiveAssignments(cfg, courtCount, courtSize).map(c => c.filter(e => e !== email));
       let subList = (cfg.substituteList || []).filter(e => e !== email);
 
       if (assignments[courtIdx].length >= courtSize) {
@@ -1214,7 +1231,7 @@
       const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
       const courtCount = cfg.courtCount || 3;
       const courtSize = courtSizeFor(cfg);
-      const assignments = removePlayerFromAssignments(cfg.courtAssignments || [], email, courtCount);
+      const assignments = effectiveAssignments(cfg, courtCount, courtSize).map(c => c.filter(e => e !== email));
       const sanitized = sanitizePracticeState(assignments, cfg.substituteList || [], courtCount, courtSize);
       await saveAssignments(sanitized.assignments, sanitized.substituteList);
     }
@@ -1240,7 +1257,7 @@
       const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
       const courtCount = cfg.courtCount || 3;
       const courtSize = courtSizeFor(cfg);
-      let assignments = removePlayerFromAssignments(cfg.courtAssignments || [], email, courtCount);
+      let assignments = effectiveAssignments(cfg, courtCount, courtSize).map(c => c.filter(e => e !== email));
       let subList = [...(cfg.substituteList || [])];
       if (!subList.includes(email)) subList.push(email);
       const sanitized = sanitizePracticeState(assignments, subList, courtCount, courtSize);
@@ -1254,7 +1271,7 @@
       const subList = (cfg.substituteList || []).filter(e => e !== email);
       const courtCount = cfg.courtCount || 3;
       const courtSize = courtSizeFor(cfg);
-      const sanitized = sanitizePracticeState(cfg.courtAssignments || [], subList, courtCount, courtSize);
+      const sanitized = sanitizePracticeState(effectiveAssignments(cfg, courtCount, courtSize), subList, courtCount, courtSize);
       await saveAssignments(sanitized.assignments, sanitized.substituteList);
     }
 
@@ -1271,7 +1288,7 @@
         return;
       }
 
-      let assignments = removePlayerFromAssignments(cfg.courtAssignments || [], email, courtCount);
+      let assignments = effectiveAssignments(cfg, courtCount, courtSize).map(c => c.filter(e => e !== email));
       let subList = (cfg.substituteList || []).filter(e => e !== email);
       if (assignments[courtIdx].length >= courtSize) {
         alert(`Court ${courtIdx + 1} is full (${courtSize} players max). Unassign a player first.`);
@@ -1286,7 +1303,9 @@
       if (!currentDisplayDate) return;
       const dateStr = currentDisplayDate.toISOString().split("T")[0];
       const existing = (practiceConfig && practiceConfig[dateStr]) || {};
-      const updatedDate = { ...existing, courtAssignments, substituteList };
+      // Firestore rejects arrays-of-arrays, so wrap each court's player list in an object.
+      const courtAssignmentsForSave = (courtAssignments || []).map(arr => ({ p: Array.isArray(arr) ? arr : [] }));
+      const updatedDate = { ...existing, courtAssignments: courtAssignmentsForSave, substituteList };
       try {
         await db.collection("settings").doc("practiceConfig").set({
           [dateStr]: updatedDate

@@ -824,8 +824,15 @@
             else if (courtIdx >= 0) { statusClass = "status-yes"; statusText = `Court ${courtIdx + 1}`; }
             else if (data.status === "Yes") { statusClass = "status-yes"; statusText = "Confirmed"; }
             else { statusClass = "status-maybe"; statusText = data.status; }
+            const updated = isCaptain ? formatRsvpTime(data.timestamp) : "";
+            const updatedLine = updated
+              ? `<div style="font-size:10px;color:var(--text-muted);margin-top:1px;">Updated ${updated}</div>`
+              : "";
             return `<div class="signup-row">
-              <div class="signup-name">${getPlayerName(email, responses)}</div>
+              <div class="signup-name" style="flex-direction:column;align-items:flex-start;gap:0">
+                <span>${getPlayerName(email, responses)}</span>
+                ${updatedLine}
+              </div>
               <div class="signup-status ${statusClass}">${statusText}</div>
             </div>`;
           }).join("");
@@ -846,6 +853,15 @@
     function getPlayerName(email, responses) {
       if (rosterNameByEmail[email]) return rosterNameByEmail[email];
       return (responses[email] && responses[email].name) || email.split("@")[0];
+    }
+
+    // Friendly "last updated" time for an RSVP. The stored timestamp is refreshed on
+    // every set/edit, so it reflects the player's most recent change. Returns "" while
+    // a just-written server timestamp is still pending (resolves on the next snapshot).
+    function formatRsvpTime(ts) {
+      if (!ts || typeof ts.toDate !== "function") return "";
+      const d = ts.toDate();
+      return d.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
     }
 
     function escHtml(s) {
@@ -982,6 +998,14 @@
       } catch (e) {
         alert("Could not add player: " + e.message);
       }
+    }
+
+    // Captain drops any player (including a self-RSVP'd one) from this practice,
+    // with a confirmation since it overrides the player's own RSVP for the date.
+    async function captainDropFromPractice(key) {
+      if (!isCaptain) return;
+      if (!confirm("Remove this player from this practice? It clears their RSVP for this date and frees their seat.")) return;
+      await captainRemovePlayer(key);
     }
 
     async function captainRemovePlayer(key) {
@@ -1180,7 +1204,8 @@
               const name = getPlayerName(email, responses);
               return `<div class="ap-player-row">
                 <span class="ap-player-name">${name}</span>
-                <button class="ap-unassign-btn" onclick="unassignFromCourt('${email}')">✕</button>
+                <button class="ap-unassign-btn" onclick="unassignFromCourt('${email}')" title="Move to unassigned">✕ Bench</button>
+                <button class="ap-unassign-btn" onclick="captainDropFromPractice('${email}')" title="Remove from this practice">Remove</button>
               </div>`;
             }).join("")}
             ${emptySlots > 0 ? `<div class="ap-empty-slot">${emptySlots} slot${emptySlots > 1 ? "s" : ""} open</div>` : ""}
@@ -1201,6 +1226,7 @@
               <span class="ap-unassigned-name">${getPlayerName(p.email, responses)}</span>
               <select class="ap-assign-select" id="asel-${safeId}">${courtOptions}</select>
               <button class="ap-assign-btn" onclick="assignPlayer('${p.email}',document.getElementById('asel-${safeId}').value)">Assign →</button>
+              <button class="ap-unassign-btn" onclick="captainDropFromPractice('${p.email}')" title="Remove from this practice">Remove</button>
             </div>`;
           }).join("")}`;
       } else {

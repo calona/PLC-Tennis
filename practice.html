@@ -734,13 +734,18 @@
         const yesPlayers = [];
         const maybePlayers = [];
         Object.entries(responses).forEach(([email, data]) => {
-          if (data.status === "Yes") yesPlayers.push({ email, ...data });
-          else if (data.status === "Maybe") maybePlayers.push({ email, ...data });
+          // Spread data FIRST so the document key always wins as the identity.
+          // (Unclaimed roster players are stored with email:"" — letting that
+          // overwrite the key collapses their identity and breaks assignments.)
+          if (data.status === "Yes") yesPlayers.push({ ...data, email });
+          else if (data.status === "Maybe") maybePlayers.push({ ...data, email });
         });
         yesPlayers.sort((a, b) => ((a.timestamp && a.timestamp.seconds) || 0) - ((b.timestamp && b.timestamp.seconds) || 0));
 
-        const confirmed = yesPlayers.slice(0, capacity);
-        const waitlist = yesPlayers.slice(capacity);
+        // Manual court placements count as confirmed (captain's explicit choice),
+        // then remaining seats auto-fill by RSVP order. This lets the captain seat
+        // a waitlisted player without them being stripped back off by the sanitizer.
+        const { confirmed, waitlist } = computeConfirmedPlayers(yesPlayers, rawAssignments, courtCount, courtSize);
         currentConfirmedPlayers = confirmed;
         const sanitizedState = sanitizePracticeState(rawAssignments, rawSubstituteList, courtCount, courtSize);
         const courtAssignments = sanitizedState.assignments;
@@ -786,13 +791,18 @@
           waitlistCard.classList.add("show");
           waitlistRows.innerHTML = waitlist.map((p, i) => {
             const isMe = currentUser && p.email === currentUser.email;
-            const subBtn = isCaptain
-              ? `<button class="waitlist-to-sub-btn" onclick="addToSubList('${p.email}')">→ Sub</button>`
+            const safeId = p.email.replace(/[@.]/g, "-");
+            const captainControls = isCaptain
+              ? `<select class="sub-callin-select" id="wlseat-${safeId}">
+                   ${Array.from({ length: courtCount }, (_, c) => `<option value="${c + 1}">Court ${c + 1}</option>`).join("")}
+                 </select>
+                 <button class="sub-callin-btn" onclick="seatFromWaitlist('${p.email}',document.getElementById('wlseat-${safeId}').value)">→ Court</button>
+                 <button class="waitlist-to-sub-btn" onclick="addToSubList('${p.email}')">→ Sub</button>`
               : "";
             return `<div class="waitlist-row">
               <div class="waitlist-pos">#${i + 1}</div>
-              <div>${isMe ? "⭐ " : ""}${getPlayerName(p.email, responses)}</div>
-              ${subBtn}
+              <div style="flex:1">${isMe ? "⭐ " : ""}${getPlayerName(p.email, responses)}</div>
+              ${captainControls}
             </div>`;
           }).join("");
         } else {
@@ -1022,6 +1032,44 @@
 
     function isConfirmedPlayer(email) {
       return currentConfirmedPlayers.some(p => p.email === email);
+    }
+
+    // Confirmed = players explicitly seated on a court (captain's choice) first,
+    // then auto-fill the remaining seats by RSVP order. Everyone else waitlists.
+    function computeConfirmedPlayers(yesPlayers, rawAssignments, courtCount, courtSize) {
+      const capacity = courtCount * courtSize;
+      const byEmail = new Map(yesPlayers.map(p => [p.email, p]));
+      const placed = [];
+      const placedSet = new Set();
+      normalizeAssignments(rawAssignments, courtCount).forEach(court => {
+        let n = 0;
+        for (const email of court) {
+          if (n >= courtSize) break;          // respect per-court size
+          if (!byEmail.has(email)) continue;  // only a current "Yes" can hold a seat
+          if (placedSet.has(email)) continue; // no duplicates across courts
+          placed.push(byEmail.get(email));
+          placedSet.add(email);
+          n++;
+        }
+      });
+      const confirmed = placed.slice(0, capacity);
+      for (const p of yesPlayers) {           // fill leftover seats by RSVP order
+        if (confirmed.length >= capacity) break;
+        if (placedSet.has(p.email)) continue;
+        confirmed.push(p);
+      }
+      const confirmedSet = new Set(confirmed.map(p => p.email));
+      const waitlist = yesPlayers.filter(p => !confirmedSet.has(p.email));
+      return { confirmed, waitlist };
+    }
+
+    // Optimistically treat an email as confirmed for the current render pass so a
+    // just-seated waitlist/sub player survives the pre-save sanitizer. The next
+    // load recomputes confirmed authoritatively from the saved assignments.
+    function ensureConfirmedLocally(email) {
+      if (isConfirmedPlayer(email)) return;
+      const data = (currentRSVPResponses && currentRSVPResponses[email]) || {};
+      currentConfirmedPlayers = [...currentConfirmedPlayers, { ...data, email }];
     }
 
     function courtSizeFor(cfg) {
@@ -1295,6 +1343,34 @@
         return;
       }
       assignments[courtIdx].push(email);
+      ensureConfirmedLocally(email);   // a called-in sub may be a Maybe/over-capacity player
+      const sanitized = sanitizePracticeState(assignments, subList, courtCount, courtSize);
+      await saveAssignments(sanitized.assignments, sanitized.substituteList);
+    }
+
+    // Captain seats a waitlisted player directly onto a court. Being seated makes
+    // them confirmed; the lowest-priority unseated confirmed player drops to waitlist.
+    async function seatFromWaitlist(email, courtNumStr) {
+      if (!currentDisplayDate) return;
+      const dateStr = currentDisplayDate.toISOString().split("T")[0];
+      const cfg = (practiceConfig && practiceConfig[dateStr]) || {};
+      const courtCount = cfg.courtCount || 3;
+      const courtSize = courtSizeFor(cfg);
+      const courtIdx = parseInt(courtNumStr, 10) - 1;
+
+      if (courtIdx < 0 || courtIdx >= courtCount) {
+        alert("Invalid court selection.");
+        return;
+      }
+
+      let assignments = effectiveAssignments(cfg, courtCount, courtSize).map(c => c.filter(e => e !== email));
+      let subList = (cfg.substituteList || []).filter(e => e !== email);
+      if (assignments[courtIdx].length >= courtSize) {
+        alert(`Court ${courtIdx + 1} is full (${courtSize} players max). Unassign a player first.`);
+        return;
+      }
+      assignments[courtIdx].push(email);
+      ensureConfirmedLocally(email);   // seating promotes them out of the waitlist
       const sanitized = sanitizePracticeState(assignments, subList, courtCount, courtSize);
       await saveAssignments(sanitized.assignments, sanitized.substituteList);
     }

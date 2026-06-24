@@ -222,6 +222,17 @@
       0%, 100% { border-color: rgba(234,179,8,0.4); }
       50% { border-color: rgba(234,179,8,0.8); }
     }
+    .loading-banner {
+      background: rgba(99,102,241,0.1);
+      border: 1px solid rgba(99,102,241,0.35);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+      font-size: clamp(12px, 2.5vw, 13px); color: #4338ca;
+      font-weight: 500;
+    }
+    .loading-banner.hidden { display: none; }
 
     /* FOOTER */
     .footer {
@@ -318,6 +329,10 @@
           ⚠️ You haven't responded to this match yet
         </div>
 
+        <div class="loading-banner hidden" id="loadingBanner">
+          ⏳ Loading all match availability…
+        </div>
+
         <div class="filter-row">
           <span class="filter-label">League:</span>
           <select id="leagueSelect" class="filter-select" onchange="changeLeague()">
@@ -405,6 +420,7 @@
     function logout() { auth.signOut().then(() => window.location.href = "login.html"); }
 
     let allMatches = [], filteredMatches = [], currentIndex = 0;
+    let matchAvailabilityCache = {};
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-KfGVV4zKjLXTxXpJcaHA7KIjpQGHfMPU6CIgmUYEnh1Aed-bwrnfZIn1M6B08qSKsC1QcQMQ6f9U/pub?output=csv";
 
     function parseCSV(text) {
@@ -422,26 +438,46 @@
     }
 
     async function loadAllMatches() {
-      const res = await fetch(SHEET_URL);
-      const csv = await res.text();
-      const rows = parseCSV(csv);
-      const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
-      const matches = []; const numMatches = rows[0].length - 1;
-      for (let col = 1; col <= numMatches; col++) {
-        const match = {};
-        for (let row = 0; row < fieldNames.length; row++) {
-          const field = fieldNames[row]; const value = rows[row][col]?.trim();
-          if (field && value) match[field] = value;
+      document.getElementById("loadingBanner").classList.remove("hidden");
+      try {
+        const res = await fetch(SHEET_URL);
+        const csv = await res.text();
+        const rows = parseCSV(csv);
+        const fieldNames = rows.map(r => r[0]?.trim()).filter(x => x);
+        const matches = []; const numMatches = rows[0].length - 1;
+        for (let col = 1; col <= numMatches; col++) {
+          const match = {};
+          for (let row = 0; row < fieldNames.length; row++) {
+            const field = fieldNames[row]; const value = rows[row][col]?.trim();
+            if (field && value) match[field] = value;
+          }
+          if (match["Match ID"]) matches.push(match);
         }
-        if (match["Match ID"]) matches.push(match);
+        matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
+        const today = new Date(); today.setHours(0,0,0,0);
+        allMatches = matches.filter(m => {
+          const d = parseMatchDate(m["Schedule Date"]);
+          return d ? d >= today : true;
+        });
+        await batchLoadAllAvailability();
+      } finally {
+        document.getElementById("loadingBanner").classList.add("hidden");
       }
-      matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
-      const today = new Date(); today.setHours(0,0,0,0);
-      allMatches = matches.filter(m => {
-        const d = parseMatchDate(m["Schedule Date"]);
-        return d ? d >= today : true;
-      });
       applyLeagueFilter();
+    }
+
+    async function batchLoadAllAvailability() {
+      const user = auth.currentUser; if (!user) return;
+      const email = user.email;
+      const matchIds = allMatches.map(m => m["Match ID"]);
+      await Promise.all(matchIds.map(async matchId => {
+        try {
+          const doc = await db.collection("availability").doc(matchId).collection("players").doc(email).get();
+          matchAvailabilityCache[matchId] = doc.exists ? doc.data() : null;
+        } catch (e) {
+          matchAvailabilityCache[matchId] = null;
+        }
+      }));
     }
 
     function applyLeagueFilter() {
@@ -512,30 +548,27 @@
     }
 
     function loadPlayerAvailability(matchId) {
-      const user = auth.currentUser; if (!user) return;
-      const email = user.email;
       const banner = document.getElementById("noResponseBanner");
-      db.collection("availability").doc(matchId).collection("players").doc(email).get().then(doc => {
-        clearSelectedButtons();
-        document.getElementById("playerNotes").value = "";
-        hideMsg();
-        if (!doc.exists) {
-          banner.classList.remove("hidden");
-          return;
-        }
-        banner.classList.add("hidden");
-        const data = doc.data(); const status = data.status || ""; const notes = data.notes || "";
-        document.getElementById("playerNotes").value = notes;
-        const labelMap = {
-          "Yes": "Yes, I can play",
-          "No": "No, I cannot play",
-          "Maybe": "Maybe",
-          "Maybe - conflict": "Conflict with another match"
-        };
-        const label = labelMap[status]; if (!label) return;
-        document.querySelectorAll('.avail-btn').forEach(b => {
-          if (b.textContent.includes(label)) { b.classList.add('selected'); }
-        });
+      clearSelectedButtons();
+      document.getElementById("playerNotes").value = "";
+      hideMsg();
+      const data = matchAvailabilityCache[matchId];
+      if (!data) {
+        banner.classList.remove("hidden");
+        return;
+      }
+      banner.classList.add("hidden");
+      const status = data.status || ""; const notes = data.notes || "";
+      document.getElementById("playerNotes").value = notes;
+      const labelMap = {
+        "Yes": "Yes, I can play",
+        "No": "No, I cannot play",
+        "Maybe": "Maybe",
+        "Maybe - conflict": "Conflict with another match"
+      };
+      const label = labelMap[status]; if (!label) return;
+      document.querySelectorAll('.avail-btn').forEach(b => {
+        if (b.textContent.includes(label)) { b.classList.add('selected'); }
       });
     }
 
@@ -548,9 +581,9 @@
       const matchId = localStorage.getItem("selectedMatchId");
       const notes = document.getElementById("playerNotes").value.trim();
       if (!matchId) { showMsg("Error: No match selected.", "error"); return; }
-      db.collection("availability").doc(matchId).collection("players").doc(email).set({
-        email: email, status: status, notes: notes || "", timestamp: new Date()
-      }).then(() => {
+      const record = { email: email, status: status, notes: notes || "", timestamp: new Date() };
+      db.collection("availability").doc(matchId).collection("players").doc(email).set(record).then(() => {
+        matchAvailabilityCache[matchId] = record;
         clearSelectedButtons();
         const labelMap = {
           "Yes": "Yes, I can play",

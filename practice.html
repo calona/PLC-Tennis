@@ -1047,7 +1047,13 @@
 
     // The assignments currently on screen: saved manual layout if any, else the auto-fill by confirmed order.
     function effectiveAssignments(cfg, courtCount, courtSize) {
-      const persisted = normalizeAssignments(cfg.courtAssignments || [], courtCount);
+      // Sanitize the stored layout so this matches exactly what the UI displays —
+      // stale/duplicate/non-confirmed entries (e.g. leftover empty slots from older
+      // data) are dropped. Otherwise capacity checks count phantom players and a
+      // court that shows "3/4 · 1 slot open" wrongly reports as full.
+      const persisted = sanitizePracticeState(
+        normalizeAssignments(cfg.courtAssignments || [], courtCount), [], courtCount, courtSize
+      ).assignments;
       if (persisted.some(c => c.length > 0)) return persisted;
       return Array.from({ length: courtCount }, (_, c) =>
         currentConfirmedPlayers.slice(c * courtSize, c * courtSize + courtSize).map(p => p.email)

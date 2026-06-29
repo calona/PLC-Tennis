@@ -4,26 +4,12 @@
   <meta charset="UTF-8" />
   <title>Captain Dashboard — PLC Tennis</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <style>
-    :root {
-      --navy: #1d3563;
-      --navy-soft: #243c6f;
-      --blue: #4a6fa5;
-      --green: #1d6f42;
-      --bg: #f5f7fa;
-      --card-bg: #ffffff;
-      --text-main: #1f2933;
-      --text-muted: #6b7280;
-      --border-subtle: #e5e7eb;
-      --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
-      --radius-lg: 18px;
-      --radius-pill: 999px;
-    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -33,42 +19,6 @@
       display: flex;
       flex-direction: column;
     }
-    .nav {
-      position: sticky; top: 0; z-index: 20;
-      backdrop-filter: blur(12px);
-      background: linear-gradient(to right, rgba(245,247,250,0.95), rgba(245,247,250,0.9));
-      border-bottom: 1px solid rgba(148,163,184,0.25);
-    }
-    .nav-inner {
-      max-width: 1100px; margin: 0 auto; padding: 12px 20px;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    }
-    .nav-left { display: flex; align-items: center; gap: 10px; }
-    .nav-logo {
-      width: 34px; height: 34px; border-radius: 12px;
-      background: radial-gradient(circle at 30% 20%, #facc15, #f97316 40%, #b91c1c 100%);
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; font-weight: 700; font-size: 18px;
-      box-shadow: 0 6px 14px rgba(15,23,42,0.25);
-    }
-    .nav-title { display: flex; flex-direction: column; }
-    .nav-title-main { font-family: "Poppins", sans-serif; font-weight: 700; font-size: 18px; color: var(--navy); }
-    .nav-title-sub { font-size: 12px; color: var(--text-muted); }
-    .nav-links { display: flex; align-items: center; gap: 10px; font-size: 14px; }
-    .nav-link {
-      padding: 6px 12px; border-radius: var(--radius-pill);
-      color: var(--text-muted); text-decoration: none; transition: all 0.2s ease;
-    }
-    .nav-link:hover { background: rgba(148,163,184,0.12); color: var(--navy); }
-    .nav-link.active { background: var(--navy); color: #fff; box-shadow: 0 6px 14px rgba(15,23,42,0.25); }
-    .nav-cta {
-      padding: 7px 14px; border-radius: var(--radius-pill);
-      border: 1px solid rgba(148,163,184,0.5); font-size: 12px;
-      color: var(--text-muted); background: rgba(255,255,255,0.8);
-      display: flex; align-items: center; gap: 6px; cursor: pointer;
-      text-decoration: none;
-    }
-    .nav-cta span { font-size: 16px; }
     .page { flex: 1; display: flex; justify-content: center; padding: 24px 16px 32px; }
     .page-inner { max-width: 1100px; width: 100%; }
     .page-header {
@@ -193,21 +143,7 @@
       margin-right: 8px; vertical-align: middle;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .footer {
-      border-top: 1px solid rgba(148,163,184,0.3);
-      padding: 10px 16px 14px; font-size: 11px; color: var(--text-muted);
-      display: flex; justify-content: center;
-    }
-    .footer-inner {
-      max-width: 1100px; width: 100%;
-      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
-    }
-    .footer-links { display: flex; gap: 10px; flex-wrap: wrap; }
-    .footer-link { color: var(--text-muted); text-decoration: none; }
-    .footer-link:hover { text-decoration: underline; }
     @media (max-width: 900px) {
-      .nav-inner { flex-wrap: wrap; }
-      .nav-links { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
     }
     @media (max-width: 600px) {
       .page-header { flex-direction: column; align-items: flex-start; }
@@ -216,30 +152,42 @@
       .match-card-body { padding: 12px 14px; }
     }
   </style>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css" />
 </head>
 <body>
 
   <!-- NAVBAR -->
   <header class="nav">
-    <div class="nav-inner">
-      <div class="nav-left">
-        <div class="nav-logo">PLC</div>
-        <div class="nav-title">
-          <div class="nav-title-main">PLC Tennis</div>
-          <div class="nav-title-sub">USTA Team Hub · 2026 Season</div>
-        </div>
-      </div>
-      <div class="nav-links">
-        <a href="index.html" class="nav-link">Home</a>
-        <a href="calendar.html" class="nav-link">Calendar</a>
-        <a href="availability.html" class="nav-link">Availability</a>
-        <a href="practice.html" class="nav-link">Practice</a>
-        <a href="roster.html" class="nav-link">Roster</a>
-        <a href="captain.html" class="nav-link active" id="captainNav">Captain</a>
-        <a href="#" class="nav-cta" onclick="logout()"><span>🔒</span> Logout</a>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <a href="index.html" class="nav-logo">PLC</a>
+      <div>
+        <div class="nav-title-main">PLC Tennis</div>
+        <div class="nav-title-sub">USTA Team Hub · 2026</div>
       </div>
     </div>
-  </header>
+    <nav class="nav-links" id="navLinks">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="calendar.html" class="nav-link">Calendar</a>
+      <a href="availability.html" class="nav-link">Availability</a>
+      <a href="practice.html" class="nav-link">Practice</a>
+      <a href="roster.html" class="nav-link">Roster</a>
+      <a href="captain.html" class="nav-link active" id="captainNavDesktop" style="display:none">Captain</a>
+      <button class="nav-logout" onclick="logout()">🔒 Logout</button>
+    </nav>
+    <button class="nav-hamburger" id="navHamburger" onclick="toggleNav()" aria-label="Menu">☰</button>
+  </div>
+  <div class="nav-drawer" id="navDrawer">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="calendar.html" class="nav-link">Calendar</a>
+    <a href="availability.html" class="nav-link">Availability</a>
+    <a href="practice.html" class="nav-link">Practice</a>
+    <a href="roster.html" class="nav-link">Roster</a>
+    <a href="captain.html" class="nav-link active" id="captainNavMobile" style="display:none">Captain</a>
+    <button class="nav-logout" onclick="logout()">🔒 Logout</button>
+  </div>
+</header>
 
   <!-- MAIN -->
   <main class="page">
@@ -619,5 +567,14 @@
 
     // loadEverything() is called by onAuthStateChanged above
   </script>
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a href="index.html" class="bottom-nav-item active"><span class="bottom-nav-icon">🏠</span><span class="bottom-nav-label">Home</span></a>
+    <a href="calendar.html" class="bottom-nav-item"><span class="bottom-nav-icon">📅</span><span class="bottom-nav-label">Calendar</span></a>
+    <a href="availability.html" class="bottom-nav-item"><span class="bottom-nav-icon">✅</span><span class="bottom-nav-label">Avail</span></a>
+    <a href="practice.html" class="bottom-nav-item"><span class="bottom-nav-icon">🎾</span><span class="bottom-nav-label">Practice</span></a>
+    <a href="roster.html" class="bottom-nav-item"><span class="bottom-nav-icon">👥</span><span class="bottom-nav-label">Roster</span></a>
+  </div>
+</nav>
 </body>
 </html>

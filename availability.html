@@ -3,25 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+  <meta name="theme-color" content="#1d3563" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <title>Set Availability — PLC Tennis</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  
   <style>
-    :root {
-      --navy: #1d3563;
-      --navy-soft: #243c6f;
-      --blue: #4a6fa5;
-      --green: #1d6f42;
-      --bg: #f5f7fa;
-      --card-bg: #ffffff;
-      --text-main: #1f2933;
-      --text-muted: #6b7280;
-      --border-subtle: #e5e7eb;
-      --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
-      --radius-lg: 18px;
-      --radius-pill: 999px;
-      --safe-area-inset-left: env(safe-area-inset-left, 0);
-      --safe-area-inset-right: env(safe-area-inset-right, 0);
-    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { width: 100%; overflow-x: hidden; }
     body {
@@ -35,42 +24,6 @@
     }
 
     /* NAVBAR */
-    .nav {
-      position: sticky; top: 0; z-index: 20;
-      backdrop-filter: blur(12px);
-      background: linear-gradient(to right, rgba(245,247,250,0.95), rgba(245,247,250,0.9));
-      border-bottom: 1px solid rgba(148,163,184,0.25);
-      margin: 0 calc(-1 * max(14px, var(--safe-area-inset-left))) 0 calc(-1 * max(14px, var(--safe-area-inset-right)));
-      padding: 0 max(14px, var(--safe-area-inset-left)) 0 max(14px, var(--safe-area-inset-right));
-    }
-    .nav-inner {
-      max-width: 1100px; margin: 0 auto; padding: 10px 0;
-      display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
-    }
-    .nav-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
-    .nav-logo {
-      width: 34px; height: 34px; border-radius: 12px;
-      background: radial-gradient(circle at 30% 20%, #facc15, #f97316 40%, #b91c1c 100%);
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; font-weight: 700; font-size: 16px;
-      box-shadow: 0 6px 14px rgba(15,23,42,0.25);
-      flex-shrink: 0;
-    }
-    .nav-title-main { font-family: "Poppins", sans-serif; font-weight: 700; font-size: clamp(14px, 3vw, 18px); color: var(--navy); line-height: 1.2; }
-    .nav-title-sub { font-size: clamp(10px, 2vw, 12px); color: var(--text-muted); }
-    .nav-links { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: clamp(12px, 2.5vw, 14px); width: 100%; justify-content: flex-start; margin-top: 8px; }
-    .nav-link {
-      padding: 6px 10px; border-radius: var(--radius-pill);
-      color: var(--text-muted); text-decoration: none; transition: all 0.2s ease; white-space: nowrap;
-    }
-    .nav-link:hover { background: rgba(148,163,184,0.12); color: var(--navy); }
-    .nav-link.active { background: var(--navy); color: #fff; box-shadow: 0 6px 14px rgba(15,23,42,0.25); }
-    .nav-cta {
-      padding: 6px 10px; border-radius: var(--radius-pill);
-      border: 1px solid rgba(148,163,184,0.5); font-size: clamp(11px, 2vw, 12px);
-      color: var(--text-muted); background: rgba(255,255,255,0.8);
-      display: flex; align-items: center; gap: 4px; white-space: nowrap; cursor: pointer;
-    }
 
     /* PAGE */
     .page { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 16px 0 24px; width: 100%; }
@@ -224,38 +177,14 @@
     }
 
     /* FOOTER */
-    .footer {
-      border-top: 1px solid rgba(148,163,184,0.3);
-      padding: 10px 0 12px;
-      font-size: 11px; color: var(--text-muted);
-      display: flex; justify-content: center;
-      margin: 0 calc(-1 * max(14px, var(--safe-area-inset-left))) 0 calc(-1 * max(14px, var(--safe-area-inset-right)));
-      padding-left: max(14px, var(--safe-area-inset-left));
-      padding-right: max(14px, var(--safe-area-inset-right));
-    }
-    .footer-inner {
-      max-width: 1100px; width: 100%;
-      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
-    }
-    .footer-links { display: flex; gap: 12px; flex-wrap: wrap; }
-    .footer-link { color: var(--text-muted); text-decoration: none; font-size: clamp(9px, 2vw, 11px); }
-    .footer-link:hover { text-decoration: underline; }
 
     @media (max-width: 600px) {
       body { padding: 0 12px; }
-      .nav { margin: 0 -12px; padding: 0 12px; }
       .page { padding: 12px 0 16px; }
       .card { padding: 16px; border-radius: 16px; }
       .avail-btn { padding: 12px; }
-      .footer { margin: 0 -12px; padding: 8px 12px; }
     }
-
-    button, a, input, textarea, select {
-      min-height: 44px;
-    }
-    input, textarea, select {
-      font-size: 16px !important;
-    }
+    
 
     /* PRACTICE BANNER */
     .practice-banner {
@@ -275,30 +204,43 @@
     }
     .practice-banner-link:hover { background: rgba(255,255,255,0.25); color: #fff; }
   </style>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css" />
+<script src="shared.js"></script>
 </head>
 <body>
 
   <!-- NAVBAR -->
   <header class="nav">
-    <div class="nav-inner">
-      <div class="nav-left">
-        <div class="nav-logo">PLC</div>
-        <div>
-          <div class="nav-title-main">PLC Tennis</div>
-          <div class="nav-title-sub">USTA Team Hub · 2026</div>
-        </div>
-      </div>
-      <div class="nav-links">
-        <a href="index.html" class="nav-link">Home</a>
-        <a href="calendar.html" class="nav-link">Calendar</a>
-        <a href="availability.html" class="nav-link active">Availability</a>
-        <a href="practice.html" class="nav-link">Practice</a>
-        <a href="roster.html" class="nav-link">Roster</a>
-        <a href="captain.html" class="nav-link">Captain</a>
-        <a href="#" class="nav-cta" onclick="logout()"><span>🔒</span> Logout</a>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <a href="index.html" class="nav-logo">PLC</a>
+      <div>
+        <div class="nav-title-main">PLC Tennis</div>
+        <div class="nav-title-sub">USTA Team Hub · 2026</div>
       </div>
     </div>
-  </header>
+    <nav class="nav-links" id="navLinks">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="calendar.html" class="nav-link">Calendar</a>
+      <a href="availability.html" class="nav-link active">Availability</a>
+      <a href="practice.html" class="nav-link">Practice</a>
+      <a href="roster.html" class="nav-link">Roster</a>
+      <a href="captain.html" class="nav-link" id="captainNavDesktop" style="display:none">Captain</a>
+      <button class="nav-logout" onclick="logout()">🔒 Logout</button>
+    </nav>
+    <button class="nav-hamburger" id="navHamburger" onclick="toggleNav()" aria-label="Menu">☰</button>
+  </div>
+  <div class="nav-drawer" id="navDrawer">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="calendar.html" class="nav-link">Calendar</a>
+    <a href="availability.html" class="nav-link active">Availability</a>
+    <a href="practice.html" class="nav-link">Practice</a>
+    <a href="roster.html" class="nav-link">Roster</a>
+    <a href="captain.html" class="nav-link" id="captainNavMobile" style="display:none">Captain</a>
+    <button class="nav-logout" onclick="logout()">🔒 Logout</button>
+  </div>
+</header>
 
   <!-- MAIN -->
   <main class="page">
@@ -631,5 +573,14 @@
       }).catch(() => {});
     }
   </script>
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a href="index.html" class="bottom-nav-item"><span class="bottom-nav-icon">🏠</span><span class="bottom-nav-label">Home</span></a>
+    <a href="calendar.html" class="bottom-nav-item"><span class="bottom-nav-icon">📅</span><span class="bottom-nav-label">Calendar</span></a>
+    <a href="availability.html" class="bottom-nav-item active"><span class="bottom-nav-icon">✅</span><span class="bottom-nav-label">Avail</span></a>
+    <a href="practice.html" class="bottom-nav-item"><span class="bottom-nav-icon">🎾</span><span class="bottom-nav-label">Practice</span></a>
+    <a href="roster.html" class="bottom-nav-item"><span class="bottom-nav-icon">👥</span><span class="bottom-nav-label">Roster</span></a>
+  </div>
+</nav>
 </body>
 </html>

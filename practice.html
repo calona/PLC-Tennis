@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <title>Thursday Practice — PLC Tennis</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+  <meta name="theme-color" content="#1d3563" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   
   <style>
     :root{--navy:#1d3563;--navy-soft:#243c6f;--blue:#4a6fa5;--green:#1d6f42;--bg:#f5f7fa;--card-bg:#fff;--text-main:#1f2933;--text-muted:#6b7280;--border-subtle:#e5e7eb;--shadow-soft:0 10px 25px rgba(15,23,42,.08);--radius-pill:999px}
@@ -152,6 +157,7 @@
     .footer-link:hover{text-decoration:underline}
 
     @media(max-width:900px){.nav-inner{flex-wrap:wrap}.nav-links{width:100%;justify-content:flex-start}}
+    @media(max-width:860px){.courts-grid{grid-template-columns:repeat(2,1fr)}.ap-courts{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:700px){.courts-grid{grid-template-columns:1fr}}
     @media(max-width:600px){.page-header{flex-direction:column;align-items:flex-start}.info-grid{grid-template-columns:1fr 1fr}.reason-input{width:100%}.add-date-row{flex-direction:column}}
 
@@ -188,6 +194,14 @@
     .ap-roster-add-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
     .ap-roster-note{font-size:11px;color:var(--text-muted);font-style:italic}
     @media(max-width:700px){.ap-courts{grid-template-columns:1fr}}
+    @media(max-width:700px){
+      .ap-unassign-btn,.ap-assign-btn,.ap-to-sub-btn,.sub-callin-btn,.sub-remove-btn,.waitlist-to-sub-btn{
+        min-height:32px;padding:6px 12px;font-size:12px;
+      }
+      .ap-assign-select,.sub-callin-select{min-height:34px;padding:6px 8px;font-size:13px;}
+      .ap-player-row,.ap-unassigned-row,.ap-sub-move-row,.sub-row{gap:10px;}
+      .schedule-item-remove{min-height:32px;padding:8px 14px;}
+    }
 
     /* UNASSIGNED PLAYERS CARD */
     .unassigned-card{background:var(--card-bg);border-radius:18px;padding:16px 20px;box-shadow:var(--shadow-soft);border:1px dashed rgba(74,111,165,.4);margin-bottom:20px;display:none}

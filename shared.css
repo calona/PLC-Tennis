@@ -14,8 +14,17 @@
   --radius-pill: 999px;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: rgba(29,53,99,0.12); }
 html, body { width: 100%; overflow-x: hidden; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+/* Visible, accessible focus ring for keyboard/switch/voice control users,
+   without adding an outline on plain mouse/touch taps */
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
 
 body {
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;

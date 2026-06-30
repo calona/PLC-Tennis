@@ -316,7 +316,7 @@
         matches.sort((a, b) => new Date(a["Schedule Date"]) - new Date(b["Schedule Date"]));
         allMatches = matches;
 
-        for (const match of allMatches) {
+        await Promise.all(allMatches.map(async (match) => {
           const matchId = match["Match ID"];
           const snapshot = await db.collection("availability").doc(matchId).collection("players").get();
           const players = [];
@@ -326,7 +326,7 @@
           });
           players.sort((a, b) => a.player.localeCompare(b.player));
           allAvailability[matchId] = players;
-        }
+        }));
 
         renderMatches();
       } catch (e) {

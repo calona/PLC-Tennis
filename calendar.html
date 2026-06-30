@@ -293,7 +293,7 @@
             .catch(() => {})
         );
         Promise.all(promises).then(() => {
-          if (document.getElementById('calListView')?.style.display === 'block') buildListView();
+          buildListView();
         });
       });
     });
@@ -522,7 +522,6 @@
         container.appendChild(grid);
       }
     }
-  </script>
 
 /* ---- Calendar list view ---- */
 function setCalView(mode) {
@@ -628,6 +627,7 @@ function buildListView() {
 
   container.innerHTML = html;
 }
+  </script>
 
 <nav class="bottom-nav">
   <div class="bottom-nav-inner">

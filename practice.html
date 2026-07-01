@@ -439,6 +439,7 @@
       if (!user) { window.location.href = "login.html"; return; }
       currentUser = user;
       isCaptain = user.email.toLowerCase() === CAPTAIN_EMAIL;
+      revealCaptainNav(user.email);
       document.getElementById("captainBar").classList.toggle("show", isCaptain);
       document.getElementById("scheduleEditor").classList.toggle("show", isCaptain);
       loadPracticeSchedule();

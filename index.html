@@ -717,7 +717,7 @@ const auth = firebase.auth();
 
 auth.onAuthStateChanged(user => {
   if (user && user.email.toLowerCase() === "gaylorde@outlook.com") {
-    showCaptainLink();
+    revealCaptainNav(user.email);
   }
   // Reload practice widget with user context for court assignment display
   setupPracticeWidget();

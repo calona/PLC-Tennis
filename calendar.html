@@ -285,6 +285,7 @@
       if (!user) { window.location.href = "login.html"; return; }
       window._currentUser = user;
       window._myAvail = {};
+      revealCaptainNav(user.email);
       loadMatches().then(() => {
         // Load availability for list view
         const matchIds = (window._allMatches || []).map(m => m["Match ID"]);
@@ -542,6 +543,17 @@ function setCalView(mode) {
     btnG && btnG.classList.add('active');
     btnL && btnL.classList.remove('active');
   }
+}
+
+// Parse a "Schedule Date" string from the match CSV into a local-midnight
+// Date object (mirrors the normalization already used for practice dates
+// above, so dates don't shift a day depending on the viewer's timezone).
+// Returns null for missing/invalid input instead of throwing.
+function parseMatchDate(str) {
+  if (!str) return null;
+  const d = new Date(str);
+  if (isNaN(d.getTime())) return null;
+  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
 }
 
 function buildListView() {

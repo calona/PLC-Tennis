@@ -340,6 +340,7 @@
 
     auth.onAuthStateChanged(user => {
       if (!user) { window.location.href = "login.html"; } else {
+        revealCaptainNav(user.email);
         loadAllMatches();
         loadPracticeAssignment(user);
       }

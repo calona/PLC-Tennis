@@ -17,3 +17,15 @@ window.addEventListener('resize', () => {
     if (drawer) drawer.classList.remove('open');
   }
 });
+
+// Reveals the "Captain" nav link (desktop nav + mobile drawer) once the
+// signed-in user's email is confirmed to be the team captain. Every page
+// has this link in its markup pre-hidden via inline style="display:none",
+// but nothing ever called a function to un-hide it for any of them.
+function revealCaptainNav(email) {
+  if (!email || email.toLowerCase() !== "gaylorde@outlook.com") return;
+  const d = document.getElementById('captainNavDesktop');
+  const m = document.getElementById('captainNavMobile');
+  if (d) d.style.display = '';
+  if (m) m.style.display = '';
+}

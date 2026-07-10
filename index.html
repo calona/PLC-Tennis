@@ -176,12 +176,13 @@ body {
   border: 1px solid rgba(148,163,184,0.25);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   text-decoration: none;
   color: inherit;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
   min-height: 140px;
   touch-action: manipulation;
+  position: relative;
 }
 
 .action-card:hover {
@@ -194,18 +195,41 @@ body {
 }
 
 .action-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.action-icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 .action-icon.calendar { background: rgba(59,130,246,0.12); color: #2563eb; }
 .action-icon.check { background: rgba(34,197,94,0.12); color: #16a34a; }
 .action-icon.clipboard { background: rgba(234,179,8,0.12); color: #ca8a04; }
+
+.action-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.action-chevron {
+  display: none;
+  color: #9ca3af;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.action-chevron svg { width: 16px; height: 16px; display: block; }
 
 .action-title {
   font-size: clamp(12px, 2.5vw, 13px);
@@ -217,6 +241,7 @@ body {
   font-size: clamp(11px, 2vw, 11px);
   color: var(--text-muted);
   flex: 1;
+  line-height: 1.45;
 }
 
 .action-meta {
@@ -327,138 +352,6 @@ body {
   margin-top: 4px;
 }
 
-/* Q&A */
-.qa-card {
-  max-height: 500px;
-  display: flex;
-  flex-direction: column;
-}
-
-.qa-scroll {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  max-height: 280px;
-  margin-bottom: 10px;
-}
-
-.qa-thread {
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 8px 0;
-}
-
-.qa-question {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-}
-
-.qa-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 700;
-  color: #fff;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-}
-
-.qa-avatar.captain {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-
-.qa-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.qa-name {
-  font-size: clamp(10px, 2vw, 11px);
-  font-weight: 600;
-  color: var(--navy-soft);
-}
-
-.qa-badge {
-  font-size: 9px;
-  font-weight: 700;
-  color: #d97706;
-  background: rgba(234,179,8,0.12);
-  padding: 2px 6px;
-  border-radius: 999px;
-  margin-left: 4px;
-  display: inline-block;
-}
-
-.qa-time {
-  font-size: 9px;
-  color: var(--text-muted);
-  margin-left: 6px;
-}
-
-.qa-text {
-  font-size: clamp(11px, 2vw, 12px);
-  color: var(--text-main);
-  margin-top: 3px;
-  line-height: 1.45;
-  word-break: break-word;
-  overflow-wrap: break-word;
-}
-
-.qa-input-row {
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-}
-
-.qa-input {
-  flex: 1;
-  padding: 10px 12px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  font-size: 12px;
-  resize: none;
-  min-height: 40px;
-  max-height: 100px;
-  font-family: "Inter", sans-serif;
-}
-
-.qa-send {
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: none;
-  background: var(--navy);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  min-height: 40px;
-  touch-action: manipulation;
-}
-
-.qa-send:hover {
-  background: var(--navy-soft);
-}
-
-.qa-send:active {
-  opacity: 0.9;
-}
-
-.qa-send:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.qa-empty {
-  font-size: 12px;
-  color: var(--text-muted);
-  text-align: center;
-  padding: 16px 0;
-}
-
 /* FOOTER */
 
 /* MOBILE OPTIMIZATIONS */
@@ -479,15 +372,40 @@ body {
     gap: 8px;
   }
 
+  /* On phones, action cards become compact horizontal rows:
+     icon left, text middle, chevron right — less scrolling,
+     clearer "tap me" affordance */
   .action-card {
-    padding: 12px;
+    padding: 12px 14px;
     min-height: auto;
     border-radius: 14px;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
   }
 
+  .action-body { gap: 2px; }
+
+  .action-desc { flex: none; }
+
+  .action-meta { display: none; }
+
+  .action-chevron { display: flex; }
+
   .hero-card {
-    padding: 14px;
+    padding: 16px;
     border-radius: 16px;
+  }
+
+  /* Full-width stacked CTAs: primary action first, easy thumb reach */
+  .hero-cta-row {
+    flex-direction: column;
+  }
+
+  .hero-cta-primary, .hero-cta-secondary {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
   }
 
   .card {
@@ -507,15 +425,6 @@ body {
 
   .card-grid {
     grid-template-columns: 1fr;
-  }
-
-  .hero-cta-row {
-    flex-direction: column;
-  }
-
-  .hero-cta-primary, .hero-cta-secondary {
-    width: 100%;
-    justify-content: center;
   }
 }
 
@@ -546,7 +455,7 @@ body {
       <a href="captain.html" class="nav-link" id="captainNavDesktop" style="display:none">Captain</a>
       <button class="nav-logout" onclick="logout()">🔒 Logout</button>
     </nav>
-    <button class="nav-hamburger" id="navHamburger" onclick="toggleNav()" aria-label="Menu">☰</button>
+    <button class="nav-hamburger" id="navHamburger" onclick="toggleNav()" aria-label="Menu" aria-expanded="false" aria-controls="navDrawer">☰</button>
   </div>
   <div class="nav-drawer" id="navDrawer">
     <a href="index.html" class="nav-link active">Home</a>
@@ -585,30 +494,64 @@ body {
 
         <div class="card-grid">
           <a href="calendar.html" class="action-card">
-            <div class="action-icon calendar"></div>
-            <div class="action-title">Match Calendar</div>
-            <div class="action-desc">See all upcoming matches, locations, and start times.</div>
-            <div class="action-meta">
-              <span>Next 4 weeks</span>
+            <div class="action-icon calendar" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
             </div>
+            <div class="action-body">
+              <div class="action-title">Match Calendar</div>
+              <div class="action-desc">See all upcoming matches, locations, and start times.</div>
+              <div class="action-meta">
+                <span>Next 4 weeks</span>
+              </div>
+            </div>
+            <span class="action-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </span>
           </a>
 
           <a href="availability.html" class="action-card">
-            <div class="action-icon check"></div>
-            <div class="action-title">Submit Availability</div>
-            <div class="action-desc">Tell the captain which matches you can play.</div>
-            <div class="action-meta">
-              <span>Keep updated</span>
+            <div class="action-icon check" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
             </div>
+            <div class="action-body">
+              <div class="action-title">Submit Availability</div>
+              <div class="action-desc">Tell the captain which matches you can play.</div>
+              <div class="action-meta">
+                <span>Keep updated</span>
+              </div>
+            </div>
+            <span class="action-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </span>
           </a>
 
           <a href="captain.html" class="action-card">
-            <div class="action-icon clipboard"></div>
-            <div class="action-title">Captain Dashboard</div>
-            <div class="action-desc">View responses and plan rosters.</div>
-            <div class="action-meta">
-              <span>Excel export</span>
+            <div class="action-icon clipboard" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                <line x1="9" y1="12" x2="15" y2="12"/>
+                <line x1="9" y1="16" x2="13" y2="16"/>
+              </svg>
             </div>
+            <div class="action-body">
+              <div class="action-title">Captain Dashboard</div>
+              <div class="action-desc">View responses and plan rosters.</div>
+              <div class="action-meta">
+                <span>Excel export</span>
+              </div>
+            </div>
+            <span class="action-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </span>
           </a>
         </div>
       </section>
@@ -665,21 +608,6 @@ body {
         </ul>
       </section>
 
-      <section class="card qa-card">
-        <div class="card-title">Ask the Captain</div>
-        <div class="card-subtitle">Questions, comments, or logistics.</div>
-
-        <div class="qa-scroll" id="qaScroll">
-          <div class="qa-empty" id="qaEmpty">Loading...</div>
-        </div>
-
-        <div class="qa-input-row" id="qaInputRow" style="display:none;">
-          <textarea class="qa-input" id="qaInput" placeholder="Type a question..." rows="1"
-            onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); postQuestion(); }"></textarea>
-          <button class="qa-send" onclick="postQuestion()">Post</button>
-        </div>
-      </section>
-
     </aside>
   </div>
 </main>
@@ -716,9 +644,8 @@ const db = firebase.firestore();
 const auth = firebase.auth();
 
 auth.onAuthStateChanged(user => {
-  if (user && user.email.toLowerCase() === "gaylorde@outlook.com") {
-    revealCaptainNav(user.email);
-  }
+  if (!user) { window.location.href = "login.html"; return; }
+  revealCaptainNav(user.email);
   // Reload practice widget with user context for court assignment display
   setupPracticeWidget();
 });
@@ -994,76 +921,6 @@ async function renderPracticeWidget(upcomingDates, cfg, container) {
   container.innerHTML = html;
 }
 
-function postQuestion() {
-  const input = document.getElementById("qaInput");
-  const text = input.value.trim();
-  if (!text) return;
-  const user = auth.currentUser;
-  if (!user) { alert("Not logged in."); return; }
-
-  db.collection("qa").add({
-    user_email: user.email,
-    text: text,
-    timestamp: new Date()
-  }).then(() => {
-    input.value = "";
-    loadQA();
-  }).catch(e => alert("Error posting: " + e.message));
-}
-
-async function loadQA() {
-  const container = document.getElementById("qaScroll");
-  const inputRow = document.getElementById("qaInputRow");
-  const user = auth.currentUser;
-
-  if (!user) {
-    container.innerHTML = '<div class="qa-empty">Please log in to ask questions.</div>';
-    inputRow.style.display = "none";
-    return;
-  }
-
-  inputRow.style.display = "flex";
-
-  try {
-    const snap = await db.collection("qa").orderBy("timestamp", "desc").limit(20).get();
-    const docs = snap.docs;
-
-    if (docs.length === 0) {
-      container.innerHTML = '<div class="qa-empty">No questions yet. Be the first to ask!</div>';
-      return;
-    }
-
-    let html = "";
-    for (const doc of docs) {
-      const d = doc.data();
-      const isCapt = d.user_email.toLowerCase() === "gaylorde@outlook.com";
-      const nameShort = d.user_email.split("@")[0].charAt(0).toUpperCase();
-      const timeStr = d.timestamp ? new Date(d.timestamp.toDate()).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "?";
-
-      html += `
-        <div class="qa-thread">
-          <div class="qa-question">
-            <div class="qa-avatar ${isCapt ? 'captain' : ''}">${nameShort}</div>
-            <div class="qa-content">
-              <div>
-                <span class="qa-name">${d.user_email}</span>
-                ${isCapt ? '<span class="qa-badge">CAPTAIN</span>' : ''}
-                <span class="qa-time">${timeStr}</span>
-              </div>
-              <div class="qa-text">${d.text}</div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    container.innerHTML = html;
-  } catch (e) {
-    container.innerHTML = '<div class="qa-empty">Could not load questions.</div>';
-  }
-}
-
-loadQA();
 </script>
 <nav class="bottom-nav">
   <div class="bottom-nav-inner">

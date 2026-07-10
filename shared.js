@@ -5,7 +5,9 @@
 function toggleNav() {
   const drawer = document.getElementById('navDrawer');
   if (!drawer) return;
-  drawer.classList.toggle('open');
+  const isOpen = drawer.classList.toggle('open');
+  const btn = document.getElementById('navHamburger');
+  if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 }
 
 // Close the drawer automatically if the viewport is resized/rotated

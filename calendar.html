@@ -297,6 +297,13 @@
         Promise.all(promises).then(() => {
           buildListView();
         });
+      }).catch(err => {
+        console.error("Calendar load failed:", err);
+        const msg = '<p class="loading-msg">Could not load matches. Check your connection and refresh to try again.</p>';
+        const grid = document.getElementById('calendarContainer');
+        const list = document.getElementById('calListView');
+        if (grid) grid.innerHTML = msg;
+        if (list) list.innerHTML = msg;
       });
     });
     function logout() { auth.signOut().then(() => window.location.href = "login.html"); }
@@ -321,10 +328,12 @@
     }
 
     async function loadMatches() { /* returns promise */
+      // Firestore settings reads are non-fatal: if rules or network block
+      // them, we still load and render matches from the sheet.
       const [sheetRes, schedDoc, cfgDoc] = await Promise.all([
         fetch(SHEET_URL),
-        db.collection("settings").doc("practiceSchedule").get(),
-        db.collection("settings").doc("practiceConfig").get()
+        db.collection("settings").doc("practiceSchedule").get().catch(() => null),
+        db.collection("settings").doc("practiceConfig").get().catch(() => null)
       ]);
 
       const csv = await sheetRes.text();
@@ -343,7 +352,7 @@
       allMatches = matches;
       window._allMatches = matches;
 
-      if (schedDoc.exists && Array.isArray(schedDoc.data().dates)) {
+      if (schedDoc && schedDoc.exists && Array.isArray(schedDoc.data().dates)) {
         practiceSchedule = schedDoc.data().dates.map(d => {
           const date = new Date(d);
           return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
@@ -351,7 +360,7 @@
       } else {
         practiceSchedule = [];
       }
-      practiceConfig = cfgDoc.exists ? (cfgDoc.data() || {}) : {};
+      practiceConfig = (cfgDoc && cfgDoc.exists) ? (cfgDoc.data() || {}) : {};
       // Build practice dates for list view
       window._practiceDates = practiceSchedule.map(d => {
         const dk = d.toISOString().split("T")[0];
@@ -360,6 +369,9 @@
         return { date: d, meta: h + (dc.courtCount ? ` · ${dc.courtCount} courts` : "") + (dc.cancelled ? " · ❌ CANCELLED" : "") };
       });
       renderFilteredMatches();
+      // Render the list view (what mobile sees) right away with match data;
+      // availability pills get filled in by a second pass once those load.
+      buildListView();
     }
 
     function renderFilteredMatches() {
@@ -371,6 +383,7 @@
         return true;
       });
       renderCalendar(filtered);
+      buildListView(); // keep mobile list in sync with the filter
     }
 
     function loadMyAvailability(matchId) {

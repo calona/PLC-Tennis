@@ -368,10 +368,10 @@
         const h = dc.practiceTime ? (() => { const [hh,mm] = dc.practiceTime.split(":").map(Number); const p=hh>=12?"PM":"AM"; return `${hh%12||12}:${String(mm).padStart(2,"0")} ${p}`; })() : "6:45 PM";
         return { date: d, meta: h + (dc.courtCount ? ` · ${dc.courtCount} courts` : "") + (dc.cancelled ? " · ❌ CANCELLED" : "") };
       });
-      renderFilteredMatches();
-      // Render the list view (what mobile sees) right away with match data;
-      // availability pills get filled in by a second pass once those load.
-      buildListView();
+      // Render grid and list independently: an error in one view must
+      // never blank out the other.
+      try { renderFilteredMatches(); } catch (e) { console.error("Grid render failed:", e); }
+      try { buildListView(); } catch (e) { console.error("List render failed:", e); }
     }
 
     function renderFilteredMatches() {
@@ -383,7 +383,7 @@
         return true;
       });
       renderCalendar(filtered);
-      buildListView(); // keep mobile list in sync with the filter
+      try { buildListView(); } catch (e) { console.error("List render failed:", e); } // keep mobile list in sync with the filter
     }
 
     function loadMyAvailability(matchId) {
@@ -621,8 +621,9 @@ function buildListView() {
     }
     const wd = ev.date.toLocaleDateString('en-US', { weekday: 'short' });
     const day = ev.date.getDate();
-    const leagueTag = ev.league.includes('55') ? '<span class="list-event-tag tag-55">55+</span>' :
-                      ev.league.includes('40') ? '<span class="list-event-tag tag-40">40+</span>' : '';
+    const lg = ev.league || '';
+    const leagueTag = lg.includes('55') ? '<span class="list-event-tag tag-55">55+</span>' :
+                      lg.includes('40') ? '<span class="list-event-tag tag-40">40+</span>' : '';
     const typeTag = ev.type === 'match' 
       ? `<span class="list-event-tag tag-match">Match</span>${leagueTag}`
       : '<span class="list-event-tag tag-practice">Practice</span>';
